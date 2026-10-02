@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 import { MxnPricePipe } from '../../pipes/mxn-price.pipe';
 import type { Product } from '../../models/catalog.models';
@@ -10,7 +10,7 @@ import type { Product } from '../../models/catalog.models';
   imports: [MxnPricePipe],
   template: `
     <article class="product-card">
-      @if (product().imageUrl; as imageUrl) {
+      @if (imageUrl(); as imageUrl) {
         <img
           class="product-card__image"
           [src]="imageUrl"
@@ -18,6 +18,7 @@ import type { Product } from '../../models/catalog.models';
           width="160"
           height="160"
           loading="lazy"
+          (error)="failedImageUrl.set(imageUrl)"
         />
       } @else {
         <div class="product-card__image product-card__image--empty" aria-hidden="true"></div>
@@ -92,4 +93,10 @@ import type { Product } from '../../models/catalog.models';
 export class ProductCardComponent {
   readonly product = input.required<Product>();
   readonly addRequested = output<Product>();
+
+  protected readonly failedImageUrl = signal<string | null>(null);
+  protected readonly imageUrl = computed(() => {
+    const imageUrl = this.product().imageUrl;
+    return imageUrl !== this.failedImageUrl() ? imageUrl : null;
+  });
 }

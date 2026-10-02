@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/JulianH2/itacr-frontend/compare/v0.1.0...v0.1.1) (2026-10-02)
+
+
+### Fixed
+
+* **catalog:** use the backend catalog in production and hide broken product photos (ITACR-8) ([4d06b26](https://github.com/JulianH2/itacr-frontend/commit/4d06b261016e4802d6ffd48cf62abb20c2b7738a))
+* **catalog:** use the backend catalog in production and hide broken product photos (ITACR-8) ([74e66f8](https://github.com/JulianH2/itacr-frontend/commit/74e66f8d991cddedf1bc4e643365ed9d320d404e))
+
 ## 0.1.0 (2026-10-02)
 
 
