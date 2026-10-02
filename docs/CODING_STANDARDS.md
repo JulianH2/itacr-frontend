@@ -196,6 +196,7 @@ src/app/
 - Every order gets a client-generated UUID (`crypto.randomUUID()`) that the API uses as an idempotency key, so a retried sync never creates duplicates.
 - Never block the UI while offline. Show the connection state and queue the action.
 - **Never drop queued orders on logout or when the session expires** (HU_07). The queue lives in IndexedDB, separate from the session. When the token expires, the app asks for the PIN again and the queued orders sync after the employee logs in; logout clears the session but not the queue.
+- Never force a reload when a new version is deployed: `AppUpdateService` offers it with an **Actualizar** button, so nothing in progress is lost. Only an unrecoverable service worker state reloads by itself.
 
 ### 2.6 Accessibility
 

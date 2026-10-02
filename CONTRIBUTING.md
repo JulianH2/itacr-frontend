@@ -18,6 +18,7 @@ All commands work in PowerShell, Git Bash, and macOS/Linux terminals, one line a
 10. [Releases and versioning](#10-releases-and-versioning)
 11. [Scrum Master responsibilities](#11-scrum-master-responsibilities)
 12. [Definition of Done](#12-definition-of-done)
+13. [Deployment to Azure](#13-deployment-to-azure)
 
 ---
 
@@ -295,7 +296,7 @@ The Scrum Master runs the close; the other team member approves each PR. Replace
 
   Smoke test at `http://localhost:8080`: every route loads, the app installs as a PWA, and the waiter flow works with DevTools > Network > **Offline**. If you find a blocking bug, fix it with a personal branch into `sprint-01` and repeat steps 2 and 3. Do not go on to step 4 until QA passes.
 
-- [ ] **4. PR `release` → `main`.** Open `https://github.com/JulianH2/itacr-frontend/compare/main...release`, get approval, and merge.
+- [ ] **4. PR `release` → `main`, then production deploy.** Open `https://github.com/JulianH2/itacr-frontend/compare/main...release`, get approval, and merge. The push to `main` starts the **Deploy** workflow ([section 13](#13-deployment-to-azure)). Deploy the backend first when both repositories change in the same sprint, so the new frontend never calls endpoints that do not exist yet. When the workflow finishes, open `https://app-itacr-frontend-prod-hchjfvaadffrhre3.westus-01.azurewebsites.net`, log in, and check the sprint's screens.
 
 - [ ] **5. Merge the release-please PR.** A few seconds after step 4, release-please opens (or updates) the PR `chore(repo): release vX.Y.Z` on `main`. Review the version and the generated `CHANGELOG.md`, approve, and merge. release-please then creates the tag `vX.Y.Z` and the GitHub Release.
 
@@ -404,3 +405,30 @@ An issue is **Done** only when all of the following are true:
 - [ ] It works on a phone and a tablet, and offline if the story involves the waiter flow.
 - [ ] Docs are updated (README, `.env.example`) if applicable.
 - [ ] The Jira issue is moved to **Done**.
+
+## 13. Deployment to Azure
+
+The Azure resources are created by hand in the Azure Portal; this repository never creates or changes them. The PWA is served by App Service `app-itacr-frontend-prod` with `pm2 serve /home/site/wwwroot --no-daemon --spa`.
+
+### 13.1 Deploy workflow
+
+`.github/workflows/deploy.yml` runs on every push to `main` (and by hand with **Run workflow**):
+
+1. `npm ci` with the Node.js version of `.nvmrc`.
+2. `npm test`.
+3. `npm run build` (production configuration).
+4. Checks that `dist/itacr-frontend/browser` contains `index.html` and `ngsw.json`.
+5. Deploys that folder to `app-itacr-frontend-prod` with `azure/webapps-deploy` and the `AZURE_FRONTEND_PUBLISH_PROFILE` secret.
+
+If a test or the build fails, nothing is deployed.
+
+**One-time setup (repository owner):** App Service `app-itacr-frontend-prod` > Overview > **Download publish profile**, then paste the whole file into the repository secret `AZURE_FRONTEND_PUBLISH_PROFILE` (Settings > Secrets and variables > Actions). Delete the downloaded file afterwards, and never commit it. Downloading it requires App Service > Configuration > **SCM Basic Auth Publishing Credentials** turned on. If the file is ever exposed, reset it (Overview > **Reset publish profile**) and update the secret.
+
+### 13.2 New versions of the PWA
+
+The service worker keeps the app working offline, so a device can keep an old version after a deploy. To avoid it:
+
+- The service worker downloads the new version in the background, checking `ngsw.json` with a cache-busting parameter.
+- `AppUpdateService` then shows "Hay una nueva versión disponible." with an **Actualizar** button. The app does not reload by itself, so a waiter never loses an order in progress; the next reload uses the new version.
+- If the service worker reaches an unrecoverable state (for example, files of the old version are gone from the server), the app reloads right away.
+- To force the update on a device: reload the page twice, or DevTools > Application > Service workers > **Update**.
