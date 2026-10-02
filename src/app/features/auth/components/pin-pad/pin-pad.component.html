@@ -1,0 +1,47 @@
+<div
+  class="pin-pad__display"
+  data-testid="pin-display"
+  role="status"
+  [attr.aria-label]="value().length + ' de ' + slots().length + ' dígitos capturados'"
+>
+  @for (filled of slots(); track $index) {
+    <span class="pin-pad__slot" [class.pin-pad__slot--filled]="filled" aria-hidden="true"></span>
+  }
+</div>
+
+<div class="pin-pad__keys">
+  @for (digit of digits; track digit) {
+    <button
+      mat-stroked-button
+      type="button"
+      class="pin-pad__key"
+      [attr.data-testid]="'pin-key-' + digit"
+      [disabled]="disabled()"
+      (click)="append(digit)"
+    >
+      {{ digit }}
+    </button>
+  }
+  <span class="pin-pad__spacer"></span>
+  <button
+    mat-stroked-button
+    type="button"
+    class="pin-pad__key"
+    data-testid="pin-key-0"
+    [disabled]="disabled()"
+    (click)="append('0')"
+  >
+    0
+  </button>
+  <button
+    mat-icon-button
+    type="button"
+    class="pin-pad__key"
+    aria-label="Borrar el último dígito"
+    data-testid="pin-key-backspace"
+    [disabled]="disabled()"
+    (click)="removeLast()"
+  >
+    <mat-icon>backspace</mat-icon>
+  </button>
+</div>
