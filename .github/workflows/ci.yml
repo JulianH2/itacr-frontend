@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['sprint-*', develop, release, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  branch-name:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate source and target branches
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          KEBAB='[a-z0-9]+(-[a-z0-9]+)*'
+          PERSONAL="^(feature|fix|docs|refactor|test|chore)/ITACR-[0-9]+-${KEBAB}$"
+          HOTFIX="^hotfix/ITACR-[0-9]+-${KEBAB}$"
+          SPRINT='^sprint-[0-9]{2,}$'
+          DEPENDABOT='^dependabot/.+$'
+          RELEASE_PLEASE='^release-please--.+$'
+
+          allowed=false
+          case "$BASE_REF" in
+            sprint-*)
+              if [[ "$HEAD_REF" =~ $PERSONAL ]]; then allowed=true; fi
+              ;;
+            develop)
+              # Dependabot is allowed because its weekly update PRs target develop.
+              if [[ "$HEAD_REF" =~ $SPRINT || "$HEAD_REF" =~ $HOTFIX || "$HEAD_REF" =~ $DEPENDABOT ]]; then allowed=true; fi
+              ;;
+            release)
+              if [[ "$HEAD_REF" == "develop" || "$HEAD_REF" == "main" ]]; then allowed=true; fi
+              ;;
+            main)
+              if [[ "$HEAD_REF" == "release" || "$HEAD_REF" =~ $HOTFIX || "$HEAD_REF" =~ $RELEASE_PLEASE ]]; then allowed=true; fi
+              ;;
+          esac
+
+          if [[ "$allowed" == "true" ]]; then
+            echo "OK: '$HEAD_REF' -> '$BASE_REF'"
+            exit 0
+          fi
+
+          echo "::error title=Branch flow not allowed::'$HEAD_REF' cannot open a PR into '$BASE_REF'. See the allowed flow below and CONTRIBUTING.md, section 2."
+          cat <<'EOF'
+          Allowed flow (target <- source):
+            sprint-XX <- <type>/ITACR-<N>-<kebab-description>   (type: feature, fix, docs, refactor, test, chore)
+            develop   <- sprint-XX | hotfix/ITACR-<N>-<kebab-description> (back-merge) | dependabot/*
+            release   <- develop | main (back-merge after a release)
+            main      <- release | hotfix/ITACR-<N>-<kebab-description> | release-please--*
+          The description after the Jira key is lowercase kebab-case: letters, numbers, and single hyphens.
+          Example: feature/ITACR-7-pin-login -> sprint-01
+          EOF
+          exit 1
+
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Git hooks are only useful on developer machines.
+      HUSKY: 0
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
