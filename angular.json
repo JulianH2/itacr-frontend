@@ -67,6 +67,10 @@
                 }
               ],
               "outputHashing": "all",
+              "index": {
+                "input": "src/index.production.html",
+                "output": "index.html"
+              },
               "optimization": {
                 "scripts": true,
                 "styles": {
