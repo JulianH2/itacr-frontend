@@ -105,8 +105,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) =>
 - Validate forms for user experience, but never rely on it: the backend validates every request.
 - The staff session (JWT valid for one 12-hour shift, no refresh token) is stored in `localStorage` through `SessionService`, and logout removes all session data. This is a deliberate trade-off:
   - HU_01 requires the session to stay on the device until the employee logs out, and the PWA must keep it while offline. `sessionStorage` and memory lose it when the tab or app closes.
-  - An `httpOnly` cookie is not an option: the frontend (Azure Static Web Apps) and the API (Azure App Service) are on different `azurewebsites.net` sites, so browsers treat the API cookie as third-party and block it.
-  - The risk of `localStorage` is token theft through XSS. It is mitigated by the Content Security Policy in `public/staticwebapp.config.json` (no inline or third-party scripts), Angular's built-in sanitization, the rules below, and the short token lifetime.
+  - An `httpOnly` cookie is not an option: the frontend (`app-itacr-frontend-prod`) and the API (`app-itacr-backend-prod`) are two App Services on different `azurewebsites.net` sites, so browsers treat the API cookie as third-party and block it.
+  - The risk of `localStorage` is token theft through XSS. It is mitigated by Angular's built-in sanitization, the rules below, the short token lifetime, and the Content Security Policy `<meta>` tag of the production build (`src/index.production.html`), which only allows scripts from the site itself and connections to the backend.
 - Never bind untrusted HTML with `[innerHTML]` or bypass Angular sanitization (`bypassSecurityTrust*`), and never add inline scripts, inline event handlers, or scripts from other domains: the CSP blocks them in production.
 - Guard every route by role (waiter, kitchen, manager); the backend enforces the same roles.
 - Keep dependencies updated: review Dependabot PRs every week and run `npm audit` before each sprint close.

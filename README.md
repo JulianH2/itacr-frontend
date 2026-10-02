@@ -71,7 +71,7 @@ itacr-frontend/
 ├── .husky/                   # Git hooks: pre-commit (lint-staged), commit-msg (commitlint)
 ├── docs/
 │   └── CODING_STANDARDS.md
-├── public/                   # Static files: manifest, icons, favicon, staticwebapp.config.json (CSP)
+├── public/                   # Static files: manifest, icons, favicon
 ├── src/
 │   ├── app/
 │   │   ├── core/             # Singletons: guards, interceptors, services, models
@@ -89,6 +89,7 @@ itacr-frontend/
 │   │   └── app.ts            # App shell (toolbar + router outlet)
 │   ├── environments/         # Build-time configuration (API URL, SignalR hub URL, VAPID key)
 │   ├── index.html
+│   ├── index.production.html # index.html plus the production CSP
 │   └── styles.scss           # Angular Material theme and global styles
 ├── ngsw-config.json          # Service worker caching strategies
 ├── release-please-config.json # Release automation (with .release-please-manifest.json)
@@ -122,12 +123,32 @@ The simulated employees are the same as the Development test employees seeded by
 
 Service worker caching (`ngsw-config.json`):
 
-| Data group       | URLs                                                       | Strategy                                        |
-| ---------------- | ---------------------------------------------------------- | ----------------------------------------------- |
-| `catalog-api`    | `/api/v1/products`, `/api/v1/categories`, `/api/v1/combos` | `freshness` (network first, 3 s timeout, 1 day) |
-| `product-images` | `/uploads/**`                                              | `performance` (cache first, 7 days)             |
+| Data group       | URLs                                                                     | Strategy                                        |
+| ---------------- | ------------------------------------------------------------------------ | ----------------------------------------------- |
+| `catalog-api-v2` | `/api/v1/catalog/**` and `https://*.azurewebsites.net/api/v1/catalog/**` | `freshness` (network first, 3 s timeout, 1 day) |
+| `catalog-api`    | `/api/v1/products`, `/api/v1/categories`, `/api/v1/combos`               | `freshness` (network first, 3 s timeout, 1 day) |
+| `product-images` | `/uploads/**`                                                            | `performance` (cache first, 7 days)             |
 
-In production, the API must be served on the same origin (reverse proxy to `/api/v1` and `/uploads`) for these rules to apply.
+In production the API is on another domain, so only the data groups that list the full `azurewebsites.net` URL apply there.
+
+## Production
+
+The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, with the startup command:
+
+```
+pm2 serve /home/site/wwwroot --no-daemon --spa
+```
+
+`--spa` answers every unknown path with `index.html`, so routes such as `/login` work after a reload.
+
+| URL      | Value                                                                                |
+| -------- | ------------------------------------------------------------------------------------ |
+| Frontend | `https://app-itacr-frontend-prod-hchjfvaadffrhre3.westus-01.azurewebsites.net`       |
+| API      | `https://app-itacr-backend-prod-b3hvcggncghafbgp.westus-01.azurewebsites.net/api/v1` |
+
+- Azure generates the domains with a unique suffix; they are shown in each App Service > Overview > **Default domain**. `src/environments/environment.ts` uses the backend one for `apiBaseUrl` and `kitchenHubUrl`.
+- The backend only accepts this frontend if its domain is in the backend `Cors__Origins__0` setting (itacr-backend README, "Production settings").
+- **Content Security Policy:** `pm2 serve` cannot send HTTP headers, so the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep both index files in sync**, and add any new external origin (API, fonts, images) to the CSP. A `<meta>` CSP cannot set `frame-ancestors`.
 
 ## Branching model
 
