@@ -71,13 +71,14 @@ itacr-frontend/
 ├── .husky/                   # Git hooks: pre-commit (lint-staged), commit-msg (commitlint)
 ├── docs/
 │   └── CODING_STANDARDS.md
-├── public/                   # Static files: manifest.webmanifest, icons, favicon
+├── public/                   # Static files: manifest, icons, favicon, staticwebapp.config.json (CSP)
 ├── src/
 │   ├── app/
 │   │   ├── core/             # Singletons: guards, interceptors, services, models
 │   │   ├── shared/           # Reusable presentational components, pipes, directives
 │   │   ├── features/         # One lazy-loaded folder per epic
-│   │   │   ├── auth/         # Staff access and accounts (/login)
+│   │   │   ├── home/         # Landing screen with "Acceso Personal" (/)
+│   │   │   ├── auth/         # Staff login, role redirect, and logout (/login)
 │   │   │   ├── catalog/      # Products, combos, categories (/catalog)
 │   │   │   ├── orders/       # Waiter and pickup orders, offline queue (/orders)
 │   │   │   ├── kitchen/      # Kitchen Display System (/kitchen)
@@ -105,6 +106,17 @@ Angular bundles its configuration at build time from `src/environments/`:
 | `src/environments/environment.ts`             | `ng build` (production) |
 
 The keys are defined by the `AppEnvironment` interface and documented in [.env.example](.env.example). Everything in these files is public once built, so **never put secrets in them**.
+
+### Simulated API (development only)
+
+While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `environment.development.ts` makes `src/app/core/mocks/mock-auth.interceptor.ts` answer the auth calls with test data that follows the API contract. Set it to `false` to call the real backend. Production builds never use it.
+
+| Test login                     | Value                                                      |
+| ------------------------------ | ---------------------------------------------------------- |
+| PIN (every active employee)    | `1234`                                                     |
+| Email and password             | `ana@itacr.mx` / `Itacr2026!`                              |
+| Pending approval account (CA4) | `pedro@itacr.mx` / `Itacr2026!` (not listed in the picker) |
+| Lockout                        | 5 wrong PINs lock that employee for 15 minutes             |
 
 Service worker caching (`ngsw-config.json`):
 

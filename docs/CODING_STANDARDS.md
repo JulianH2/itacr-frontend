@@ -103,8 +103,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) =>
 
 - **Never put secrets in the frontend.** Everything in `src/environments/` and the bundle is public once built. Only public values (API URL, SignalR hub URL, VAPID public key) go there.
 - Validate forms for user experience, but never rely on it: the backend validates every request.
-- Store the JWT only in memory or `sessionStorage`, never in `localStorage`, and clear it on logout.
-- Never bind untrusted HTML with `[innerHTML]` or bypass Angular sanitization (`bypassSecurityTrust*`).
+- The staff session (JWT valid for one 12-hour shift, no refresh token) is stored in `localStorage` through `SessionService`, and logout removes all session data. This is a deliberate trade-off:
+  - HU_01 requires the session to stay on the device until the employee logs out, and the PWA must keep it while offline. `sessionStorage` and memory lose it when the tab or app closes.
+  - An `httpOnly` cookie is not an option: the frontend (Azure Static Web Apps) and the API (Azure App Service) are on different `azurewebsites.net` sites, so browsers treat the API cookie as third-party and block it.
+  - The risk of `localStorage` is token theft through XSS. It is mitigated by the Content Security Policy in `public/staticwebapp.config.json` (no inline or third-party scripts), Angular's built-in sanitization, the rules below, and the short token lifetime.
+- Never bind untrusted HTML with `[innerHTML]` or bypass Angular sanitization (`bypassSecurityTrust*`), and never add inline scripts, inline event handlers, or scripts from other domains: the CSP blocks them in production.
 - Guard every route by role (waiter, kitchen, manager); the backend enforces the same roles.
 - Keep dependencies updated: review Dependabot PRs every week and run `npm audit` before each sprint close.
 
@@ -142,6 +145,7 @@ src/app/
 ├── core/          # Singletons used app-wide: guards, interceptors, services, models
 ├── shared/        # Reusable presentational components, pipes, directives (no services with state)
 └── features/      # One folder per epic, each lazy-loaded
+    ├── home/
     ├── auth/
     ├── catalog/
     ├── orders/
@@ -191,6 +195,7 @@ src/app/
 - IndexedDB naming: database `itacr`, stores in kebab-case plural (`pending-orders`, `catalog-snapshot`). Keep store names in constants in one file.
 - Every order gets a client-generated UUID (`crypto.randomUUID()`) that the API uses as an idempotency key, so a retried sync never creates duplicates.
 - Never block the UI while offline. Show the connection state and queue the action.
+- **Never drop queued orders on logout or when the session expires** (HU_07). The queue lives in IndexedDB, separate from the session. When the token expires, the app asks for the PIN again and the queued orders sync after the employee logs in; logout clears the session but not the queue.
 
 ### 2.6 Accessibility
 
