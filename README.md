@@ -111,12 +111,14 @@ The keys are defined by the `AppEnvironment` interface and documented in [.env.e
 
 While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `environment.development.ts` makes `src/app/core/mocks/mock-auth.interceptor.ts` answer the auth calls with test data that follows the API contract. Set it to `false` to call the real backend. Production builds never use it.
 
-| Test login                     | Value                                                      |
-| ------------------------------ | ---------------------------------------------------------- |
-| PIN (every active employee)    | `1234`                                                     |
-| Email and password             | `ana@itacr.mx` / `Itacr2026!`                              |
-| Pending approval account (CA4) | `pedro@itacr.mx` / `Itacr2026!` (not listed in the picker) |
-| Lockout                        | 5 wrong PINs lock that employee for 15 minutes             |
+The simulated employees are the same as the Development test employees seeded by itacr-backend (`docs/database.md`), so the same logins work with both. Every employee's password is `Itacr2026!`, and 5 wrong PINs lock that employee for 15 minutes.
+
+| Employee         | Email                  | PIN    | Role    | Status                                 |
+| ---------------- | ---------------------- | ------ | ------- | -------------------------------------- |
+| Mesero P.        | `mesero@itacr.test`    | `1111` | Waiter  | Active                                 |
+| Cocina P.        | `cocina@itacr.test`    | `2222` | Kitchen | Active                                 |
+| Gerente P.       | `gerente@itacr.test`   | `3333` | Manager | Active                                 |
+| Mesero Pendiente | `pendiente@itacr.test` | `4444` | Waiter  | Pending (not in the picker; CA4 login) |
 
 Service worker caching (`ngsw-config.json`):
 

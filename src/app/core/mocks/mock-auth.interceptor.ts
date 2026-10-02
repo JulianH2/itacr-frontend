@@ -18,7 +18,6 @@ import {
   PinResetRequest,
 } from '@core/auth/auth.models';
 
-const MOCK_PIN = '1234';
 const MOCK_PASSWORD = 'Itacr2026!';
 const MOCK_LATENCY_MS = 400;
 const MAX_FAILED_ATTEMPTS = 5;
@@ -30,44 +29,42 @@ type MockStatus = 'Active' | 'PendingApproval';
 interface MockEmployee extends EmployeeOption {
   readonly role: EmployeeRole;
   readonly email: string;
+  readonly pin: string;
   readonly status: MockStatus;
 }
 
 const MOCK_EMPLOYEES: readonly MockEmployee[] = [
   {
     id: 'a1f0c6d2-0000-4000-8000-000000000001',
-    displayName: 'Ana M.',
+    displayName: 'Mesero P.',
     role: EmployeeRole.Waiter,
-    email: 'ana@itacr.mx',
+    email: 'mesero@itacr.test',
+    pin: '1111',
     status: 'Active',
   },
   {
     id: 'a1f0c6d2-0000-4000-8000-000000000002',
-    displayName: 'Luis R.',
-    role: EmployeeRole.Waiter,
-    email: 'luis@itacr.mx',
+    displayName: 'Cocina P.',
+    role: EmployeeRole.Kitchen,
+    email: 'cocina@itacr.test',
+    pin: '2222',
     status: 'Active',
   },
   {
     id: 'a1f0c6d2-0000-4000-8000-000000000003',
-    displayName: 'Pedro S.',
-    role: EmployeeRole.Waiter,
-    email: 'pedro@itacr.mx',
-    status: 'PendingApproval',
+    displayName: 'Gerente P.',
+    role: EmployeeRole.Manager,
+    email: 'gerente@itacr.test',
+    pin: '3333',
+    status: 'Active',
   },
   {
     id: 'a1f0c6d2-0000-4000-8000-000000000004',
-    displayName: 'Carla G.',
-    role: EmployeeRole.Kitchen,
-    email: 'carla@itacr.mx',
-    status: 'Active',
-  },
-  {
-    id: 'a1f0c6d2-0000-4000-8000-000000000005',
-    displayName: 'Jorge P.',
-    role: EmployeeRole.Manager,
-    email: 'jorge@itacr.mx',
-    status: 'Active',
+    displayName: 'Mesero P.',
+    role: EmployeeRole.Waiter,
+    email: 'pendiente@itacr.test',
+    pin: '4444',
+    status: 'PendingApproval',
   },
 ];
 
@@ -133,7 +130,7 @@ function loginWithPin(request: HttpRequest<unknown>): Observable<HttpResponse<Lo
   if ((lockedUntil.get(employee.id) ?? 0) > Date.now()) {
     return fail(request, HttpStatusCode.Locked, AUTH_PROBLEM_TYPES.accountLocked, 'Account locked');
   }
-  if (body.pin !== MOCK_PIN) {
+  if (body.pin !== employee.pin) {
     const attempts = (failedAttempts.get(employee.id) ?? 0) + 1;
     failedAttempts.set(employee.id, attempts);
     if (attempts >= MAX_FAILED_ATTEMPTS) {
