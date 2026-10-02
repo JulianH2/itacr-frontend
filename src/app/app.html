@@ -1,0 +1,21 @@
+<header>
+  <mat-toolbar class="app-toolbar">
+    <a class="app-toolbar__brand" routerLink="/">ITACR</a>
+    <nav class="app-toolbar__nav" aria-label="Navegación principal">
+      @for (link of navigationLinks; track link.path) {
+        <a
+          mat-button
+          [routerLink]="link.path"
+          routerLinkActive="app-toolbar__link--active"
+          ariaCurrentWhenActive="page"
+        >
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+  </mat-toolbar>
+</header>
+
+<main class="app-content">
+  <router-outlet />
+</main>
