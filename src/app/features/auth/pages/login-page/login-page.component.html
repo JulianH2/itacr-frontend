@@ -1,0 +1,88 @@
+<section class="login">
+  <h1 class="login__title">Acceso del personal</h1>
+
+  @if (isSessionExpired()) {
+    <p class="login__notice" role="status">{{ messages.sessionExpired }}</p>
+  }
+
+  @switch (step()) {
+    @case ('role') {
+      <h2 class="login__subtitle">Selecciona tu rol</h2>
+      <div class="login__options">
+        @for (option of roles; track option.role) {
+          <button
+            mat-stroked-button
+            type="button"
+            class="login__option"
+            [attr.data-testid]="'role-' + option.role"
+            (click)="selectRole(option.role)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+    }
+
+    @case ('employee') {
+      <h2 class="login__subtitle">{{ roleLabel() }}: selecciona tu nombre</h2>
+      @if (isLoadingEmployees()) {
+        <mat-spinner diameter="40" aria-label="Cargando personal" />
+      } @else {
+        <div class="login__options">
+          @for (employee of employees(); track employee.id) {
+            <button
+              mat-stroked-button
+              type="button"
+              class="login__option"
+              [attr.data-testid]="'employee-' + employee.id"
+              (click)="selectEmployee(employee)"
+            >
+              {{ employee.displayName }}
+            </button>
+          } @empty {
+            @if (errorMessage() === null) {
+              <p>{{ messages.noEmployees }}</p>
+            }
+          }
+        </div>
+      }
+      <button mat-button type="button" (click)="changeRole()">Cambiar rol</button>
+    }
+
+    @case ('pin') {
+      <h2 class="login__subtitle" data-testid="selected-employee">
+        {{ selectedEmployee()?.displayName }} · {{ roleLabel() }}
+      </h2>
+      <p>Ingresa tu PIN de 4 dígitos</p>
+
+      <app-pin-pad [(value)]="pin" [disabled]="isSubmitting()" (keydown.enter)="submitPin()" />
+
+      <button
+        mat-flat-button
+        type="button"
+        class="login__submit"
+        data-testid="pin-submit"
+        [disabled]="isSubmitting()"
+        (click)="submitPin()"
+      >
+        Iniciar sesión
+      </button>
+
+      <div class="login__links">
+        <button mat-button type="button" data-testid="pin-reset" (click)="requestPinReset()">
+          ¿Olvidaste tu PIN?
+        </button>
+        <button mat-button type="button" (click)="changeEmployee()">No soy yo</button>
+      </div>
+    }
+  }
+
+  @if (errorMessage(); as message) {
+    <p class="login__error" role="alert" data-testid="login-error">{{ message }}</p>
+  }
+  @if (infoMessage(); as message) {
+    <p class="login__info" role="status" data-testid="login-info">{{ message }}</p>
+  }
+
+  <a mat-button routerLink="/login/password">Usuario y contraseña</a>
+</section>

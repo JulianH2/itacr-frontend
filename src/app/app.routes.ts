@@ -1,8 +1,15 @@
 import { Routes } from '@angular/router';
 
+import { EmployeeRole } from '@core/auth/auth.models';
+import { roleGuard } from '@core/guards/role.guard';
+
 /** Every feature is lazy-loaded so the waiter flow ships the smallest possible initial bundle. */
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadChildren: () => import('@features/home/home.routes').then((m) => m.HOME_ROUTES),
+  },
   {
     path: 'login',
     loadChildren: () => import('@features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
@@ -13,10 +20,12 @@ export const routes: Routes = [
   },
   {
     path: 'orders',
+    canActivate: [roleGuard(EmployeeRole.Waiter)],
     loadChildren: () => import('@features/orders/orders.routes').then((m) => m.ORDERS_ROUTES),
   },
   {
     path: 'kitchen',
+    canActivate: [roleGuard(EmployeeRole.Kitchen)],
     loadChildren: () => import('@features/kitchen/kitchen.routes').then((m) => m.KITCHEN_ROUTES),
   },
   {
@@ -25,7 +34,8 @@ export const routes: Routes = [
   },
   {
     path: 'manager',
+    canActivate: [roleGuard(EmployeeRole.Manager)],
     loadChildren: () => import('@features/manager/manager.routes').then((m) => m.MANAGER_ROUTES),
   },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

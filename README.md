@@ -71,13 +71,14 @@ itacr-frontend/
 ├── .husky/                   # Git hooks: pre-commit (lint-staged), commit-msg (commitlint)
 ├── docs/
 │   └── CODING_STANDARDS.md
-├── public/                   # Static files: manifest.webmanifest, icons, favicon
+├── public/                   # Static files: manifest, icons, favicon, staticwebapp.config.json (CSP)
 ├── src/
 │   ├── app/
 │   │   ├── core/             # Singletons: guards, interceptors, services, models
 │   │   ├── shared/           # Reusable presentational components, pipes, directives
 │   │   ├── features/         # One lazy-loaded folder per epic
-│   │   │   ├── auth/         # Staff access and accounts (/login)
+│   │   │   ├── home/         # Landing screen with "Acceso Personal" (/)
+│   │   │   ├── auth/         # Staff login, role redirect, and logout (/login)
 │   │   │   ├── catalog/      # Products, combos, categories (/catalog)
 │   │   │   ├── orders/       # Waiter and pickup orders, offline queue (/orders)
 │   │   │   ├── kitchen/      # Kitchen Display System (/kitchen)
@@ -105,6 +106,19 @@ Angular bundles its configuration at build time from `src/environments/`:
 | `src/environments/environment.ts`             | `ng build` (production) |
 
 The keys are defined by the `AppEnvironment` interface and documented in [.env.example](.env.example). Everything in these files is public once built, so **never put secrets in them**.
+
+### Simulated API (development only)
+
+While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `environment.development.ts` makes `src/app/core/mocks/mock-auth.interceptor.ts` answer the auth calls with test data that follows the API contract. Set it to `false` to call the real backend. Production builds never use it.
+
+The simulated employees are the same as the Development test employees seeded by itacr-backend (`docs/database.md`), so the same logins work with both. Every employee's password is `Itacr2026!`, and 5 wrong PINs lock that employee for 15 minutes.
+
+| Employee         | Email                  | PIN    | Role    | Status                                 |
+| ---------------- | ---------------------- | ------ | ------- | -------------------------------------- |
+| Mesero P.        | `mesero@itacr.test`    | `1111` | Waiter  | Active                                 |
+| Cocina P.        | `cocina@itacr.test`    | `2222` | Kitchen | Active                                 |
+| Gerente P.       | `gerente@itacr.test`   | `3333` | Manager | Active                                 |
+| Mesero Pendiente | `pendiente@itacr.test` | `4444` | Waiter  | Pending (not in the picker; CA4 login) |
 
 Service worker caching (`ngsw-config.json`):
 
