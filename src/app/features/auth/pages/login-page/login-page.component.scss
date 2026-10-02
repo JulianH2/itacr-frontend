@@ -1,0 +1,51 @@
+$touch-target-size: 44px;
+$content-width: 420px;
+
+.login {
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  margin: 0 auto;
+  max-width: $content-width;
+  text-align: center;
+}
+
+.login__title {
+  font: var(--mat-sys-headline-medium);
+  margin: 0;
+}
+
+.login__subtitle {
+  font: var(--mat-sys-title-medium);
+  margin: 0;
+}
+
+.login__options {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.login__option,
+.login__submit {
+  min-height: $touch-target-size;
+  width: 100%;
+}
+
+.login__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.login__notice,
+.login__info {
+  color: var(--mat-sys-on-surface-variant);
+  margin: 0;
+}
+
+.login__error {
+  color: var(--mat-sys-error);
+  margin: 0;
+}
