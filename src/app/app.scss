@@ -34,6 +34,18 @@ $touch-target-size: 44px;
   }
 }
 
+.app-toolbar__profile {
+  align-items: center;
+  display: flex;
+  font: var(--mat-sys-body-medium);
+  gap: 8px;
+  margin-left: auto;
+
+  button {
+    min-height: $touch-target-size;
+  }
+}
+
 .app-toolbar__link--active {
   text-decoration: underline;
   text-underline-offset: 6px;

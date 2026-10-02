@@ -1,0 +1,38 @@
+$key-size: 64px;
+$slot-size: 16px;
+
+:host {
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+  outline: none;
+}
+
+.pin-pad__display {
+  display: flex;
+  gap: 16px;
+}
+
+.pin-pad__slot {
+  width: $slot-size;
+  height: $slot-size;
+  border: 2px solid var(--mat-sys-outline);
+  border-radius: 50%;
+}
+
+.pin-pad__slot--filled {
+  background-color: var(--mat-sys-primary);
+  border-color: var(--mat-sys-primary);
+}
+
+.pin-pad__keys {
+  display: grid;
+  grid-template-columns: repeat(3, $key-size);
+  gap: 12px;
+}
+
+.pin-pad__key {
+  width: $key-size;
+  height: $key-size;
+  font: var(--mat-sys-headline-small);
+}

@@ -1,18 +1,26 @@
 <header>
   <mat-toolbar class="app-toolbar">
     <a class="app-toolbar__brand" routerLink="/">ITACR</a>
-    <nav class="app-toolbar__nav" aria-label="Navegación principal">
-      @for (link of navigationLinks; track link.path) {
-        <a
-          mat-button
-          [routerLink]="link.path"
-          routerLinkActive="app-toolbar__link--active"
-          ariaCurrentWhenActive="page"
-        >
-          {{ link.label }}
-        </a>
-      }
-    </nav>
+    @if (employee(); as employee) {
+      <nav class="app-toolbar__nav" aria-label="Navegación principal">
+        @for (link of navigationLinks(); track link.path) {
+          <a
+            mat-button
+            [routerLink]="link.path"
+            routerLinkActive="app-toolbar__link--active"
+            ariaCurrentWhenActive="page"
+          >
+            {{ link.label }}
+          </a>
+        }
+      </nav>
+      <section class="app-toolbar__profile" aria-label="Perfil">
+        <span data-testid="profile-name">{{ employee.displayName }} · {{ roleLabel() }}</span>
+        <button mat-button type="button" data-testid="logout" (click)="logout()">
+          Cerrar sesión
+        </button>
+      </section>
+    }
   </mat-toolbar>
 </header>
 
