@@ -1,0 +1,75 @@
+// The board is meant for a wide screen in landscape, with large type readable from a distance.
+.kitchen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  min-height: calc(100dvh - 64px);
+  padding: 16px;
+}
+
+.kitchen__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.kitchen__title {
+  margin: 0;
+  font: var(--mat-sys-display-small);
+}
+
+.kitchen__tools {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.kitchen__outdated {
+  margin: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+  font: var(--mat-sys-title-medium);
+}
+
+.kitchen__sound-on {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-title-medium);
+}
+
+.kitchen__button {
+  min-width: 44px;
+  min-height: 48px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  font: var(--mat-sys-title-medium);
+  cursor: pointer;
+}
+
+.kitchen__state {
+  margin: 64px 0;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-headline-medium);
+}
+
+.kitchen__board {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .kitchen__board {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
