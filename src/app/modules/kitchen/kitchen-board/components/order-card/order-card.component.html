@@ -1,0 +1,33 @@
+<article class="order-card" [attr.data-origin]="origin()" [attr.data-level]="level()">
+  <header class="order-card__header">
+    <h3 class="order-card__number">#{{ order().orderNumber }}</h3>
+    <span
+      class="order-card__timer"
+      role="timer"
+      [attr.aria-label]="'Tiempo transcurrido ' + elapsedText()"
+    >
+      {{ elapsedText() }}
+    </span>
+  </header>
+
+  <p class="order-card__origin">{{ originText() }}</p>
+  @if (level() === 'late') {
+    <p class="order-card__late">Retraso</p>
+  }
+
+  <ul class="order-card__items">
+    @for (item of items(); track $index) {
+      <li class="order-card__item">
+        <span class="order-card__quantity">{{ item.quantity }}×</span>
+        <span class="order-card__product">{{ item.productName }}</span>
+        @if (item.details.length > 0) {
+          <ul class="order-card__details">
+            @for (detail of item.details; track $index) {
+              <li>{{ detail }}</li>
+            }
+          </ul>
+        }
+      </li>
+    }
+  </ul>
+</article>

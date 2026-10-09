@@ -1,4 +1,4 @@
-import type { KitchenOrder } from './kitchen.models';
+import type { KitchenOrder, KitchenOrderItem } from './kitchen.models';
 
 export type OrderOrigin = 'waiter' | 'pickup';
 
@@ -22,4 +22,14 @@ export function originLabel(order: KitchenOrder): string {
 /** Oldest first: the queue is ordered by the time the order was created, whatever its channel. */
 export function byArrival(first: KitchenOrder, second: KitchenOrder): number {
   return Date.parse(first.createdAt) - Date.parse(second.createdAt);
+}
+
+/** What the cook has to follow for one product: size, drink, `+ extra` and `Sin ingrediente`, one text per line. */
+export function itemDetails(item: KitchenOrderItem): string[] {
+  const choices = [item.size, item.drink].filter((choice): choice is string => choice !== null);
+  return [
+    ...choices,
+    ...item.extras.map((extra) => `+ ${extra}`),
+    ...item.exclusions.map((exclusion) => `Sin ${exclusion.toLowerCase()}`),
+  ];
 }

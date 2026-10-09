@@ -1,4 +1,4 @@
-import { byArrival, originLabel, originOf } from './kitchen-order';
+import { byArrival, itemDetails, originLabel, originOf } from './kitchen-order';
 import type { KitchenOrder } from './kitchen.models';
 
 function order(overrides: Partial<KitchenOrder>): KitchenOrder {
@@ -39,5 +39,40 @@ describe('byArrival', () => {
 
     // Assert
     expect(sorted).toEqual(['c', 'b', 'a']);
+  });
+});
+
+describe('itemDetails', () => {
+  it('should list the size, drink, extras and exclusions of a product', () => {
+    // Arrange
+    const item = {
+      productName: 'Combo Clásico',
+      quantity: 2,
+      size: 'Grande',
+      drink: 'Refresco de Cola',
+      extras: ['Queso extra'],
+      exclusions: ['Cebolla'],
+    };
+
+    // Act
+    const details = itemDetails(item);
+
+    // Assert
+    expect(details).toEqual(['Grande', 'Refresco de Cola', '+ Queso extra', 'Sin cebolla']);
+  });
+
+  it('should return nothing when the product has no customization', () => {
+    // Arrange
+    const item = {
+      productName: 'Limonada',
+      quantity: 1,
+      size: null,
+      drink: null,
+      extras: [],
+      exclusions: [],
+    };
+
+    // Act / Assert
+    expect(itemDetails(item)).toEqual([]);
   });
 });
