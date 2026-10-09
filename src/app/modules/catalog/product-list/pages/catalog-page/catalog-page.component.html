@@ -1,0 +1,47 @@
+<main class="catalog">
+  <header class="catalog__header">
+    <h1 class="catalog__title">Menú</h1>
+    <app-order-counter [count]="itemCount()" />
+    @if (isWaiter() && itemCount() > 0) {
+      <a mat-flat-button routerLink="/orders/summary" class="catalog__review">Ver pedido</a>
+    }
+  </header>
+
+  @if (store.hasCategoriesError()) {
+    <section class="catalog__state" role="alert">
+      <p>No pudimos cargar el menú. Revisa tu conexión e inténtalo de nuevo.</p>
+      <button type="button" class="catalog__retry" (click)="store.reloadCategories()">
+        Reintentar
+      </button>
+    </section>
+  } @else if (store.isLoadingCategories()) {
+    <p class="catalog__state" role="status">Cargando menú…</p>
+  } @else {
+    <app-category-tabs
+      [categories]="store.categories()"
+      [selectedId]="store.activeCategoryId()"
+      (categorySelected)="store.selectCategory($event)"
+    />
+
+    @if (store.hasProductsError()) {
+      <section class="catalog__state" role="alert">
+        <p>No pudimos cargar los productos. Revisa tu conexión e inténtalo de nuevo.</p>
+        <button type="button" class="catalog__retry" (click)="store.reloadProducts()">
+          Reintentar
+        </button>
+      </section>
+    } @else if (store.isLoadingProducts()) {
+      <p class="catalog__state" role="status">Cargando productos…</p>
+    } @else if (store.products().length === 0) {
+      <p class="catalog__state" role="status">No hay productos en esta categoría.</p>
+    } @else {
+      <ul class="catalog__grid">
+        @for (product of store.products(); track product.id) {
+          <li>
+            <app-product-card [product]="product" (addRequested)="addToOrder($event)" />
+          </li>
+        }
+      </ul>
+    }
+  }
+</main>
