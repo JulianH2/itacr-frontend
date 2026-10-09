@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 
 import { guestGuard } from '@shared/guards/guest.guard';
 
-export const AUTH_ROUTES: Routes = [
+export const LOGIN_ROUTES: Routes = [
   {
     path: '',
     title: 'Iniciar sesión | ITACR',

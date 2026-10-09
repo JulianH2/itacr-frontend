@@ -12,7 +12,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    loadChildren: () => import('@features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+    loadChildren: () => import('@modules/identity/login/login.routes').then((m) => m.LOGIN_ROUTES),
   },
   {
     path: 'catalog',
