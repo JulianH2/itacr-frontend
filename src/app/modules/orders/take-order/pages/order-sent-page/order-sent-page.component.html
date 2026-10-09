@@ -1,0 +1,16 @@
+<main class="sent">
+  @if (store.sentOrder(); as order) {
+    <section class="sent__card" role="status" aria-live="polite">
+      <h1 class="sent__title">Pedido enviado a cocina</h1>
+      <p class="sent__number">Orden #{{ order.orderNumber }}</p>
+      <p class="sent__destination">
+        {{ order.tableNumber !== null ? 'Mesa ' + order.tableNumber : 'Para llevar' }}
+      </p>
+      <p class="sent__total">Total: {{ order.total | mxnPrice }}</p>
+    </section>
+
+    <button type="button" mat-flat-button class="sent__new" (click)="startNewOrder()">
+      Tomar nuevo pedido
+    </button>
+  }
+</main>
