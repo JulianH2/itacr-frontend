@@ -3,10 +3,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-import { ROLE_LABELS } from '@core/auth/auth-messages';
-import { EmployeeRole } from '@core/auth/auth.models';
-import { AuthService } from '@core/auth/auth.service';
-import { SessionService } from '@core/auth/session.service';
+import { ROLE_LABELS } from '@shared/auth/auth-messages';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { AuthService } from '@shared/auth/auth.service';
+import { SessionService } from '@shared/auth/session.service';
 
 interface NavigationLink {
   readonly path: string;

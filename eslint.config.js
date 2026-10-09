@@ -3,6 +3,7 @@ const eslint = require('@eslint/js');
 const { defineConfig, globalIgnores } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
+const boundaries = require('eslint-plugin-boundaries');
 
 module.exports = defineConfig([
   globalIgnores(['dist/', 'coverage/', '.angular/']),
@@ -45,6 +46,43 @@ module.exports = defineConfig([
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'no-console': ['error', { allow: ['warn', 'error'] }],
       eqeqeq: ['error', 'always'],
+    },
+  },
+  {
+    files: ['src/app/**/*.ts'],
+    plugins: { boundaries },
+    settings: {
+      'boundaries/elements': [
+        { type: 'module', pattern: 'src/app/modules/*', capture: ['name'] },
+        { type: 'shared', pattern: 'src/app/shared' },
+      ],
+      'import/resolver': { typescript: { alwaysTryTypes: true } },
+    },
+    rules: {
+      // A module never imports another module; common code lives in shared/, and shared/ never depends on modules/.
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'allow',
+          policies: [
+            {
+              from: { element: { type: 'module' } },
+              disallow: {
+                to: {
+                  element: {
+                    type: 'module',
+                    captured: { name: '!{{ from.element.captured.name }}' },
+                  },
+                },
+              },
+            },
+            {
+              from: { element: { type: 'shared' } },
+              disallow: { to: { element: { type: 'module' } } },
+            },
+          ],
+        },
+      ],
     },
   },
   {
