@@ -13,12 +13,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
-import { AuthApiService } from '@core/auth/auth-api.service';
-import { toAuthErrorMessage } from '@core/auth/auth-errors';
-import { AUTH_MESSAGES, ROLE_LABELS } from '@core/auth/auth-messages';
-import { EmployeeOption, EmployeeRole, PIN_LENGTH } from '@core/auth/auth.models';
-import { AuthService, SESSION_EXPIRED_REASON } from '@core/auth/auth.service';
-import { SessionService } from '@core/auth/session.service';
+import { AuthApiService } from '@shared/auth/auth-api.service';
+import { toAuthErrorMessage } from '@shared/auth/auth-errors';
+import { AUTH_MESSAGES, ROLE_LABELS } from '@shared/auth/auth-messages';
+import { EmployeeOption, EmployeeRole, PIN_LENGTH } from '@shared/auth/auth.models';
+import { AuthService, SESSION_EXPIRED_REASON } from '@shared/auth/auth.service';
+import { SessionService } from '@shared/auth/session.service';
 
 import { PinPadComponent } from '../../components/pin-pad/pin-pad.component';
 

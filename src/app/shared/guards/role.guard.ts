@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { AuthService } from '@core/auth/auth.service';
-import { ROLE_HOME } from '@core/auth/auth-messages';
-import { EmployeeRole } from '@core/auth/auth.models';
-import { SessionService } from '@core/auth/session.service';
+import { AuthService } from '@shared/auth/auth.service';
+import { ROLE_HOME } from '@shared/auth/auth-messages';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SessionService } from '@shared/auth/session.service';
 
 export function roleGuard(...allowedRoles: readonly EmployeeRole[]): CanActivateFn {
   return (_route, state) => {

@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 
 import { EmployeeRole } from './auth.models';
 import { SESSION_STORAGE, SessionService } from './session.service';
-import { loginResponse, PAST_EXPIRATION } from '@core/testing/auth-fixtures';
-import { MemoryStorage } from '@core/testing/memory-storage';
+import { loginResponse, PAST_EXPIRATION } from '@shared/testing/auth-fixtures';
+import { MemoryStorage } from '@shared/testing/memory-storage';
 
 describe('SessionService', () => {
   let storage: MemoryStorage;

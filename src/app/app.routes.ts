@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
-import { EmployeeRole } from '@core/auth/auth.models';
-import { roleGuard } from '@core/guards/role.guard';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { roleGuard } from '@shared/guards/role.guard';
 
 /** Every feature is lazy-loaded so the waiter flow ships the smallest possible initial bundle. */
 export const routes: Routes = [

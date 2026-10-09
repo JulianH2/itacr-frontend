@@ -4,9 +4,9 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 
 import { environment } from '@env/environment';
-import { AUTH_API_URL } from '@core/auth/auth-api.service';
-import { AuthService } from '@core/auth/auth.service';
-import { SessionService } from '@core/auth/session.service';
+import { AUTH_API_URL } from '@shared/auth/auth-api.service';
+import { AuthService } from '@shared/auth/auth.service';
+import { SessionService } from '@shared/auth/session.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   if (!request.url.startsWith(environment.apiBaseUrl)) {

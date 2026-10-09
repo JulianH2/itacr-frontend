@@ -14,8 +14,8 @@ import { MatInputModule } from '@angular/material/input';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
-import { toAuthErrorMessage } from '@core/auth/auth-errors';
-import { AuthService } from '@core/auth/auth.service';
+import { toAuthErrorMessage } from '@shared/auth/auth-errors';
+import { AuthService } from '@shared/auth/auth.service';
 
 @Component({
   selector: 'app-password-login-page',

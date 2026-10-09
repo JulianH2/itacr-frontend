@@ -10,11 +10,11 @@ import { provideRouter, Router } from '@angular/router';
 import type { MockInstance } from 'vitest';
 
 import { environment } from '@env/environment';
-import { AUTH_API_URL } from '@core/auth/auth-api.service';
-import { EmployeeRole } from '@core/auth/auth.models';
-import { SESSION_STORAGE, SessionService } from '@core/auth/session.service';
-import { loginResponse } from '@core/testing/auth-fixtures';
-import { MemoryStorage } from '@core/testing/memory-storage';
+import { AUTH_API_URL } from '@shared/auth/auth-api.service';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SESSION_STORAGE, SessionService } from '@shared/auth/session.service';
+import { loginResponse } from '@shared/testing/auth-fixtures';
+import { MemoryStorage } from '@shared/testing/memory-storage';
 
 import { authInterceptor } from './auth.interceptor';
 

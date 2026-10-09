@@ -7,8 +7,8 @@ import {
 } from '@angular/common/http';
 import { mergeMap, Observable, throwError, timer, map } from 'rxjs';
 
-import { AUTH_API_URL } from '@core/auth/auth-api.service';
-import { AUTH_PROBLEM_TYPES } from '@core/auth/auth-messages';
+import { AUTH_API_URL } from '@shared/auth/auth-api.service';
+import { AUTH_PROBLEM_TYPES } from '@shared/auth/auth-messages';
 import {
   EmployeeOption,
   EmployeeRole,
@@ -16,7 +16,7 @@ import {
   PasswordLoginRequest,
   PinLoginRequest,
   PinResetRequest,
-} from '@core/auth/auth.models';
+} from '@shared/auth/auth.models';
 
 const MOCK_PASSWORD = 'Itacr2026!';
 const MOCK_LATENCY_MS = 400;

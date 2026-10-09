@@ -5,9 +5,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, timer } from 'rxjs';
 
-import { ROLE_HOME_LABELS } from '@core/auth/auth-messages';
-import { AuthService } from '@core/auth/auth.service';
-import { SessionService } from '@core/auth/session.service';
+import { ROLE_HOME_LABELS } from '@shared/auth/auth-messages';
+import { AuthService } from '@shared/auth/auth.service';
+import { SessionService } from '@shared/auth/session.service';
 
 export const REDIRECT_DELAY_MS = 1500;
 

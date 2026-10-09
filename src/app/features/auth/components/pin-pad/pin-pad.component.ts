@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from '@ang
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
-import { PIN_LENGTH } from '@core/auth/auth.models';
+import { PIN_LENGTH } from '@shared/auth/auth.models';
 
 const DIGIT_PATTERN = /^\d$/;
 

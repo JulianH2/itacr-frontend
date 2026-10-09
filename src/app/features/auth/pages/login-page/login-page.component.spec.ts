@@ -4,12 +4,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import type { MockInstance } from 'vitest';
 
-import { AUTH_API_URL } from '@core/auth/auth-api.service';
-import { AUTH_MESSAGES, AUTH_PROBLEM_TYPES } from '@core/auth/auth-messages';
-import { EmployeeRole } from '@core/auth/auth.models';
-import { SESSION_STORAGE, SessionService } from '@core/auth/session.service';
-import { loginResponse, WAITER } from '@core/testing/auth-fixtures';
-import { MemoryStorage } from '@core/testing/memory-storage';
+import { AUTH_API_URL } from '@shared/auth/auth-api.service';
+import { AUTH_MESSAGES, AUTH_PROBLEM_TYPES } from '@shared/auth/auth-messages';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SESSION_STORAGE, SessionService } from '@shared/auth/session.service';
+import { loginResponse, WAITER } from '@shared/testing/auth-fixtures';
+import { MemoryStorage } from '@shared/testing/memory-storage';
 
 import { LoginPageComponent } from './login-page.component';
 

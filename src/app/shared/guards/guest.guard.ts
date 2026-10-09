@@ -1,8 +1,8 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
-import { ROLE_HOME } from '@core/auth/auth-messages';
-import { SessionService } from '@core/auth/session.service';
+import { ROLE_HOME } from '@shared/auth/auth-messages';
+import { SessionService } from '@shared/auth/session.service';
 
 export const guestGuard: CanActivateFn = () => {
   const session = inject(SessionService);

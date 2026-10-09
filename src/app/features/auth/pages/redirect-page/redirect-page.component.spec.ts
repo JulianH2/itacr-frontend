@@ -2,10 +2,10 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import type { MockInstance } from 'vitest';
 
-import { EmployeeRole } from '@core/auth/auth.models';
-import { SESSION_STORAGE, SessionService } from '@core/auth/session.service';
-import { loginResponse } from '@core/testing/auth-fixtures';
-import { MemoryStorage } from '@core/testing/memory-storage';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SESSION_STORAGE, SessionService } from '@shared/auth/session.service';
+import { loginResponse } from '@shared/testing/auth-fixtures';
+import { MemoryStorage } from '@shared/testing/memory-storage';
 
 import { REDIRECT_DELAY_MS, RedirectPageComponent } from './redirect-page.component';
 
