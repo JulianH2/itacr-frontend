@@ -21,6 +21,12 @@ updates:
           - 'angular-eslint'
       dev-tooling:
         dependency-type: development
+        # Angular dev packages (compiler-cli, build, cli) must move with the angular group: they need the exact same version.
+        exclude-patterns:
+          - '@angular/*'
+          - '@angular-devkit/*'
+          - '@angular-eslint/*'
+          - 'angular-eslint'
     ignore:
       # Angular and TypeScript majors need `ng update` migrations, done manually in a personal branch.
       - dependency-name: '@angular/*'

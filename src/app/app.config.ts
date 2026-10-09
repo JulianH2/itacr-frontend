@@ -10,9 +10,9 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideServiceWorker } from '@angular/service-worker';
 
 import { environment } from '@env/environment';
-import { authInterceptor } from '@core/interceptors/auth.interceptor';
-import { mockAuthInterceptor } from '@core/mocks/mock-auth.interceptor';
-import { AppUpdateService } from '@core/services/app-update.service';
+import { authInterceptor } from '@shared/interceptors/auth.interceptor';
+import { mockAuthInterceptor } from '@shared/mocks/mock-auth.interceptor';
+import { AppUpdateService } from '@shared/services/app-update.service';
 
 import { routes } from './app.routes';
 

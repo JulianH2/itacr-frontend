@@ -133,7 +133,7 @@ Move the Jira issue to **In Progress**.
 ```bash
 npm start                          # http://localhost:4200
 git status
-git add src/app/features/auth      # stage specific paths; avoid "git add ." with unknown files
+git add src/app/modules/identity      # stage specific paths; avoid "git add ." with unknown files
 git commit -m "feat(auth): add 4-digit pin validation (ITACR-7)"
 ```
 

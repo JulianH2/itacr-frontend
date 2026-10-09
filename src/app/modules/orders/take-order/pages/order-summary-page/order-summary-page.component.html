@@ -1,0 +1,99 @@
+<main class="summary">
+  <header class="summary__header">
+    <h1 class="summary__title">Resumen del pedido</h1>
+    <a mat-stroked-button routerLink="/catalog">Agregar productos</a>
+  </header>
+
+  @if (store.items().length === 0) {
+    <p class="summary__empty" role="status">Aún no hay productos en el pedido.</p>
+  } @else {
+    <ul class="summary__items" aria-label="Productos del pedido">
+      @for (item of store.items(); track item.productId) {
+        <li class="summary__item">
+          <span class="summary__item-name">{{ item.name }}</span>
+          <span class="summary__item-price">{{ item.unitPrice * item.quantity | mxnPrice }}</span>
+          <div class="summary__quantity">
+            <button
+              type="button"
+              mat-icon-button
+              [attr.aria-label]="'Quitar uno de ' + item.name"
+              (click)="decrease(item.productId, item.quantity)"
+            >
+              −
+            </button>
+            <span class="summary__quantity-value" [attr.aria-label]="item.quantity + ' unidades'">
+              {{ item.quantity }}
+            </span>
+            <button
+              type="button"
+              mat-icon-button
+              [attr.aria-label]="'Agregar uno de ' + item.name"
+              (click)="increase(item.productId, item.quantity)"
+            >
+              +
+            </button>
+          </div>
+          <button type="button" mat-button class="summary__remove" (click)="remove(item.productId)">
+            Quitar
+          </button>
+        </li>
+      }
+    </ul>
+  }
+
+  <p class="summary__total">
+    <span>Total</span>
+    <strong data-testid="order-total">{{ store.total() | mxnPrice }}</strong>
+  </p>
+
+  <section class="summary__destination" aria-labelledby="destination-title">
+    <h2 id="destination-title" class="summary__subtitle">¿A dónde va?</h2>
+
+    @if (store.hasTablesError()) {
+      <div class="summary__state" role="alert">
+        <p>No pudimos cargar las mesas.</p>
+        <button type="button" mat-stroked-button (click)="store.reloadTables()">Reintentar</button>
+      </div>
+    } @else if (store.isLoadingTables()) {
+      <p class="summary__state" role="status">Cargando mesas…</p>
+    } @else {
+      <div class="summary__tables" role="group" aria-label="Mesas">
+        @for (table of store.tables(); track table.id) {
+          <button
+            type="button"
+            class="summary__table"
+            [class.summary__table--selected]="store.tableId() === table.id"
+            [attr.aria-pressed]="store.tableId() === table.id"
+            (click)="store.selectTable(table.id)"
+          >
+            Mesa {{ table.number }}
+          </button>
+        }
+      </div>
+    }
+
+    <button
+      type="button"
+      class="summary__take-away"
+      [class.summary__take-away--selected]="store.takeAway()"
+      [attr.aria-pressed]="store.takeAway()"
+      (click)="store.setTakeAway(!store.takeAway())"
+    >
+      Para llevar
+    </button>
+  </section>
+
+  @if (store.error(); as error) {
+    <p class="summary__error" role="alert">{{ error }}</p>
+  }
+
+  <button
+    type="button"
+    mat-flat-button
+    class="summary__send"
+    [disabled]="!store.canSend()"
+    (click)="send()"
+  >
+    {{ store.isSending() ? 'Enviando…' : 'Enviar a cocina' }}
+  </button>
+</main>

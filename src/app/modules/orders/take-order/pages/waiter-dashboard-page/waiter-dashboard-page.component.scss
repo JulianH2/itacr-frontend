@@ -1,0 +1,47 @@
+.dashboard {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.dashboard__title {
+  font: var(--mat-sys-headline-medium);
+  margin: 0;
+}
+
+.dashboard__greeting {
+  font: var(--mat-sys-title-medium);
+  margin: 4px 0 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.dashboard__card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--mat-sys-surface-container);
+}
+
+.dashboard__card-title {
+  font: var(--mat-sys-title-large);
+  margin: 0;
+}
+
+.dashboard__card-text {
+  font: var(--mat-sys-body-large);
+  margin: 0;
+}
+
+.dashboard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+
+  a {
+    min-height: 44px;
+  }
+}
