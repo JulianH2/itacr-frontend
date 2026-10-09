@@ -27,7 +27,7 @@ export const routes: Routes = [
   },
   {
     path: 'kitchen',
-    canActivate: [roleGuard(EmployeeRole.Kitchen)],
+    canActivate: [roleGuard(EmployeeRole.Kitchen, EmployeeRole.Manager)],
     loadChildren: () =>
       import('@modules/kitchen/kitchen-board/kitchen.routes').then((m) => m.KITCHEN_ROUTES),
   },

@@ -21,6 +21,7 @@ export const NAVIGATION_BY_ROLE: Readonly<Record<EmployeeRole, readonly Navigati
   [EmployeeRole.Kitchen]: [{ path: '/kitchen', label: 'Cocina' }],
   [EmployeeRole.Manager]: [
     { path: '/manager', label: 'Gerencia' },
+    { path: '/kitchen', label: 'Cocina' },
     { path: '/catalog', label: 'Menú' },
   ],
 };
