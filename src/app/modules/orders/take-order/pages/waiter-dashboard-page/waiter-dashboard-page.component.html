@@ -1,0 +1,30 @@
+<main class="dashboard">
+  <header class="dashboard__header">
+    <h1 class="dashboard__title">Pedidos</h1>
+    @if (displayName()) {
+      <p class="dashboard__greeting">Hola, {{ displayName() }}</p>
+    }
+  </header>
+
+  @if (store.itemCount() > 0) {
+    <section class="dashboard__card" aria-labelledby="order-in-progress">
+      <h2 id="order-in-progress" class="dashboard__card-title">Pedido en curso</h2>
+      <p class="dashboard__card-text">
+        {{ store.itemCount() }} {{ store.itemCount() === 1 ? 'producto' : 'productos' }} ·
+        {{ store.total() | mxnPrice }}
+      </p>
+      <div class="dashboard__actions">
+        <a mat-flat-button routerLink="/orders/summary">Ver resumen</a>
+        <a mat-stroked-button routerLink="/catalog">Agregar productos</a>
+      </div>
+    </section>
+  } @else {
+    <section class="dashboard__card" aria-labelledby="new-order">
+      <h2 id="new-order" class="dashboard__card-title">Nuevo pedido</h2>
+      <p class="dashboard__card-text">Elige los productos en el menú y envíalos a cocina.</p>
+      <div class="dashboard__actions">
+        <a mat-flat-button routerLink="/catalog" data-testid="start-order">Tomar pedido</a>
+      </div>
+    </section>
+  }
+</main>

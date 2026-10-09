@@ -2,6 +2,9 @@
   <header class="catalog__header">
     <h1 class="catalog__title">Menú</h1>
     <app-order-counter [count]="itemCount()" />
+    @if (isWaiter() && itemCount() > 0) {
+      <a mat-flat-button routerLink="/orders/summary" class="catalog__review">Ver pedido</a>
+    }
   </header>
 
   @if (store.hasCategoriesError()) {
