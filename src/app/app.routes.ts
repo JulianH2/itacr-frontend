@@ -16,7 +16,8 @@ export const routes: Routes = [
   },
   {
     path: 'catalog',
-    loadChildren: () => import('@features/catalog/catalog.routes').then((m) => m.CATALOG_ROUTES),
+    loadChildren: () =>
+      import('@modules/catalog/product-list/catalog.routes').then((m) => m.CATALOG_ROUTES),
   },
   {
     path: 'orders',
