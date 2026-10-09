@@ -4,7 +4,6 @@ export const ORDERS_ROUTES: Routes = [
   {
     path: '',
     title: 'Pedidos | ITACR',
-    loadComponent: () =>
-      import('./pages/orders-page/orders-page.component').then((m) => m.OrdersPageComponent),
+    loadComponent: () => import('./orders-page.component').then((m) => m.OrdersPageComponent),
   },
 ];

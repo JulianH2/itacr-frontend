@@ -8,7 +8,7 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    loadChildren: () => import('@features/home/home.routes').then((m) => m.HOME_ROUTES),
+    loadChildren: () => import('@modules/home/home-page/home.routes').then((m) => m.HOME_ROUTES),
   },
   {
     path: 'login',
@@ -22,21 +22,25 @@ export const routes: Routes = [
   {
     path: 'orders',
     canActivate: [roleGuard(EmployeeRole.Waiter)],
-    loadChildren: () => import('@features/orders/orders.routes').then((m) => m.ORDERS_ROUTES),
+    loadChildren: () =>
+      import('@modules/orders/take-order/orders.routes').then((m) => m.ORDERS_ROUTES),
   },
   {
     path: 'kitchen',
     canActivate: [roleGuard(EmployeeRole.Kitchen)],
-    loadChildren: () => import('@features/kitchen/kitchen.routes').then((m) => m.KITCHEN_ROUTES),
+    loadChildren: () =>
+      import('@modules/kitchen/kitchen-board/kitchen.routes').then((m) => m.KITCHEN_ROUTES),
   },
   {
     path: 'tracking',
-    loadChildren: () => import('@features/tracking/tracking.routes').then((m) => m.TRACKING_ROUTES),
+    loadChildren: () =>
+      import('@modules/tracking/tracking-page/tracking.routes').then((m) => m.TRACKING_ROUTES),
   },
   {
     path: 'manager',
     canActivate: [roleGuard(EmployeeRole.Manager)],
-    loadChildren: () => import('@features/manager/manager.routes').then((m) => m.MANAGER_ROUTES),
+    loadChildren: () =>
+      import('@modules/manager/dashboard-page/manager.routes').then((m) => m.MANAGER_ROUTES),
   },
   { path: '**', redirectTo: '' },
 ];
