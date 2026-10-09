@@ -56,6 +56,20 @@ describe('App', () => {
     expect(element.querySelector('[data-testid="profile-name"]')?.textContent).toContain('Ana M.');
   });
 
+  // The manager can follow the kitchen queue, so the kitchen link is part of their navigation.
+  it('should link the kitchen board when a manager is logged in', async () => {
+    // Arrange
+    TestBed.inject(SessionService).start(loginResponse(EmployeeRole.Manager));
+    const fixture = TestBed.createComponent(App);
+
+    // Act
+    await fixture.whenStable();
+
+    // Assert
+    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('.app-toolbar__nav a');
+    expect(Array.from(links, (link) => link.getAttribute('href'))).toContain('/kitchen');
+  });
+
   it('should clear the session and go to login when the employee logs out', async () => {
     // Arrange
     const session = TestBed.inject(SessionService);

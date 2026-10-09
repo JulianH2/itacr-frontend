@@ -1,0 +1,108 @@
+// The app theme has no green or yellow, and the timer colors are part of the business rule of HU_04
+// (green, yellow, red), so the three timer colors are defined here instead of coming from the theme.
+:host {
+  --kitchen-timer-ok: #2e7d32;
+  --kitchen-timer-warning: #f9a825;
+  --kitchen-timer-late: var(--mat-sys-error);
+  --kitchen-timer-text: #ffffff;
+  --kitchen-timer-warning-text: #000000;
+  display: block;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 16px;
+  border-left: 8px solid var(--mat-sys-outline-variant);
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface);
+
+  &[data-origin='pickup'] {
+    border-left-color: var(--mat-sys-tertiary);
+  }
+
+  &[data-origin='waiter'] {
+    border-left-color: var(--mat-sys-primary);
+  }
+
+  &[data-level='late'] {
+    outline: 3px solid var(--kitchen-timer-late);
+  }
+}
+
+.order-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-card__number {
+  margin: 0;
+  font: var(--mat-sys-headline-large);
+}
+
+.order-card__timer {
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--kitchen-timer-ok);
+  color: var(--kitchen-timer-text);
+  font: var(--mat-sys-headline-medium);
+  font-variant-numeric: tabular-nums;
+
+  [data-level='warning'] & {
+    background: var(--kitchen-timer-warning);
+    color: var(--kitchen-timer-warning-text);
+  }
+
+  [data-level='late'] & {
+    background: var(--kitchen-timer-late);
+    color: var(--mat-sys-on-error);
+  }
+}
+
+.order-card__origin {
+  margin: 0;
+  font: var(--mat-sys-title-large);
+  font-weight: 700;
+  color: var(--mat-sys-on-surface);
+}
+
+.order-card__late {
+  margin: 0;
+  color: var(--kitchen-timer-late);
+  font: var(--mat-sys-title-medium);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.order-card__items,
+.order-card__details {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-card__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-card__item {
+  font: var(--mat-sys-title-large);
+}
+
+.order-card__quantity {
+  margin-right: 6px;
+  font-weight: 700;
+}
+
+.order-card__details {
+  margin-left: 40px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-title-medium);
+}
