@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
-import { EmployeeRole } from '@core/auth/auth.models';
-import { SESSION_STORAGE, SessionService } from '@core/auth/session.service';
-import { loginResponse } from '@core/testing/auth-fixtures';
-import { MemoryStorage } from '@core/testing/memory-storage';
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SESSION_STORAGE, SessionService } from '@shared/auth/session.service';
+import { loginResponse } from '@shared/testing/auth-fixtures';
+import { MemoryStorage } from '@shared/testing/memory-storage';
 
 import { App, NAVIGATION_BY_ROLE } from './app';
 
@@ -54,6 +54,20 @@ describe('App', () => {
     const links = element.querySelectorAll('.app-toolbar__nav a');
     expect(links.length).toBe(NAVIGATION_BY_ROLE[EmployeeRole.Waiter].length);
     expect(element.querySelector('[data-testid="profile-name"]')?.textContent).toContain('Ana M.');
+  });
+
+  // The manager can follow the kitchen queue, so the kitchen link is part of their navigation.
+  it('should link the kitchen board when a manager is logged in', async () => {
+    // Arrange
+    TestBed.inject(SessionService).start(loginResponse(EmployeeRole.Manager));
+    const fixture = TestBed.createComponent(App);
+
+    // Act
+    await fixture.whenStable();
+
+    // Assert
+    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('.app-toolbar__nav a');
+    expect(Array.from(links, (link) => link.getAttribute('href'))).toContain('/kitchen');
   });
 
   it('should clear the session and go to login when the employee logs out', async () => {

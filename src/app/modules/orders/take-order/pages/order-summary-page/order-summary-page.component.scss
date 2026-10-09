@@ -1,0 +1,133 @@
+.summary {
+  display: grid;
+  gap: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.summary__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  a {
+    min-height: 44px;
+  }
+}
+
+.summary__title {
+  font: var(--mat-sys-headline-medium);
+  margin: 0;
+}
+
+.summary__subtitle {
+  font: var(--mat-sys-title-medium);
+  margin: 0 0 8px;
+}
+
+.summary__empty,
+.summary__state {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.summary__items {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.summary__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+}
+
+.summary__item-name {
+  font: var(--mat-sys-title-small);
+}
+
+.summary__item-price {
+  font: var(--mat-sys-body-large);
+  text-align: right;
+}
+
+.summary__quantity {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.summary__quantity-value {
+  min-width: 24px;
+  text-align: center;
+  font: var(--mat-sys-title-medium);
+}
+
+.summary__remove {
+  justify-self: end;
+  min-height: 44px;
+}
+
+.summary__total {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font: var(--mat-sys-title-large);
+}
+
+.summary__tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.summary__table,
+.summary__take-away {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--mat-sys-outline);
+  border-radius: 12px;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-label-large);
+  cursor: pointer;
+}
+
+.summary__table--selected,
+.summary__take-away--selected {
+  border-color: var(--mat-sys-primary);
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.summary__take-away {
+  width: 100%;
+}
+
+.summary__error {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.summary__send {
+  min-height: 48px;
+}

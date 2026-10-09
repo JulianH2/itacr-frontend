@@ -1,0 +1,51 @@
+<main class="kitchen">
+  <header class="kitchen__header">
+    <h1 class="kitchen__title">Vista de Cocina</h1>
+    <div class="kitchen__tools">
+      @if (store.isOutdated()) {
+        <p class="kitchen__outdated" role="status">
+          Sin conexión. Mostrando la última actualización.
+        </p>
+      }
+      @if (alert.isEnabled()) {
+        <p class="kitchen__sound-on" role="status">Sonido activado</p>
+      } @else if (alert.isSupported) {
+        <button type="button" class="kitchen__button" (click)="alert.enable()">
+          Activar sonido
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (store.hasError()) {
+    <section class="kitchen__state" role="alert">
+      <p>No pudimos cargar los pedidos. Revisa la conexión e inténtalo de nuevo.</p>
+      <button type="button" class="kitchen__button" (click)="store.reload()">Reintentar</button>
+    </section>
+  } @else if (store.isLoading()) {
+    <p class="kitchen__state" role="status">Cargando pedidos…</p>
+  } @else if (store.isEmpty()) {
+    <p class="kitchen__state" role="status">No hay pedidos pendientes.</p>
+  } @else {
+    <div class="kitchen__board">
+      <app-kitchen-column
+        title="Nuevos"
+        [orders]="store.newOrders()"
+        [now]="store.now()"
+        [thresholds]="store.thresholds"
+      />
+      <app-kitchen-column
+        title="En preparación"
+        [orders]="store.inPreparationOrders()"
+        [now]="store.now()"
+        [thresholds]="store.thresholds"
+      />
+      <app-kitchen-column
+        title="Listos"
+        [orders]="store.readyOrders()"
+        [now]="store.now()"
+        [thresholds]="store.thresholds"
+      />
+    </div>
+  }
+</main>
