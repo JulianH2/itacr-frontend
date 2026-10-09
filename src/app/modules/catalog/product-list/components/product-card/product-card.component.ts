@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
-import { MxnPricePipe } from '../../pipes/mxn-price.pipe';
+import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 import type { Product } from '../../models/catalog.models';
 
 /** Card with the photo, name, description and price of a product and its "Agregar" button. */
