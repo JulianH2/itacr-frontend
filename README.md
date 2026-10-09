@@ -111,6 +111,8 @@ The keys are defined by the `AppEnvironment` interface and documented in [.env.e
 
 While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `environment.development.ts` makes `src/app/shared/mocks/mock-auth.interceptor.ts` answer the auth calls with test data that follows the API contract. Set it to `false` to call the real backend. Production builds never use it.
 
+The kitchen board (`/kitchen`) has its own mock, `MockKitchenApiService`, chosen by the same flag: it returns orders of different ages so the three timer colors show up, and adds a new order every few polls to hear the alert. With the flag on, log in as Cocina or Gerente and open `/kitchen`. The real board calls `GET /kitchen/queue` every 5 seconds and the service worker never caches it.
+
 The simulated employees are the same as the Development test employees seeded by itacr-backend (`docs/database.md`), so the same logins work with both. Every employee's password is `Itacr2026!`, and 5 wrong PINs lock that employee for 15 minutes.
 
 | Employee         | Email                  | PIN    | Role    | Status                                 |
