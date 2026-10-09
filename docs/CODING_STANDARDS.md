@@ -142,25 +142,24 @@ Follow the official [Angular Style Guide](https://angular.dev/style-guide).
 
 ```
 src/app/
-├── core/          # Singletons used app-wide: guards, interceptors, services, models
-├── shared/        # Reusable presentational components, pipes, directives (no services with state)
-└── features/      # One folder per epic, each lazy-loaded
-    ├── home/
-    ├── auth/
-    ├── catalog/
-    ├── orders/
-    ├── kitchen/
-    ├── tracking/
-    └── manager/
-        ├── manager.routes.ts
-        ├── pages/          # Routed (smart) components
-        ├── components/     # Presentational components used only by this feature
-        ├── services/
-        └── models/
+├── modules/                  # One folder per module, one subfolder per screen, each lazy-loaded
+│   ├── identity/login/
+│   ├── catalog/product-list/
+│   ├── orders/take-order/
+│   ├── kitchen/kitchen-board/
+│   ├── tracking/tracking-page/
+│   ├── home/home-page/
+│   └── manager/dashboard-page/
+│       ├── <module>.routes.ts
+│       ├── <screen>.component.ts   # Routed (smart) component, with its template, styles, and spec
+│       └── components/, services/, models/   # Only what that screen uses
+├── shared/                   # Code used by more than one module: auth, guards, interceptors, mocks, services, state, components
+└── app.routes.ts             # One lazy route per screen
 ```
 
-- A feature never imports from another feature. Shared code moves to `shared/` or `core/`.
-- Each feature exposes a `<feature>.routes.ts` file lazy-loaded from `app.routes.ts` with `loadChildren`.
+- A module never imports from another module. Shared code moves to `shared/`. `eslint-plugin-boundaries` enforces this, and `shared/` never imports from `modules/`.
+- Each screen exposes a `<module>.routes.ts` file lazy-loaded from `app.routes.ts` with `loadChildren`.
+- Import with the `@modules/*` and `@shared/*` aliases.
 
 ### 2.2 Components
 
