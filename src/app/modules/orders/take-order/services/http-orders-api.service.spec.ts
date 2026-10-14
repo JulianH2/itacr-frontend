@@ -49,4 +49,24 @@ describe('HttpOrdersApiService', () => {
     expect(request.request.body).toEqual(order);
     request.flush({});
   });
+
+  it('should request the detail of an order by its id', () => {
+    // Act
+    service.getOrder('order-1').subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/order-1`);
+    expect(request.request.method).toBe('GET');
+    request.flush({});
+  });
+
+  it('should request the recent orders of the waiter', () => {
+    // Act
+    service.getRecentOrders().subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/recent`);
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
 });

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
@@ -24,6 +24,8 @@ const SENT_ORDER: PlacedOrder = {
 const API: OrdersApi = {
   getDiningTables: () => of([{ id: 'table-5', number: 5 }]),
   createOrder: () => of(SENT_ORDER),
+  getOrder: () => EMPTY,
+  getRecentOrders: () => of([]),
 };
 
 describe('OrderSentPageComponent', () => {

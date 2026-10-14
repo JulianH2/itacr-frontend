@@ -4,7 +4,13 @@ import type { Observable } from 'rxjs';
 
 import { environment } from '@env/environment';
 
-import type { CreateOrderRequest, DiningTable, PlacedOrder } from '../models/take-order.models';
+import type {
+  CreateOrderRequest,
+  DiningTable,
+  OrderDetail,
+  PlacedOrder,
+  RecentOrder,
+} from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
 /**
@@ -21,5 +27,13 @@ export class HttpOrdersApiService implements OrdersApi {
 
   createOrder(request: CreateOrderRequest): Observable<PlacedOrder> {
     return this.http.post<PlacedOrder>(`${environment.apiBaseUrl}/orders`, request);
+  }
+
+  getOrder(orderId: string): Observable<OrderDetail> {
+    return this.http.get<OrderDetail>(`${environment.apiBaseUrl}/orders/${orderId}`);
+  }
+
+  getRecentOrders(): Observable<readonly RecentOrder[]> {
+    return this.http.get<readonly RecentOrder[]>(`${environment.apiBaseUrl}/orders/recent`);
   }
 }

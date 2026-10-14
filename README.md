@@ -116,6 +116,8 @@ While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `en
 
 The kitchen board (`/kitchen`) has its own mock, `MockKitchenApiService`, chosen by the same flag: it returns orders of different ages so the three timer colors show up, and adds a new order every few polls to hear the alert. With the flag on, log in as Cocina or Gerente and open `/kitchen`. The real board calls `GET /kitchen/queue` every 5 seconds and the service worker never caches it.
 
+A tap on a card moves the order one step (`POST /orders/{id}/status`): the card changes column at once and goes back with a message if the API refuses. For 6 seconds the board offers **Deshacer** (`POST /orders/{id}/status/undo`); the API accepts it for 15. The waiter sees the change in the order detail (`/orders/detail/:id`, `GET /orders/{id}`, refreshed every 10 seconds), opened from the confirmation or from **Últimos pedidos** on the dashboard (`GET /orders/recent`). The mock kitchen remembers the taps, but the mock orders of the waiter stay in New, because the two mocks do not share data.
+
 The simulated employees are the same as the Development test employees seeded by itacr-backend (`docs/database.md`), so the same logins work with both. Every employee's password is `Itacr2026!`, and 5 wrong PINs lock that employee for 15 minutes.
 
 | Employee         | Email                  | PIN    | Role    | Status                                 |

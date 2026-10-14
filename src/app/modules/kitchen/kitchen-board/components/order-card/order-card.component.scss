@@ -10,6 +10,7 @@
 }
 
 .order-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -105,4 +106,37 @@
   margin-left: 40px;
   color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-title-medium);
+}
+
+.order-card__hint {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-large);
+}
+
+.order-card[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.order-card__tap {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: none;
+  border-radius: inherit;
+  background: transparent;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+  }
+
+  &:active:not(:disabled) {
+    background: color-mix(in srgb, var(--mat-sys-on-surface) 8%, transparent);
+  }
+
+  &:disabled {
+    cursor: progress;
+  }
 }

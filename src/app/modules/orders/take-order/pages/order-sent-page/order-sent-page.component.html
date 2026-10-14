@@ -12,5 +12,8 @@
     <button type="button" mat-flat-button class="sent__new" (click)="startNewOrder()">
       Tomar nuevo pedido
     </button>
+    <a mat-stroked-button class="sent__new" [routerLink]="['/orders/detail', order.id]">
+      Ver detalle
+    </a>
   }
 </main>

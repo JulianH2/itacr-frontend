@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, untracked } from '@
 
 import { KitchenColumnComponent } from '../../components/kitchen-column/kitchen-column.component';
 import { provideKitchenApi } from '../../kitchen.config';
+import { statusLabel } from '../../models/kitchen-order';
 import { KitchenAlertService } from '../../services/kitchen-alert.service';
 import { KitchenStore } from '../../services/kitchen-store.service';
 
@@ -17,6 +18,7 @@ import { KitchenStore } from '../../services/kitchen-store.service';
 export class KitchenPageComponent {
   protected readonly store = inject(KitchenStore);
   protected readonly alert = inject(KitchenAlertService);
+  protected readonly statusLabel = statusLabel;
 
   constructor() {
     effect(() => {

@@ -1,4 +1,32 @@
-import type { KitchenOrder, KitchenOrderItem } from './kitchen.models';
+import type {
+  KitchenOrder,
+  KitchenOrderItem,
+  KitchenOrderStatus,
+  KitchenStep,
+} from './kitchen.models';
+
+/** The status a tap moves an order to, or null for a Ready order (the waiter delivers it). */
+export function nextKitchenStep(status: KitchenOrderStatus): KitchenStep | null {
+  switch (status) {
+    case 'New':
+      return 'InPreparation';
+    case 'InPreparation':
+      return 'Ready';
+    case 'Ready':
+      return null;
+  }
+}
+
+export function statusLabel(status: KitchenOrderStatus): string {
+  switch (status) {
+    case 'New':
+      return 'Nuevo';
+    case 'InPreparation':
+      return 'En preparación';
+    case 'Ready':
+      return 'Listo';
+  }
+}
 
 export type OrderOrigin = 'waiter' | 'pickup';
 

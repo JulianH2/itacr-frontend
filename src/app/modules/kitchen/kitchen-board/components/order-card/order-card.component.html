@@ -1,4 +1,9 @@
-<article class="order-card" [attr.data-origin]="origin()" [attr.data-level]="level()">
+<article
+  class="order-card"
+  [attr.data-origin]="origin()"
+  [attr.data-level]="level()"
+  [attr.aria-busy]="busy()"
+>
   <header class="order-card__header">
     <h3 class="order-card__number">#{{ order().orderNumber }}</h3>
     <span
@@ -30,4 +35,17 @@
       </li>
     }
   </ul>
+
+  <p class="order-card__hint">{{ busy() ? 'Guardando…' : hint() }}</p>
+
+  @if (canAdvance()) {
+    <!-- Covers the whole card, so a tap anywhere on it moves the order. -->
+    <button
+      type="button"
+      class="order-card__tap"
+      [attr.aria-label]="actionLabel()"
+      [disabled]="busy()"
+      (click)="onTap()"
+    ></button>
+  }
 </article>
