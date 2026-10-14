@@ -1,0 +1,63 @@
+<div class="home">
+  <section class="hero">
+    <div class="hero__copy">
+      <p class="hero__eyebrow">Plataforma ITACR</p>
+      <h1 class="hero__title">Tu mostrador, en una sola app.</h1>
+      <p class="hero__lead">
+        Toma pedidos, organiza mesas y coordina cocina desde cualquier dispositivo — incluso sin
+        conexión.
+      </p>
+
+      <ul class="hero__actions">
+        <li>
+          <a class="action" routerLink="/catalog" data-testid="pickup-order">
+            <span class="action__icon"><app-icon name="bag" [size]="28" /></span>
+            <span class="action__text">
+              <span class="action__title">Ordenar para recoger</span>
+              <span class="action__description">Arma tu pedido y recógelo apenas esté listo.</span>
+            </span>
+            <app-icon class="action__chevron" name="chevron-right" />
+          </a>
+        </li>
+        <li>
+          <a class="action" routerLink="/login" data-testid="staff-access">
+            <span class="action__icon"><app-icon name="key" [size]="28" /></span>
+            <span class="action__text">
+              <span class="action__title">Acceso Personal</span>
+              <span class="action__description"
+                >Entra con tu PIN como mesero, cocina o gerencia.</span
+              >
+            </span>
+            <app-icon class="action__chevron" name="chevron-right" />
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <app-hero-art />
+  </section>
+
+  <ul class="features">
+    @for (feature of features; track feature.label) {
+      <li class="feature">
+        <span class="feature__icon"><app-icon [name]="feature.icon" [size]="24" /></span>
+        <span class="feature__label">{{ feature.label }}</span>
+      </li>
+    }
+  </ul>
+
+  <section class="steps" aria-labelledby="how-it-works">
+    <h2 id="how-it-works" class="steps__title">Cómo funciona</h2>
+    <ol class="steps__list">
+      @for (step of steps; track step.title; let index = $index) {
+        <li class="step">
+          <span class="step__number" aria-hidden="true">{{ index + 1 }}</span>
+          <div>
+            <h3 class="step__title">{{ step.title }}</h3>
+            <p class="step__text">{{ step.text }}</p>
+          </div>
+        </li>
+      }
+    </ol>
+  </section>
+</div>

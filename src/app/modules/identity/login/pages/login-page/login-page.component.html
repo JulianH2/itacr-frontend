@@ -1,88 +1,111 @@
-<section class="login">
-  <h1 class="login__title">Acceso del personal</h1>
+<div class="split">
+  <aside class="split__panel">
+    <span class="split__mark"><app-brand-mark [size]="32" /></span>
+    <p class="split__title">Acceso del personal</p>
+    <p class="split__text">
+      Entra con tu PIN para gestionar mesas, pedidos y cocina — cada rol ve solo lo que necesita.
+    </p>
+    <app-brand-mark class="split__watermark" [size]="240" />
+  </aside>
 
-  @if (isSessionExpired()) {
-    <p class="login__notice" role="status">{{ messages.sessionExpired }}</p>
-  }
+  <section class="login">
+    <span class="login__logo"><app-brand-mark [size]="44" /></span>
+    <h1 class="login__title">
+      <span class="login__title--phone">Bienvenido a ITACR</span>
+      <span class="login__title--wide">Iniciar sesión</span>
+    </h1>
 
-  @switch (step()) {
-    @case ('role') {
-      <h2 class="login__subtitle">Selecciona tu rol</h2>
-      <div class="login__options">
-        @for (option of roles; track option.role) {
-          <button
-            mat-stroked-button
-            type="button"
-            class="login__option"
-            [attr.data-testid]="'role-' + option.role"
-            (click)="selectRole(option.role)"
-          >
-            {{ option.label }}
-          </button>
-        }
-      </div>
+    @if (isSessionExpired()) {
+      <p class="login__notice" role="status">{{ messages.sessionExpired }}</p>
     }
 
-    @case ('employee') {
-      <h2 class="login__subtitle">{{ roleLabel() }}: selecciona tu nombre</h2>
-      @if (isLoadingEmployees()) {
-        <mat-spinner diameter="40" aria-label="Cargando personal" />
-      } @else {
-        <div class="login__options">
-          @for (employee of employees(); track employee.id) {
-            <button
-              mat-stroked-button
-              type="button"
-              class="login__option"
-              [attr.data-testid]="'employee-' + employee.id"
-              (click)="selectEmployee(employee)"
-            >
-              {{ employee.displayName }}
-            </button>
-          } @empty {
-            @if (errorMessage() === null) {
-              <p>{{ messages.noEmployees }}</p>
-            }
-          }
-        </div>
+    @switch (step()) {
+      @case ('role') {
+        <app-segmented-control
+          class="login__roles"
+          label="Rol"
+          testIdPrefix="role-"
+          [options]="roleOptions"
+          [value]="''"
+          (valueChange)="pickRole($event)"
+        />
+        <p class="login__hint">Elige tu rol para ver al personal.</p>
       }
-      <button mat-button type="button" (click)="changeRole()">Cambiar rol</button>
+
+      @case ('employee') {
+        <app-segmented-control
+          class="login__roles"
+          label="Rol"
+          testIdPrefix="role-"
+          [options]="roleOptions"
+          [value]="selectedRole() ?? ''"
+          (valueChange)="pickRole($event)"
+        />
+        <h2 class="login__subtitle">{{ roleLabel() }}: selecciona tu nombre</h2>
+        @if (isLoadingEmployees()) {
+          <mat-spinner diameter="40" aria-label="Cargando personal" />
+        } @else {
+          <div class="login__options">
+            @for (employee of employees(); track employee.id) {
+              <button
+                type="button"
+                class="login__employee"
+                [attr.data-testid]="'employee-' + employee.id"
+                (click)="selectEmployee(employee)"
+              >
+                <app-avatar [name]="employee.displayName" />
+                <span>{{ employee.displayName }}</span>
+              </button>
+            } @empty {
+              @if (errorMessage() === null) {
+                <p class="login__hint">{{ messages.noEmployees }}</p>
+              }
+            }
+          </div>
+        }
+        <button mat-button type="button" (click)="changeRole()">Cambiar rol</button>
+      }
+
+      @case ('pin') {
+        <h2 class="login__person" data-testid="selected-employee">
+          <app-avatar [name]="selectedEmployee()?.displayName ?? ''" size="sm" />
+          <span>{{ selectedEmployee()?.displayName }} · {{ roleLabel() }}</span>
+        </h2>
+        <p class="login__hint">Ingresa tu PIN de 4 dígitos</p>
+
+        <app-pin-pad [(value)]="pin" [disabled]="isSubmitting()" (keydown.enter)="submitPin()" />
+
+        <button
+          mat-flat-button
+          type="button"
+          class="login__submit"
+          data-testid="pin-submit"
+          [disabled]="isSubmitting()"
+          (click)="submitPin()"
+        >
+          Iniciar sesión
+        </button>
+      }
     }
 
-    @case ('pin') {
-      <h2 class="login__subtitle" data-testid="selected-employee">
-        {{ selectedEmployee()?.displayName }} · {{ roleLabel() }}
-      </h2>
-      <p>Ingresa tu PIN de 4 dígitos</p>
+    @if (errorMessage(); as message) {
+      <p class="login__error" role="alert" data-testid="login-error">{{ message }}</p>
+    }
+    @if (infoMessage(); as message) {
+      <p class="login__info" role="status" data-testid="login-info">{{ message }}</p>
+    }
 
-      <app-pin-pad [(value)]="pin" [disabled]="isSubmitting()" (keydown.enter)="submitPin()" />
-
-      <button
-        mat-flat-button
-        type="button"
-        class="login__submit"
-        data-testid="pin-submit"
-        [disabled]="isSubmitting()"
-        (click)="submitPin()"
-      >
-        Iniciar sesión
-      </button>
-
-      <div class="login__links">
+    <div class="login__links">
+      <a mat-button routerLink="/login/password">
+        <app-icon name="user" [size]="18" />
+        Usuario y contraseña
+      </a>
+      @if (step() === 'pin') {
         <button mat-button type="button" data-testid="pin-reset" (click)="requestPinReset()">
           ¿Olvidaste tu PIN?
         </button>
         <button mat-button type="button" (click)="changeEmployee()">No soy yo</button>
-      </div>
-    }
-  }
-
-  @if (errorMessage(); as message) {
-    <p class="login__error" role="alert" data-testid="login-error">{{ message }}</p>
-  }
-  @if (infoMessage(); as message) {
-    <p class="login__info" role="status" data-testid="login-info">{{ message }}</p>
-  }
-
-  <a mat-button routerLink="/login/password">Usuario y contraseña</a>
-</section>
+      }
+    </div>
+  </section>
+</div>
