@@ -1,80 +1,165 @@
+$desktop: 900px;
+
 .dashboard {
   display: grid;
-  gap: 16px;
-  max-width: 640px;
+  gap: var(--space-3);
   margin: 0 auto;
-  padding: 24px 16px;
+  max-width: var(--content-width);
+  padding: var(--space-1) 0;
 }
 
 .dashboard__title {
-  font: var(--mat-sys-headline-medium);
+  font: var(--mat-sys-headline-large);
+  font-family: var(--font-family);
   margin: 0;
 }
 
-.dashboard__greeting {
-  font: var(--mat-sys-title-medium);
-  margin: 4px 0 0;
-  color: var(--mat-sys-on-surface-variant);
+.dashboard__date {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: var(--space-half) 0 0;
 }
 
-.dashboard__card {
-  display: grid;
-  gap: 8px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--mat-sys-surface-container);
+// ---------- Order in progress / new order ----------
+.dashboard__order {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
 }
 
 .dashboard__card-title {
   font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
   margin: 0;
 }
 
 .dashboard__card-text {
+  color: var(--color-text-secondary);
   font: var(--mat-sys-body-large);
-  margin: 0;
+  font-family: var(--font-family);
+  margin: var(--space-half) 0 0;
 }
 
 .dashboard__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 8px;
+  gap: var(--space-1);
+}
 
-  a {
-    min-height: 44px;
-  }
+// ---------- Layout ----------
+.dashboard__layout {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.dashboard__main {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.dashboard__stats {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(2, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard__section-title {
+  font: var(--mat-sys-headline-small);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-2);
+}
+
+.dashboard__tables {
+  display: grid;
+  gap: var(--space-1);
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+// ---------- Recent orders ----------
+.dashboard__recent-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  padding: var(--space-3);
 }
 
 .dashboard__recent {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
   list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+}
+
+.dashboard__recent li + li {
+  border-top: 1px solid var(--color-divider);
 }
 
 .dashboard__recent-link {
+  align-items: center;
+  color: var(--color-text);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: space-between;
+  min-height: 56px;
+  padding: var(--space-1) 0;
+  text-decoration: none;
+  transition: transform var(--duration-fast) var(--ease-standard);
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.dashboard__recent-text {
   display: grid;
   gap: 2px;
-  min-height: 48px;
-  padding: 8px 12px;
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container-high);
-  color: var(--mat-sys-on-surface);
-  text-decoration: none;
-
-  &:focus-visible {
-    outline: 3px solid var(--mat-sys-primary);
-    outline-offset: 2px;
-  }
+  min-width: 0;
 }
 
 .dashboard__recent-title {
   font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
 }
 
 .dashboard__recent-meta {
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-body-medium);
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+}
+
+@media (hover: hover) {
+  .dashboard__recent-link:hover .dashboard__recent-title {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (min-width: $desktop) {
+  .dashboard {
+    gap: var(--space-4);
+  }
+
+  .dashboard__layout {
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) 340px;
+  }
+
+  .dashboard__stats {
+    grid-template-columns: repeat(2, minmax(0, 280px));
+  }
 }

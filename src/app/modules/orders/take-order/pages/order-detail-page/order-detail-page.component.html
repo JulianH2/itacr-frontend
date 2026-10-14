@@ -1,39 +1,76 @@
 <main class="detail">
-  <a mat-button routerLink="/orders" class="detail__back">Volver a pedidos</a>
+  <a mat-button routerLink="/orders" class="detail__back">
+    <app-icon name="arrow-left" [size]="20" />
+    Volver a pedidos
+  </a>
 
   @if (order(); as order) {
     <header class="detail__header">
-      <h1 class="detail__title">Orden #{{ order.orderNumber }}</h1>
+      <div>
+        <h1 class="detail__title tabular">Orden #{{ order.orderNumber }}</h1>
+        <p class="detail__destination">
+          {{ destinationLabel(order.tableNumber) }}
+          @if (createdTime()) {
+            · <span class="tabular">{{ createdTime() }}</span>
+          }
+        </p>
+      </div>
       <p class="detail__status" data-testid="order-status" [attr.data-status]="order.status">
-        {{ statusLabel(order.status) }}
+        @for (status of [order.status]; track status) {
+          <app-status-badge class="detail__badge" [tone]="statusTone()">{{
+            statusLabel(status)
+          }}</app-status-badge>
+        }
       </p>
     </header>
-    <p class="detail__destination">{{ destinationLabel(order.tableNumber) }}</p>
 
-    <section class="detail__section" aria-labelledby="timeline-title">
-      <h2 id="timeline-title" class="detail__section-title">Línea de tiempo</h2>
-      <ol class="detail__timeline">
-        @for (step of timeline(); track $index) {
-          <li class="detail__step" [class.detail__step--undone]="step.undone">
-            <span class="detail__step-text">{{ step.text }}</span>
-            <time class="detail__step-time">{{ step.time }}</time>
-          </li>
-        }
-      </ol>
-    </section>
+    <div class="detail__layout">
+      <div class="detail__main">
+        <section class="detail__section" aria-labelledby="items-title">
+          <h2 id="items-title" class="detail__section-title">Productos</h2>
+          <ul class="detail__items">
+            @for (item of order.items; track $index) {
+              <li class="detail__item">
+                <span>{{ item.quantity }}× {{ item.name }}</span>
+                <span class="tabular">{{ item.subtotal | mxnPrice }}</span>
+              </li>
+            }
+          </ul>
+          <p class="detail__total">
+            <span>Total</span>
+            <strong class="tabular">{{ order.total | mxnPrice }}</strong>
+          </p>
+        </section>
+      </div>
 
-    <section class="detail__section" aria-labelledby="items-title">
-      <h2 id="items-title" class="detail__section-title">Productos</h2>
-      <ul class="detail__items">
-        @for (item of order.items; track $index) {
-          <li class="detail__item">
-            <span>{{ item.quantity }}× {{ item.name }}</span>
-            <span>{{ item.subtotal | mxnPrice }}</span>
-          </li>
-        }
-      </ul>
-      <p class="detail__total">Total: {{ order.total | mxnPrice }}</p>
-    </section>
+      <section class="detail__section" aria-labelledby="timeline-title">
+        <h2 id="timeline-title" class="detail__section-title">Seguimiento</h2>
+        <ol class="detail__timeline">
+          @for (step of timeline(); track $index) {
+            <li
+              class="detail__step"
+              [class.detail__step--undone]="step.undone"
+              [class.detail__step--current]="step.state === 'current'"
+            >
+              <span class="detail__marker"><app-icon [name]="step.icon" [size]="20" /></span>
+              <span class="detail__step-body">
+                <span class="detail__step-text">{{ step.text }}</span>
+                <time class="detail__step-time tabular">{{ step.time }}</time>
+              </span>
+            </li>
+          }
+          @for (step of upcoming(); track step.label) {
+            <li class="detail__step detail__step--pending">
+              <span class="detail__marker"><app-icon [name]="step.icon" [size]="20" /></span>
+              <span class="detail__step-body">
+                <span class="detail__step-label">{{ step.label }}</span>
+                <span class="detail__step-time">Pendiente</span>
+              </span>
+            </li>
+          }
+        </ol>
+      </section>
+    </div>
   } @else if (notFound()) {
     <p class="detail__state" role="alert">Este pedido no existe.</p>
   } @else if (hasError()) {

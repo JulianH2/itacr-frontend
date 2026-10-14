@@ -1,0 +1,260 @@
+$desktop: 900px;
+
+.home {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0 auto;
+  max-width: var(--content-width);
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+// ---------- Hero ----------
+.hero {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.hero__eyebrow {
+  color: var(--color-primary);
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+  margin: 0 0 var(--space-1);
+}
+
+.hero__title {
+  font: var(--mat-sys-display-medium);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-2);
+  max-width: 16ch;
+}
+
+.hero__lead {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-4);
+  max-width: var(--measure);
+}
+
+.hero__actions {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.action {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  color: inherit;
+  display: flex;
+  gap: var(--space-2);
+  min-height: 88px;
+  padding: var(--space-2);
+  text-decoration: none;
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard);
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+@media (hover: hover) {
+  .action:hover {
+    box-shadow: var(--shadow-medium);
+    transform: translateY(-2px);
+  }
+
+  .action:hover .action__chevron {
+    transform: translateX(4px);
+  }
+}
+
+.action__icon {
+  align-items: center;
+  background: var(--color-primary-tint);
+  border-radius: var(--radius-card);
+  color: var(--color-primary);
+  display: inline-flex;
+  flex: none;
+  height: 56px;
+  justify-content: center;
+  width: 56px;
+}
+
+.action__text {
+  display: grid;
+  flex: 1;
+  gap: var(--space-half);
+}
+
+.action__title {
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+}
+
+.action__description {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+}
+
+.action__chevron {
+  color: var(--color-text-secondary);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+// ---------- Features ----------
+.features {
+  align-items: start;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(3, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.feature {
+  align-items: center;
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  text-align: center;
+}
+
+.feature__icon {
+  align-items: center;
+  background: var(--color-primary-tint);
+  border-radius: var(--radius-card);
+  color: var(--color-primary);
+  display: inline-flex;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+
+.feature__label {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  text-wrap: balance;
+}
+
+// ---------- How it works ----------
+.steps {
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-card);
+  padding: var(--space-3);
+}
+
+.steps__title {
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-3);
+}
+
+.steps__list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  align-items: start;
+  display: flex;
+  gap: var(--space-2);
+}
+
+.step__number {
+  align-items: center;
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+  color: var(--color-on-primary);
+  display: inline-flex;
+  flex: none;
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+  height: var(--space-4);
+  justify-content: center;
+  width: var(--space-4);
+}
+
+.step__title {
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  font-weight: 600;
+  margin: 0;
+}
+
+.step__text {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  margin: var(--space-half) 0 0;
+}
+
+// ---------- Wide screens: two-column hero with the wine panel ----------
+@media (min-width: $desktop) {
+  .home {
+    gap: var(--space-5);
+    padding-top: var(--space-4);
+  }
+
+  .hero {
+    align-items: center;
+    gap: var(--space-8);
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hero__title {
+    font-size: 44px;
+    line-height: 52px;
+    max-width: 14ch;
+  }
+
+  .hero__actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .action {
+    align-items: start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .action__chevron {
+    display: none;
+  }
+
+  .features {
+    border-top: 1px solid var(--color-divider);
+    padding-top: var(--space-4);
+  }
+
+  .steps__list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .steps {
+    align-items: start;
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 200px 1fr;
+  }
+
+  .steps__title {
+    margin: 0;
+  }
+}

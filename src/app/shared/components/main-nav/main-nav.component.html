@@ -1,0 +1,36 @@
+<nav class="nav" aria-label="Navegación principal">
+  <a class="nav__brand" routerLink="/" aria-label="ITACR, inicio">
+    <app-brand-mark [size]="brandSize" />
+    <span class="nav__brand-name">ITACR</span>
+  </a>
+
+  <ul class="nav__links">
+    @for (link of links(); track link.path) {
+      <li class="nav__item">
+        <a
+          class="nav__link"
+          [routerLink]="link.path"
+          routerLinkActive="nav__link--active"
+          ariaCurrentWhenActive="page"
+        >
+          <app-icon [name]="link.icon" [size]="iconSize" />
+          <span>{{ link.label }}</span>
+        </a>
+      </li>
+    }
+    <li class="nav__item nav__item--exit">
+      <button type="button" class="nav__link" data-testid="logout" (click)="exit.emit()">
+        <app-icon name="user" [size]="iconSize" />
+        <span>Salir</span>
+      </button>
+    </li>
+  </ul>
+
+  <section class="nav__profile" aria-label="Perfil">
+    <app-avatar [name]="employeeName()" size="sm" />
+    <div class="nav__person">
+      <span class="nav__name" data-testid="profile-name">{{ employeeName() }}</span>
+      <span class="nav__role">{{ roleLabel() }}</span>
+    </div>
+  </section>
+</nav>

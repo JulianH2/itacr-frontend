@@ -25,7 +25,7 @@ describe('App', () => {
 
     // Assert
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.app-toolbar__brand')?.textContent?.trim()).toBe('ITACR');
+    expect(element.querySelector('.brand-name')?.textContent?.trim()).toBe('ITACR');
   });
 
   it('should hide the navigation and profile when nobody is logged in', async () => {
@@ -37,7 +37,7 @@ describe('App', () => {
 
     // Assert
     const element = fixture.nativeElement as HTMLElement;
-    expect(element.querySelector('.app-toolbar__nav')).toBeNull();
+    expect(element.querySelector('.nav')).toBeNull();
     expect(element.querySelector('[data-testid="logout"]')).toBeNull();
   });
 
@@ -51,7 +51,7 @@ describe('App', () => {
 
     // Assert
     const element = fixture.nativeElement as HTMLElement;
-    const links = element.querySelectorAll('.app-toolbar__nav a');
+    const links = element.querySelectorAll('.nav__link:not(button)');
     expect(links.length).toBe(NAVIGATION_BY_ROLE[EmployeeRole.Waiter].length);
     expect(element.querySelector('[data-testid="profile-name"]')?.textContent).toContain('Ana M.');
   });
@@ -66,7 +66,7 @@ describe('App', () => {
     await fixture.whenStable();
 
     // Assert
-    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('.app-toolbar__nav a');
+    const links = (fixture.nativeElement as HTMLElement).querySelectorAll('.nav__link:not(button)');
     expect(Array.from(links, (link) => link.getAttribute('href'))).toContain('/kitchen');
   });
 

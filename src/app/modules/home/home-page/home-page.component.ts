@@ -1,50 +1,38 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
+
+import { IconComponent } from '@shared/components/icon/icon.component';
+import type { IconName } from '@shared/components/icon/icon-paths';
+
+import { HeroArtComponent } from './hero-art/hero-art.component';
+
+interface Feature {
+  readonly icon: IconName;
+  readonly label: string;
+}
+
+interface Step {
+  readonly title: string;
+  readonly text: string;
+}
 
 @Component({
   selector: 'app-home-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, RouterLink],
-  template: `
-    <section class="home">
-      <h1 class="home__title">ITACR</h1>
-      <p class="home__subtitle">Pedidos rápidos para tu restaurante.</p>
-      <div class="home__actions">
-        <a mat-flat-button routerLink="/catalog">Ver menú</a>
-        <a mat-stroked-button routerLink="/login" data-testid="staff-access">Acceso Personal</a>
-      </div>
-    </section>
-  `,
-  styles: `
-    .home {
-      display: grid;
-      gap: 16px;
-      justify-items: center;
-      padding: 48px 16px;
-      text-align: center;
-    }
-
-    .home__title {
-      font: var(--mat-sys-display-medium);
-      margin: 0;
-    }
-
-    .home__subtitle {
-      font: var(--mat-sys-title-medium);
-      margin: 0;
-    }
-
-    .home__actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-
-      a {
-        min-height: 44px;
-      }
-    }
-  `,
+  imports: [RouterLink, HeroArtComponent, IconComponent],
+  templateUrl: './home-page.component.html',
+  styleUrl: './home-page.component.scss',
 })
-export class HomePageComponent {}
+export class HomePageComponent {
+  protected readonly features: readonly Feature[] = [
+    { icon: 'clock', label: 'Tiempo real' },
+    { icon: 'cloud-off', label: 'Funciona offline' },
+    { icon: 'kitchen', label: 'Hecho para equipos rápidos' },
+  ];
+
+  protected readonly steps: readonly Step[] = [
+    { title: 'Elige y personaliza', text: 'Arma tu pedido desde el catálogo en segundos.' },
+    { title: 'Envíalo a cocina', text: 'Tu orden llega al instante, incluso sin conexión.' },
+    { title: 'Recógelo o te avisamos', text: 'Te avisamos cuando tu pedido esté listo.' },
+  ];
+}

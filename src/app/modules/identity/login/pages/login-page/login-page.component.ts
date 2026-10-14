@@ -20,6 +20,11 @@ import { EmployeeOption, EmployeeRole, PIN_LENGTH } from '@shared/auth/auth.mode
 import { AuthService, SESSION_EXPIRED_REASON } from '@shared/auth/auth.service';
 import { SessionService } from '@shared/auth/session.service';
 
+import { AvatarComponent } from '@shared/components/avatar/avatar.component';
+import { BrandMarkComponent } from '@shared/components/brand-mark/brand-mark.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
+import { SegmentedControlComponent } from '@shared/components/segmented-control/segmented-control.component';
+
 import { PinPadComponent } from '../../components/pin-pad/pin-pad.component';
 
 type LoginStep = 'role' | 'employee' | 'pin';
@@ -27,7 +32,16 @@ type LoginStep = 'role' | 'employee' | 'pin';
 @Component({
   selector: 'app-login-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatProgressSpinnerModule, RouterLink, PinPadComponent],
+  imports: [
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    RouterLink,
+    AvatarComponent,
+    BrandMarkComponent,
+    IconComponent,
+    PinPadComponent,
+    SegmentedControlComponent,
+  ],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.scss',
 })
@@ -44,6 +58,7 @@ export class LoginPageComponent {
     role,
     label: ROLE_LABELS[role],
   }));
+  protected readonly roleOptions = this.roles.map(({ role, label }) => ({ value: role, label }));
   protected readonly selectedRole = signal<EmployeeRole | null>(null);
   protected readonly employees = signal<readonly EmployeeOption[]>([]);
   protected readonly isLoadingEmployees = signal(false);
@@ -71,6 +86,14 @@ export class LoginPageComponent {
     if (lastEmployee !== null) {
       this.selectedRole.set(lastEmployee.role);
       this.selectedEmployee.set({ id: lastEmployee.id, displayName: lastEmployee.displayName });
+    }
+  }
+
+  /** The segmented control reports a plain string; only the known roles start the flow. */
+  protected pickRole(value: string): void {
+    const option = this.roles.find(({ role }) => role === value);
+    if (option) {
+      this.selectRole(option.role);
     }
   }
 

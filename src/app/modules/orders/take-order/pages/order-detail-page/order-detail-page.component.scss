@@ -1,99 +1,223 @@
+$desktop: 900px;
+$marker-size: 40px;
+
 .detail {
   display: grid;
-  gap: 16px;
-  max-width: 560px;
+  gap: var(--space-3);
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  max-width: var(--content-width);
 }
 
 .detail__back {
   justify-self: start;
+  margin-left: calc(var(--space-1) * -1);
 }
 
 .detail__header {
+  align-items: start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  gap: var(--space-2);
   justify-content: space-between;
-  gap: 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .detail__title {
+  font: var(--mat-sys-headline-large);
+  font-family: var(--font-family);
   margin: 0;
-  font: var(--mat-sys-headline-medium);
-}
-
-.detail__status {
-  margin: 0;
-  padding: 4px 16px;
-  border-radius: 999px;
-  background: var(--mat-sys-secondary-container);
-  color: var(--mat-sys-on-secondary-container);
-  font: var(--mat-sys-title-medium);
-
-  &[data-status='Ready'] {
-    background: var(--mat-sys-primary);
-    color: var(--mat-sys-on-primary);
-  }
 }
 
 .detail__destination {
-  margin: 0;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-title-large);
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: var(--space-half) 0 0;
+}
+
+.detail__status {
+  margin: var(--space-half) 0 0;
+}
+
+// The badge is re-created when the status changes, so it pops once to show that something changed.
+.detail__badge {
+  animation: status-pop var(--duration-slow) var(--ease-standard);
+}
+
+.detail__step {
+  animation: step-in var(--duration-slow) var(--ease-standard) both;
+}
+
+@keyframes status-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes step-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.detail__layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-3);
 }
 
 .detail__section {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--mat-sys-surface-container);
+  gap: var(--space-2);
 }
 
 .detail__section-title {
-  margin: 0;
   font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  margin: 0;
 }
 
-.detail__timeline,
+// ---------- Items ----------
 .detail__items {
-  display: grid;
-  gap: 8px;
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
-.detail__step,
 .detail__item {
+  align-items: baseline;
+  border-bottom: 1px solid var(--color-divider);
   display: flex;
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
   justify-content: space-between;
-  gap: 12px;
-  font: var(--mat-sys-body-large);
-}
-
-.detail__step-time {
-  color: var(--mat-sys-on-surface-variant);
-  font-variant-numeric: tabular-nums;
-}
-
-.detail__step--undone .detail__step-text {
-  font-style: italic;
+  padding: var(--space-2) 0;
 }
 
 .detail__total {
-  margin: 0;
-  text-align: right;
+  align-items: baseline;
+  display: flex;
   font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  justify-content: space-between;
+  margin: 0;
+
+  strong {
+    font: var(--mat-sys-display-small);
+    font-family: var(--font-family);
+  }
+}
+
+// ---------- Timeline ----------
+.detail__timeline {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.detail__step {
+  align-items: start;
+  color: var(--color-text);
+  display: flex;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  position: relative;
+
+  // The rail between one marker and the next.
+  &:not(:last-child)::before {
+    background: var(--color-success);
+    bottom: 0;
+    content: '';
+    left: calc(#{$marker-size} / 2 - 1px);
+    position: absolute;
+    top: $marker-size;
+    width: 2px;
+  }
+}
+
+.detail__marker {
+  align-items: center;
+  background: var(--color-success-tint);
+  border-radius: var(--radius-pill);
+  color: var(--color-success-strong);
+  display: inline-flex;
+  flex: none;
+  height: $marker-size;
+  justify-content: center;
+  width: $marker-size;
+}
+
+.detail__step-body {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--space-half);
+}
+
+.detail__step-text,
+.detail__step-label {
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  font-weight: 600;
+}
+
+.detail__step-time {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+}
+
+.detail__step--current .detail__marker {
+  background: var(--color-success);
+  color: var(--color-on-success);
+}
+
+.detail__step--undone .detail__marker {
+  background: var(--color-warning-tint);
+  color: var(--color-warning-text);
+}
+
+.detail__step.detail__step--undone::before {
+  background: var(--color-divider);
+}
+
+.detail__step--pending {
+  color: var(--color-text-disabled);
+
+  .detail__marker {
+    background: var(--color-secondary-tint);
+    color: var(--color-text-disabled);
+  }
+
+  &.detail__step::before {
+    background: var(--color-divider);
+  }
+
+  .detail__step-time {
+    color: var(--color-text-disabled);
+  }
+}
+
+// The step right before the first pending one still points forward, but not in sage.
+.detail__step.detail__step--current::before {
+  background: var(--color-divider);
 }
 
 .detail__state {
-  display: grid;
-  gap: 16px;
-  justify-items: center;
-  margin: 48px 0;
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: var(--space-4) 0;
   text-align: center;
-  color: var(--mat-sys-on-surface-variant);
-  font: var(--mat-sys-title-medium);
+}
+
+@media (min-width: $desktop) {
+  .detail__layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
 }

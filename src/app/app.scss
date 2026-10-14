@@ -1,56 +1,139 @@
-@use '@angular/material' as mat;
+// App shell: top bar, breadcrumb strip and content. The navigation (tab bar on phones, sidebar on wide
+// screens) is <app-main-nav>. Everything is built from the tokens in src/styles/tokens.css.
+$desktop: 900px;
 
-$touch-target-size: 44px;
-
-.app-toolbar {
-  gap: 16px;
-
-  @include mat.toolbar-overrides(
-    (
-      container-background-color: var(--mat-sys-primary),
-      container-text-color: var(--mat-sys-on-primary),
-    )
-  );
-  @include mat.button-overrides(
-    (
-      text-label-text-color: var(--mat-sys-on-primary),
-    )
-  );
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
-.app-toolbar__brand {
-  color: inherit;
-  font: var(--mat-sys-title-large);
+.shell__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+// ---------- Top bar ----------
+.topbar {
+  align-items: center;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-divider);
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--space-2);
+  height: var(--topbar-height);
+  padding: 0 var(--space-2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.topbar__brand,
+.topbar__mark {
+  align-items: center;
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  color: var(--color-primary);
+  display: inline-flex;
+  gap: var(--space-1);
   text-decoration: none;
 }
 
-.app-toolbar__nav {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-
-  a {
-    min-height: $touch-target-size;
-  }
+.brand-name {
+  color: var(--color-text);
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
 }
 
-.app-toolbar__profile {
+.topbar__app {
+  display: none;
+}
+
+// On phones the screen title takes the place of the brand name.
+.topbar__brand:has(+ .topbar__title) .brand-name {
+  display: none;
+}
+
+.topbar__title {
+  color: var(--color-text);
+  flex: 1;
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.topbar__tools {
   align-items: center;
   display: flex;
-  font: var(--mat-sys-body-medium);
-  gap: 8px;
+  gap: var(--space-1);
   margin-left: auto;
-
-  button {
-    min-height: $touch-target-size;
-  }
 }
 
-.app-toolbar__link--active {
-  text-decoration: underline;
-  text-underline-offset: 6px;
+.topbar__exit {
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-control);
+  color: var(--color-primary);
+  cursor: pointer;
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-1);
+}
+
+.crumbbar {
+  border-bottom: 1px solid var(--color-divider);
+  display: none;
+  padding: var(--space-2) var(--space-3);
 }
 
 .app-content {
-  padding: 16px;
+  // Only the page cross-fades when the route changes; the navigation and header stay put.
+  view-transition-name: page;
+  box-sizing: border-box;
+  flex: 1;
+  padding: var(--space-2);
+}
+
+.shell--staff .app-content {
+  padding-bottom: calc(var(--tabbar-height) + var(--space-3) + env(safe-area-inset-bottom));
+}
+
+// ---------- Desktop: wine sidebar, breadcrumb strip ----------
+@media (min-width: $desktop) {
+  .shell {
+    flex-direction: row;
+  }
+
+  .topbar {
+    padding: 0 var(--space-3);
+  }
+
+  .topbar__title,
+  .shell--staff .topbar__mark {
+    display: none;
+  }
+
+  .topbar__brand:has(+ .topbar__title) .brand-name {
+    display: inline;
+  }
+
+  .shell--staff .topbar__app {
+    display: inline;
+  }
+
+  .shell--staff .crumbbar {
+    display: block;
+  }
+
+  .app-content,
+  .shell--staff .app-content {
+    padding: var(--space-3);
+  }
 }
