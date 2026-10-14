@@ -1,30 +1,113 @@
-<main class="dashboard">
+<div class="dashboard">
   <header class="dashboard__header">
-    <h1 class="dashboard__title">Pedidos</h1>
-    @if (displayName()) {
-      <p class="dashboard__greeting">Hola, {{ displayName() }}</p>
-    }
+    <h1 class="dashboard__title">Hola, {{ firstName() }}</h1>
+    <p class="dashboard__date">{{ today }}</p>
   </header>
 
   @if (store.itemCount() > 0) {
-    <section class="dashboard__card" aria-labelledby="order-in-progress">
-      <h2 id="order-in-progress" class="dashboard__card-title">Pedido en curso</h2>
-      <p class="dashboard__card-text">
-        {{ store.itemCount() }} {{ store.itemCount() === 1 ? 'producto' : 'productos' }} ·
-        {{ store.total() | mxnPrice }}
-      </p>
+    <section class="dashboard__order" aria-labelledby="order-in-progress">
+      <div>
+        <h2 id="order-in-progress" class="dashboard__card-title">Pedido en curso</h2>
+        <p class="dashboard__card-text tabular">
+          {{ store.itemCount() }} {{ store.itemCount() === 1 ? 'producto' : 'productos' }} ·
+          {{ store.total() | mxnPrice }}
+        </p>
+      </div>
       <div class="dashboard__actions">
         <a mat-flat-button routerLink="/orders/summary">Ver resumen</a>
         <a mat-stroked-button routerLink="/catalog">Agregar productos</a>
       </div>
     </section>
   } @else {
-    <section class="dashboard__card" aria-labelledby="new-order">
-      <h2 id="new-order" class="dashboard__card-title">Nuevo pedido</h2>
-      <p class="dashboard__card-text">Elige los productos en el menú y envíalos a cocina.</p>
+    <section class="dashboard__order" aria-labelledby="new-order">
+      <div>
+        <h2 id="new-order" class="dashboard__card-title">Nuevo pedido</h2>
+        <p class="dashboard__card-text">Elige los productos en el menú y envíalos a cocina.</p>
+      </div>
       <div class="dashboard__actions">
-        <a mat-flat-button routerLink="/catalog" data-testid="start-order">Tomar pedido</a>
+        <a mat-flat-button routerLink="/catalog" data-testid="start-order">
+          <app-icon name="plus" [size]="20" />
+          Tomar pedido
+        </a>
       </div>
     </section>
   }
-</main>
+
+  <div class="dashboard__layout">
+    <div class="dashboard__main">
+      @if (recentOrders().length > 0) {
+        <ul class="dashboard__stats">
+          <li>
+            <app-stat-card
+              label="En cocina"
+              icon="clock"
+              [value]="stats().inKitchen"
+              caption="De tus pedidos recientes"
+            />
+          </li>
+          <li>
+            <app-stat-card
+              label="Listos"
+              icon="check"
+              tone="success"
+              [value]="stats().ready"
+              caption="Esperando entrega"
+            />
+          </li>
+        </ul>
+      }
+
+      <section aria-labelledby="tables-title">
+        <h2 id="tables-title" class="dashboard__section-title">Mesas</h2>
+        @if (tables().length > 0) {
+          <ul class="dashboard__tables">
+            @for (table of tables(); track table.number) {
+              <li>
+                <app-table-card
+                  [number]="table.number"
+                  [status]="table.status"
+                  [seats]="table.seats"
+                />
+              </li>
+            }
+          </ul>
+        } @else {
+          <app-empty-state
+            icon="table"
+            heading="No hay mesas libres"
+            description="En cuanto una mesa se desocupe, aparecerá aquí automáticamente."
+          />
+        }
+      </section>
+    </div>
+
+    <aside class="dashboard__aside">
+      @if (recentOrders().length > 0) {
+        <section class="dashboard__recent-card" aria-labelledby="recent-orders">
+          <h2 id="recent-orders" class="dashboard__card-title">Pedidos recientes</h2>
+          <ul class="dashboard__recent">
+            @for (order of recentOrders(); track order.id) {
+              <li>
+                <a
+                  class="dashboard__recent-link"
+                  [routerLink]="['/orders/detail', order.id]"
+                  data-testid="recent-order"
+                >
+                  <span class="dashboard__recent-text">
+                    <span class="dashboard__recent-title">{{ order.title }}</span>
+                    <span class="dashboard__recent-meta tabular">{{ order.time }}</span>
+                  </span>
+                  <app-status-badge [tone]="order.tone">{{ order.status }}</app-status-badge>
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+      } @else if (recentFailed()) {
+        <p class="dashboard__card-text" role="status">
+          No pudimos cargar tus últimos pedidos. Vuelve a abrir esta pantalla para intentarlo.
+        </p>
+      }
+    </aside>
+  </div>
+</div>

@@ -1,0 +1,356 @@
+/*
+ * ITACR design tokens. Source of truth: the "ITACR — UI UX Kit" mockup (ITACAR/Docs/maqueta, sheets 1-3).
+ *
+ * Layers:
+ *   1. Palette  : raw brand colors from the mockup. Never used directly in components.
+ *   2. Semantic : --color-* and friends. Components use these. The dark theme redefines only this layer.
+ *   3. Bridge   : maps the semantic layer onto Angular Material's --mat-sys-* so Material parts match.
+ *
+ * Theme selection: follows prefers-color-scheme unless <html data-theme="light|dark"> is set
+ * (public/theme-init.js sets it before the first render from the saved choice).
+ */
+
+/* ---------- 1. Palette ---------- */
+:root {
+  --palette-wine: #5a3e37;
+  --palette-wine-hover: #4f362f;
+  --palette-wine-pressed: #47312b;
+  --palette-wine-tint: #f1e4df;
+
+  --palette-taupe: #8c6f63;
+  --palette-taupe-dark: #6e574c;
+  --palette-taupe-light: #b29c90;
+  --palette-taupe-tint: #efe6de;
+
+  --palette-cream: #faf1e4;
+  --palette-cream-alt: #f1e4d1;
+  --palette-cream-deep: #e7d6bc;
+
+  --palette-ink: #241f1f;
+  --palette-ink-secondary: rgb(36 31 31 / 68%);
+  --palette-ink-disabled: rgb(36 31 31 / 45%);
+  --palette-ink-divider: rgb(36 31 31 / 16%);
+
+  --palette-sage: #4f7a5b;
+  --palette-sage-dark: #3d6148;
+  --palette-sage-tint: #e4eee6;
+}
+
+/* ---------- Scales that do not change with the theme ---------- */
+:root {
+  --font-family: 'Inter', system-ui, sans-serif;
+
+  /* 8px grid. --space-half is the only sub-grid step, for icon/label gaps. */
+  --space-half: 4px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-8: 64px;
+
+  /* The only step off the 8px grid: horizontal padding and gaps of pills and nav items. */
+  --space-1-5: 12px;
+
+  --touch-target: 44px;
+  --topbar-height: 64px;
+  --tabbar-height: 64px;
+  --content-width: 1120px;
+  --measure: 64ch;
+
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-pill: 999px;
+
+  --icon-stroke: 1.75;
+
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --focus-ring: 2px solid var(--color-focus);
+  --focus-ring-offset: 2px;
+}
+
+/* ---------- 2. Semantic, light (default) ---------- */
+:root {
+  color-scheme: light;
+
+  --color-bg: var(--palette-cream);
+  --color-bg-alt: var(--palette-cream-alt);
+  --color-bg-deep: var(--palette-cream-deep);
+  --color-surface: #fff;
+  --color-surface-muted: var(--palette-taupe-tint);
+
+  --color-text: var(--palette-ink);
+  --color-text-secondary: var(--palette-ink-secondary);
+  --color-text-disabled: var(--palette-ink-disabled);
+  --color-divider: var(--palette-ink-divider);
+  --color-border: var(--palette-taupe-light);
+  /* Form controls need 3:1 against the page (WCAG 1.4.11); --color-border is decorative only. */
+  --color-border-strong: var(--palette-taupe);
+
+  --color-primary: var(--palette-wine);
+  --color-primary-hover: var(--palette-wine-hover);
+  --color-primary-pressed: var(--palette-wine-pressed);
+  --color-primary-tint: var(--palette-wine-tint);
+  --color-primary-tint-pressed: #e5d1ca;
+  --color-on-primary: var(--palette-cream);
+
+  --color-secondary: var(--palette-taupe);
+  --color-secondary-strong: var(--palette-taupe-dark);
+  --color-secondary-tint: var(--palette-taupe-tint);
+
+  /* Positive states only: success, "ready", live connection. Never decorative. */
+  --color-success: var(--palette-sage);
+  --color-success-strong: var(--palette-sage-dark);
+  --color-success-tint: var(--palette-sage-tint);
+  --color-on-success: #fff;
+
+  /* Not in the mockup palette except the "Con retraso" pill; derived from cream/ink. */
+  --color-warning-text: #7a4f0e;
+  --color-warning-tint: #f6e9c8;
+  --color-error: #a33a2e;
+  --color-error-tint: #f6deda;
+
+  --color-nav-bg: var(--palette-wine);
+  --color-nav-text: var(--palette-cream);
+  --color-nav-text-muted: rgb(250 241 228 / 72%);
+  --color-nav-active-bg: rgb(250 241 228 / 16%);
+  --color-brand-surface: var(--palette-wine);
+  --color-on-brand-surface: var(--palette-cream);
+
+  /* Cards rely on a shadow in light; in dark the shadow disappears, so they get a hairline edge instead. */
+  --color-card-border: transparent;
+
+  --color-scrim: rgb(36 31 31 / 52%);
+  --color-focus: var(--palette-wine);
+
+  --shadow-subtle: 0 1px 2px rgb(36 31 31 / 6%), 0 2px 8px rgb(36 31 31 / 6%);
+  --shadow-medium: 0 8px 24px rgb(36 31 31 / 14%), 0 2px 6px rgb(36 31 31 / 8%);
+}
+
+/* ---------- 2b. Semantic, dark ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-bg: #1c1715;
+    --color-bg-alt: #241e1c;
+    --color-bg-deep: #2e2623;
+    --color-surface: #262020;
+    --color-surface-muted: #302827;
+
+    --color-text: #f5eadc;
+    --color-text-secondary: rgb(245 234 220 / 72%);
+    --color-text-disabled: rgb(245 234 220 / 45%);
+    --color-divider: rgb(245 234 220 / 16%);
+    --color-border: #6e5b53;
+    --color-border-strong: #8f7a71;
+
+    --color-primary: #d8a08d;
+    --color-primary-hover: #e3b2a1;
+    --color-primary-pressed: #c98e79;
+    --color-primary-tint: #3a2b27;
+    --color-primary-tint-pressed: #4a3630;
+    --color-on-primary: #2b1a15;
+
+    --color-secondary: #b29c90;
+    --color-secondary-strong: #cdb9ad;
+    --color-secondary-tint: #302827;
+
+    --color-success: #8fc19c;
+    --color-success-strong: #a7d2b2;
+    --color-success-tint: #1f3026;
+    --color-on-success: #14231a;
+
+    --color-warning-text: #e8b866;
+    --color-warning-tint: #3a2e17;
+    --color-error: #f0a59b;
+    --color-error-tint: #3e211d;
+
+    --color-nav-bg: #2b211e;
+    --color-nav-text: #f5eadc;
+    --color-nav-text-muted: rgb(245 234 220 / 72%);
+    --color-nav-active-bg: rgb(245 234 220 / 14%);
+    --color-brand-surface: #3a2c28;
+    --color-on-brand-surface: #f5eadc;
+
+    --color-card-border: var(--color-divider);
+
+    --color-scrim: rgb(0 0 0 / 62%);
+    --color-focus: #d8a08d;
+
+    --shadow-subtle: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 8px rgb(0 0 0 / 24%);
+    --shadow-medium: 0 8px 24px rgb(0 0 0 / 50%), 0 2px 6px rgb(0 0 0 / 30%);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #1c1715;
+  --color-bg-alt: #241e1c;
+  --color-bg-deep: #2e2623;
+  --color-surface: #262020;
+  --color-surface-muted: #302827;
+
+  --color-text: #f5eadc;
+  --color-text-secondary: rgb(245 234 220 / 72%);
+  --color-text-disabled: rgb(245 234 220 / 45%);
+  --color-divider: rgb(245 234 220 / 16%);
+  --color-border: #6e5b53;
+  --color-border-strong: #8f7a71;
+
+  --color-primary: #d8a08d;
+  --color-primary-hover: #e3b2a1;
+  --color-primary-pressed: #c98e79;
+  --color-primary-tint: #3a2b27;
+  --color-primary-tint-pressed: #4a3630;
+  --color-on-primary: #2b1a15;
+
+  --color-secondary: #b29c90;
+  --color-secondary-strong: #cdb9ad;
+  --color-secondary-tint: #302827;
+
+  --color-success: #8fc19c;
+  --color-success-strong: #a7d2b2;
+  --color-success-tint: #1f3026;
+  --color-on-success: #14231a;
+
+  --color-warning-text: #e8b866;
+  --color-warning-tint: #3a2e17;
+  --color-error: #f0a59b;
+  --color-error-tint: #3e211d;
+
+  --color-nav-bg: #2b211e;
+  --color-nav-text: #f5eadc;
+  --color-nav-text-muted: rgb(245 234 220 / 72%);
+  --color-nav-active-bg: rgb(245 234 220 / 14%);
+  --color-brand-surface: #3a2c28;
+  --color-on-brand-surface: #f5eadc;
+
+  --color-card-border: var(--color-divider);
+
+  --color-scrim: rgb(0 0 0 / 62%);
+  --color-focus: #d8a08d;
+
+  --shadow-subtle: 0 1px 2px rgb(0 0 0 / 30%), 0 2px 8px rgb(0 0 0 / 24%);
+  --shadow-medium: 0 8px 24px rgb(0 0 0 / 50%), 0 2px 6px rgb(0 0 0 / 30%);
+}
+
+/* ---------- 3. Bridge to Angular Material (--mat-sys-*) ---------- */
+:root {
+  --mat-sys-primary: var(--color-primary);
+  --mat-sys-on-primary: var(--color-on-primary);
+  --mat-sys-primary-container: var(--color-primary-tint);
+  --mat-sys-on-primary-container: var(--color-text);
+  --mat-sys-secondary: var(--color-secondary-strong);
+  --mat-sys-on-secondary: var(--color-on-primary);
+  --mat-sys-secondary-container: var(--color-secondary-tint);
+  --mat-sys-on-secondary-container: var(--color-text);
+  --mat-sys-tertiary: var(--color-success);
+  --mat-sys-on-tertiary: var(--color-on-success);
+  --mat-sys-tertiary-container: var(--color-success-tint);
+  --mat-sys-on-tertiary-container: var(--color-success-strong);
+  --mat-sys-error: var(--color-error);
+  --mat-sys-on-error: var(--color-surface);
+  --mat-sys-error-container: var(--color-error-tint);
+  --mat-sys-on-error-container: var(--color-error);
+
+  --mat-sys-background: var(--color-bg);
+  --mat-sys-on-background: var(--color-text);
+  --mat-sys-surface: var(--color-bg);
+  --mat-sys-on-surface: var(--color-text);
+  --mat-sys-surface-variant: var(--color-secondary-tint);
+  --mat-sys-on-surface-variant: var(--color-text-secondary);
+  --mat-sys-surface-dim: var(--color-bg-deep);
+  --mat-sys-surface-bright: var(--color-surface);
+  --mat-sys-surface-container-lowest: var(--color-surface);
+  --mat-sys-surface-container-low: var(--color-bg);
+  --mat-sys-surface-container: var(--color-bg-alt);
+  --mat-sys-surface-container-high: var(--color-bg-alt);
+  --mat-sys-surface-container-highest: var(--color-bg-deep);
+  --mat-sys-outline: var(--color-border);
+  --mat-sys-outline-variant: var(--color-divider);
+  --mat-sys-scrim: var(--color-scrim);
+  --mat-sys-shadow: var(--palette-ink);
+  --mat-sys-inverse-surface: var(--color-text);
+  --mat-sys-inverse-on-surface: var(--color-bg);
+  --mat-sys-inverse-primary: var(--color-primary-tint);
+
+  --mat-sys-corner-extra-small: var(--radius-control);
+  --mat-sys-corner-small: var(--radius-control);
+  --mat-sys-corner-medium: var(--radius-card);
+  --mat-sys-corner-large: var(--radius-card);
+  --mat-sys-corner-extra-large: var(--radius-card);
+  --mat-sys-corner-full: var(--radius-pill);
+
+  --mat-sys-level0: none;
+  --mat-sys-level1: var(--shadow-subtle);
+  --mat-sys-level2: var(--shadow-subtle);
+  --mat-sys-level3: var(--shadow-medium);
+  --mat-sys-level4: var(--shadow-medium);
+  --mat-sys-level5: var(--shadow-medium);
+}
+
+/* Type scale: 32/24/18 at 600 for headings, 16 at 400/500 for body, 13 at 500 for captions. */
+:root {
+  --mat-sys-display-large: 600 32px/40px var(--font-family);
+  --mat-sys-display-medium: 600 32px/40px var(--font-family);
+  --mat-sys-display-small: 600 32px/40px var(--font-family);
+  --mat-sys-headline-large: 600 24px/32px var(--font-family);
+  --mat-sys-headline-medium: 600 24px/32px var(--font-family);
+  --mat-sys-headline-small: 600 24px/32px var(--font-family);
+  --mat-sys-title-large: 600 18px/24px var(--font-family);
+  --mat-sys-title-medium: 500 16px/24px var(--font-family);
+  --mat-sys-title-small: 500 16px/24px var(--font-family);
+  --mat-sys-body-large: 400 16px/24px var(--font-family);
+  --mat-sys-body-medium: 400 16px/24px var(--font-family);
+  --mat-sys-body-small: 500 13px/20px var(--font-family);
+  --mat-sys-label-large: 500 16px/24px var(--font-family);
+  --mat-sys-label-medium: 500 13px/20px var(--font-family);
+  --mat-sys-label-small: 500 13px/20px var(--font-family);
+
+  --mat-sys-display-large-size: 32px;
+  --mat-sys-display-medium-size: 32px;
+  --mat-sys-display-small-size: 32px;
+  --mat-sys-headline-large-size: 24px;
+  --mat-sys-headline-medium-size: 24px;
+  --mat-sys-headline-small-size: 24px;
+  --mat-sys-title-large-size: 18px;
+  --mat-sys-title-medium-size: 16px;
+  --mat-sys-title-small-size: 16px;
+  --mat-sys-body-large-size: 16px;
+  --mat-sys-body-medium-size: 16px;
+  --mat-sys-body-small-size: 13px;
+  --mat-sys-label-large-size: 16px;
+  --mat-sys-label-medium-size: 13px;
+  --mat-sys-label-small-size: 13px;
+
+  --mat-sys-display-large-tracking: 0;
+  --mat-sys-display-medium-tracking: 0;
+  --mat-sys-display-small-tracking: 0;
+  --mat-sys-headline-large-tracking: 0;
+  --mat-sys-headline-medium-tracking: 0;
+  --mat-sys-headline-small-tracking: 0;
+  --mat-sys-title-large-tracking: 0;
+  --mat-sys-title-medium-tracking: 0;
+  --mat-sys-title-small-tracking: 0;
+  --mat-sys-body-large-tracking: 0;
+  --mat-sys-body-medium-tracking: 0;
+  --mat-sys-body-small-tracking: 0;
+  --mat-sys-label-large-tracking: 0;
+  --mat-sys-label-medium-tracking: 0;
+  --mat-sys-label-small-tracking: 0;
+}
+
+/* Reduced motion: every transition and animation built on the duration tokens collapses to ~0. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+}

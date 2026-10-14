@@ -1,28 +1,194 @@
-// Global Angular Material 3 theme for ITACR.
-// Component styles must use the --mat-sys-* system variables instead of hard-coded colors.
+// Global styles for ITACR.
+// Design tokens live in src/styles/tokens.css (loaded first, see angular.json). Component styles must use
+// those tokens (--color-*, --space-*, --radius-*) or the --mat-sys-* bridge, never hard-coded values.
 // See https://material.angular.dev/guide/theming and https://material.angular.dev/guide/system-variables
 @use '@angular/material' as mat;
+@use 'styles/material';
 
 html {
   height: 100%;
+  // Material emits its own --mat-sys-* defaults here. tokens.css re-declares them on :root,
+  // which has higher specificity, so the ITACR palette, shapes and type scale win.
   @include mat.theme(
     (
       color: (
         primary: mat.$red-palette,
         tertiary: mat.$orange-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: 'Inter, system-ui, sans-serif',
+        brand-family: 'Inter, system-ui, sans-serif',
+        bold-weight: 600,
+        medium-weight: 500,
+        regular-weight: 400,
+      ),
       density: 0,
     )
   );
 }
 
 body {
-  // Light theme by default; switch to `light dark` to follow the device setting.
-  color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background-color: var(--color-bg);
+  color: var(--color-text);
   font: var(--mat-sys-body-medium);
-  margin: 0;
   height: 100%;
+  margin: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+}
+
+// Titles break evenly instead of leaving one word on the last line (the mockup's wrapped
+// headers are the thing to avoid); paragraphs avoid orphans.
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+// Prices, order numbers and kitchen timers must not jitter as digits change.
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+// Touch: no double-tap zoom delay on controls.
+a,
+button,
+[role='button'],
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+// Visible keyboard focus everywhere; mouse clicks do not show it.
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+// Route change: the old page fades out quickly and the new one rises in (opacity and a few px only).
+::view-transition-old(page) {
+  animation: page-out var(--duration-fast) var(--ease-standard) both;
+}
+
+::view-transition-new(page) {
+  animation: page-in var(--duration-slow) var(--ease-standard) both;
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+// Theme switch: the browser cross-fades two snapshots of the page (opacity only).
+// Browsers without View Transitions simply switch instantly.
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--duration-slow);
+  animation-timing-function: var(--ease-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}
+
+// Text for screen readers only (e.g. the word "Agregar" next to a "+" icon).
+.sr-only {
+  border: 0;
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+// Boot splash. It lives inside <app-root> in index.html and disappears when Angular renders the app.
+.splash {
+  align-content: center;
+  background: var(--color-brand-surface);
+  color: var(--color-on-brand-surface);
+  display: grid;
+  gap: var(--space-1);
+  inset: 0;
+  justify-items: center;
+  padding: var(--space-3);
+  position: fixed;
+  text-align: center;
+}
+
+.splash__logo {
+  align-items: center;
+  background: var(--color-nav-active-bg);
+  border-radius: calc(var(--radius-card) * 2);
+  display: inline-flex;
+  height: 104px;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+  width: 104px;
+}
+
+.splash__name {
+  font: var(--mat-sys-display-small);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.splash__tagline {
+  color: var(--color-nav-text-muted);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.splash__dots {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-top: var(--space-4);
+
+  i {
+    animation: splash-dot 1s var(--ease-standard) infinite;
+    background: currentcolor;
+    border-radius: var(--radius-pill);
+    height: var(--space-1);
+    opacity: 0.35;
+    width: var(--space-1);
+
+    &:nth-child(2) {
+      animation-delay: 150ms;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 300ms;
+    }
+  }
+}
+
+@keyframes splash-dot {
+  50% {
+    opacity: 1;
+  }
 }

@@ -26,6 +26,16 @@ export interface KitchenOrder {
   readonly items: readonly KitchenOrderItem[];
 }
 
+/** A status the kitchen can move an order to with a tap. Delivered belongs to the waiter. */
+export type KitchenStep = 'InPreparation' | 'Ready';
+
+/** Answer of `POST /orders/{id}/status` and of its undo. */
+export interface KitchenStatusChange {
+  readonly id: string;
+  readonly status: KitchenOrderStatus;
+  readonly lastStatusChangeAt: string;
+}
+
 export interface KitchenQueue {
   /** UTC instant (ISO 8601) of the server when it answered, so timers do not depend on the device clock. */
   readonly serverTime: string;

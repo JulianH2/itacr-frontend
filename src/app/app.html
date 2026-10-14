@@ -1,29 +1,62 @@
-<header>
-  <mat-toolbar class="app-toolbar">
-    <a class="app-toolbar__brand" routerLink="/">ITACR</a>
-    @if (employee(); as employee) {
-      <nav class="app-toolbar__nav" aria-label="Navegación principal">
-        @for (link of navigationLinks(); track link.path) {
-          <a
-            mat-button
-            [routerLink]="link.path"
-            routerLinkActive="app-toolbar__link--active"
-            ariaCurrentWhenActive="page"
-          >
-            {{ link.label }}
-          </a>
-        }
-      </nav>
-      <section class="app-toolbar__profile" aria-label="Perfil">
-        <span data-testid="profile-name">{{ employee.displayName }} · {{ roleLabel() }}</span>
-        <button mat-button type="button" data-testid="logout" (click)="logout()">
-          Cerrar sesión
-        </button>
-      </section>
+<div class="shell" [class.shell--staff]="employee() && !isBare()">
+  @if (employee(); as employee) {
+    @if (!isBare()) {
+      <app-main-nav
+        [links]="navigationLinks()"
+        [employeeName]="employee.displayName"
+        [roleLabel]="roleLabel()"
+        (exit)="logout()"
+      />
     }
-  </mat-toolbar>
-</header>
+  }
 
-<main class="app-content">
-  <router-outlet />
-</main>
+  <div class="shell__main">
+    <header class="topbar">
+      @if (!employee() || isBare()) {
+        <a class="topbar__brand" routerLink="/" aria-label="ITACR, inicio">
+          <app-brand-mark [size]="28" />
+          @if (!employee()) {
+            <span class="brand-name">ITACR</span>
+          }
+        </a>
+      } @else {
+        <app-brand-mark class="topbar__mark" [size]="28" />
+        <span class="brand-name topbar__app">ITACR</span>
+      }
+      @if (screenTitle(); as title) {
+        <span class="topbar__title">{{ title }}</span>
+      }
+
+      <div class="topbar__tools">
+        <app-theme-toggle />
+        <app-connection-pill />
+        @if (employee(); as employee) {
+          <app-avatar class="topbar__avatar" [name]="employee.displayName" />
+          @if (isBare()) {
+            <button
+              type="button"
+              class="topbar__exit"
+              data-testid="logout"
+              aria-label="Cerrar sesión"
+              (click)="logout()"
+            >
+              Salir
+            </button>
+          }
+        }
+      </div>
+    </header>
+
+    @if (employee() && !isBare() && breadcrumbs().length > 0) {
+      <div class="crumbbar">
+        <app-breadcrumb [crumbs]="breadcrumbs()" />
+      </div>
+    }
+
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+<app-toast-host />
