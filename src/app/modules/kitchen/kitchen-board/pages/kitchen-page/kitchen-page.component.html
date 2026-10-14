@@ -1,7 +1,11 @@
 <main class="kitchen">
   <header class="kitchen__header">
-    <h1 class="kitchen__title">Vista de Cocina</h1>
+    <h1 class="kitchen__title">
+      <span class="kitchen__title-icon"><app-icon name="kitchen" [size]="24" /></span>
+      Vista de Cocina
+    </h1>
     <div class="kitchen__tools">
+      <time class="kitchen__clock tabular">{{ clock() }}</time>
       @if (store.isOutdated()) {
         <p class="kitchen__outdated" role="status">
           Sin conexión. Mostrando la última actualización.

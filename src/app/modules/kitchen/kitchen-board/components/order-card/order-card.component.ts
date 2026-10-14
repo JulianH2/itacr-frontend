@@ -1,5 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
+import { IconComponent } from '@shared/components/icon/icon.component';
+import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
+
 import {
   itemDetails,
   nextKitchenStep,
@@ -19,6 +22,7 @@ import type { KitchenOrder } from '../../models/kitchen.models';
 @Component({
   selector: 'app-order-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent, StatusBadgeComponent],
   templateUrl: './order-card.component.html',
   styleUrl: './order-card.component.scss',
 })
