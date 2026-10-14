@@ -1,6 +1,6 @@
 import type { AppEnvironment } from './environment.model';
 
-const BACKEND_URL = 'https://app-itacr-backend-sprint.azurewebsites.net';
+const BACKEND_URL = 'https://app-itacr-backend-qa.azurewebsites.net';
 
 export const environment: AppEnvironment = {
   production: true,
