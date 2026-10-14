@@ -4,7 +4,7 @@ import type { Observable } from 'rxjs';
 
 import { environment } from '@env/environment';
 
-import type { KitchenQueue } from '../models/kitchen.models';
+import type { KitchenQueue, KitchenStatusChange, KitchenStep } from '../models/kitchen.models';
 import type { KitchenApi } from './kitchen-api';
 
 /**
@@ -17,5 +17,19 @@ export class HttpKitchenApiService implements KitchenApi {
 
   getQueue(): Observable<KitchenQueue> {
     return this.http.get<KitchenQueue>(`${environment.apiBaseUrl}/kitchen/queue`);
+  }
+
+  changeStatus(orderId: string, status: KitchenStep): Observable<KitchenStatusChange> {
+    return this.http.post<KitchenStatusChange>(
+      `${environment.apiBaseUrl}/orders/${orderId}/status`,
+      { status },
+    );
+  }
+
+  undoStatusChange(orderId: string): Observable<KitchenStatusChange> {
+    return this.http.post<KitchenStatusChange>(
+      `${environment.apiBaseUrl}/orders/${orderId}/status/undo`,
+      null,
+    );
   }
 }

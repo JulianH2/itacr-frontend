@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { DEFAULT_TIMER_THRESHOLDS, type TimerThresholds } from '../../models/kitchen-timer';
 import type { KitchenOrder } from '../../models/kitchen.models';
@@ -20,7 +20,13 @@ import { OrderCardComponent } from '../order-card/order-card.component';
       <ul class="kitchen-column__list">
         @for (order of orders(); track order.id) {
           <li>
-            <app-order-card [order]="order" [now]="now()" [thresholds]="thresholds()" />
+            <app-order-card
+              [order]="order"
+              [now]="now()"
+              [thresholds]="thresholds()"
+              [busy]="busyIds().has(order.id)"
+              (advance)="advance.emit($event)"
+            />
           </li>
         }
       </ul>
@@ -79,4 +85,7 @@ export class KitchenColumnComponent {
   readonly orders = input.required<readonly KitchenOrder[]>();
   readonly now = input.required<number>();
   readonly thresholds = input<TimerThresholds>(DEFAULT_TIMER_THRESHOLDS);
+  readonly busyIds = input<ReadonlySet<string>>(new Set());
+
+  readonly advance = output<KitchenOrder>();
 }
