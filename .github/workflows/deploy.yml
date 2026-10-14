@@ -1,23 +1,26 @@
 name: Deploy
 
+# main deploys production and release deploys QA (build configuration qa, which points to the QA API).
 on:
   push:
-    branches: [main]
+    branches: [main, release]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: deploy-production
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
 env:
-  AZURE_WEBAPP_NAME: app-itacr-frontend-prod
+  AZURE_WEBAPP_NAME: ${{ github.ref_name == 'main' && 'app-itacr-frontend-prod' || 'app-itacr-frontend-qa' }}
+  BUILD_SCRIPT: ${{ github.ref_name == 'main' && 'build' || 'build:qa' }}
   BUILD_OUTPUT: dist/itacr-frontend/browser
 
 jobs:
   build:
+    if: github.ref_name == 'main' || github.ref_name == 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -38,8 +41,8 @@ jobs:
       - name: Run unit tests
         run: npm test
 
-      - name: Build for production
-        run: npm run build
+      - name: Build
+        run: npm run "$BUILD_SCRIPT"
 
       - name: Check the build output
         run: test -f "$BUILD_OUTPUT/index.html" && test -f "$BUILD_OUTPUT/ngsw.json"
@@ -67,5 +70,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
+          publish-profile: ${{ github.ref_name == 'main' && secrets.AZURE_FRONTEND_PUBLISH_PROFILE || secrets.AZURE_FRONTEND_QA_PUBLISH_PROFILE }}
           package: browser
