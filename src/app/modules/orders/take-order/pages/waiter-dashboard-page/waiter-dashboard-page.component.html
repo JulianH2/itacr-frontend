@@ -27,4 +27,28 @@
       </div>
     </section>
   }
+
+  @if (recentOrders().length > 0) {
+    <section class="dashboard__card" aria-labelledby="recent-orders">
+      <h2 id="recent-orders" class="dashboard__card-title">Últimos pedidos</h2>
+      <ul class="dashboard__recent">
+        @for (order of recentOrders(); track order.id) {
+          <li>
+            <a
+              class="dashboard__recent-link"
+              [routerLink]="['/orders/detail', order.id]"
+              data-testid="recent-order"
+            >
+              <span class="dashboard__recent-title">{{ order.title }}</span>
+              <span class="dashboard__recent-meta">{{ order.status }} · {{ order.time }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </section>
+  } @else if (recentFailed()) {
+    <p class="dashboard__card-text" role="status">
+      No pudimos cargar tus últimos pedidos. Vuelve a abrir esta pantalla para intentarlo.
+    </p>
+  }
 </main>

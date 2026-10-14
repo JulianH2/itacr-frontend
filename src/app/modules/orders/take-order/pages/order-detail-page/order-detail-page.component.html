@@ -1,0 +1,47 @@
+<main class="detail">
+  <a mat-button routerLink="/orders" class="detail__back">Volver a pedidos</a>
+
+  @if (order(); as order) {
+    <header class="detail__header">
+      <h1 class="detail__title">Orden #{{ order.orderNumber }}</h1>
+      <p class="detail__status" data-testid="order-status" [attr.data-status]="order.status">
+        {{ statusLabel(order.status) }}
+      </p>
+    </header>
+    <p class="detail__destination">{{ destinationLabel(order.tableNumber) }}</p>
+
+    <section class="detail__section" aria-labelledby="timeline-title">
+      <h2 id="timeline-title" class="detail__section-title">Línea de tiempo</h2>
+      <ol class="detail__timeline">
+        @for (step of timeline(); track $index) {
+          <li class="detail__step" [class.detail__step--undone]="step.undone">
+            <span class="detail__step-text">{{ step.text }}</span>
+            <time class="detail__step-time">{{ step.time }}</time>
+          </li>
+        }
+      </ol>
+    </section>
+
+    <section class="detail__section" aria-labelledby="items-title">
+      <h2 id="items-title" class="detail__section-title">Productos</h2>
+      <ul class="detail__items">
+        @for (item of order.items; track $index) {
+          <li class="detail__item">
+            <span>{{ item.quantity }}× {{ item.name }}</span>
+            <span>{{ item.subtotal | mxnPrice }}</span>
+          </li>
+        }
+      </ul>
+      <p class="detail__total">Total: {{ order.total | mxnPrice }}</p>
+    </section>
+  } @else if (notFound()) {
+    <p class="detail__state" role="alert">Este pedido no existe.</p>
+  } @else if (hasError()) {
+    <section class="detail__state" role="alert">
+      <p>No pudimos cargar el pedido. Revisa la conexión e inténtalo de nuevo.</p>
+      <button type="button" mat-flat-button (click)="reload()">Reintentar</button>
+    </section>
+  } @else if (isLoading()) {
+    <p class="detail__state" role="status">Cargando pedido…</p>
+  }
+</main>

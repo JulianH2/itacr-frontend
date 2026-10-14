@@ -32,6 +32,14 @@ export const ORDERS_ROUTES: Routes = [
             (m) => m.OrderSentPageComponent,
           ),
       },
+      {
+        path: 'detail/:id',
+        title: 'Detalle del pedido | ITACR',
+        loadComponent: () =>
+          import('./pages/order-detail-page/order-detail-page.component').then(
+            (m) => m.OrderDetailPageComponent,
+          ),
+      },
     ],
   },
 ];

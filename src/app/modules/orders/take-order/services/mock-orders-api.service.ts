@@ -1,11 +1,14 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { type Observable, delay, of } from 'rxjs';
+import { type Observable, delay, of, throwError } from 'rxjs';
 
 import type {
   CreateOrderRequest,
   DiningTable,
+  OrderDetail,
   PlacedOrder,
   PlacedOrderItem,
+  RecentOrder,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
@@ -59,5 +62,39 @@ export class MockOrdersApiService implements OrdersApi {
     };
     this.orders.set(request.clientOrderId, order);
     return of(order).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  /** The mock kitchen is another service, so mock orders stay in New. */
+  getOrder(orderId: string): Observable<OrderDetail> {
+    const order = [...this.orders.values()].find((candidate) => candidate.id === orderId);
+    if (!order) {
+      return throwError(() => new HttpErrorResponse({ status: 404 }));
+    }
+
+    const detail: OrderDetail = {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      channel: order.channel,
+      status: order.status,
+      tableNumber: order.tableNumber,
+      total: order.total,
+      createdAt: order.createdAt,
+      readyAt: null,
+      items: order.items,
+      timeline: [{ status: 'New', changedAt: order.createdAt, undone: false }],
+    };
+    return of(detail).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  getRecentOrders(): Observable<readonly RecentOrder[]> {
+    const recent = [...this.orders.values()].reverse().map((order) => ({
+      id: order.id,
+      orderNumber: order.orderNumber,
+      channel: order.channel,
+      status: order.status,
+      tableNumber: order.tableNumber,
+      createdAt: order.createdAt,
+    }));
+    return of(recent).pipe(delay(MOCK_LATENCY_MS));
   }
 }
