@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 
 import { PIN_LENGTH } from '@shared/auth/auth.models';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 const DIGIT_PATTERN = /^\d$/;
 
 @Component({
   selector: 'app-pin-pad',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [IconComponent],
   templateUrl: './pin-pad.component.html',
   styleUrl: './pin-pad.component.scss',
   host: {

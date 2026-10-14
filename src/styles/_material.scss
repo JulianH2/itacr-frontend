@@ -1,0 +1,118 @@
+// Angular Material restyled to the ITACR component sheet (mockup 2/3). Every Material button and
+// field in the app picks this up; pages only choose the variant (flat = primary, stroked = secondary,
+// basic = text).
+@use '@angular/material' as mat;
+
+$press-scale: 0.98;
+
+html {
+  @include mat.button-overrides(
+    (
+      filled-container-shape: var(--radius-control),
+      outlined-container-shape: var(--radius-control),
+      text-container-shape: var(--radius-control),
+      tonal-container-shape: var(--radius-control),
+      filled-container-height: var(--touch-target),
+      outlined-container-height: var(--touch-target),
+      text-container-height: var(--touch-target),
+      tonal-container-height: var(--touch-target),
+      filled-container-color: var(--color-primary),
+      filled-label-text-color: var(--color-on-primary),
+      filled-disabled-container-color: var(--color-secondary-tint),
+      filled-disabled-label-text-color: var(--color-text-disabled),
+      outlined-outline-color: var(--color-primary),
+      outlined-label-text-color: var(--color-primary),
+      outlined-disabled-outline-color: var(--color-border),
+      outlined-disabled-label-text-color: var(--color-text-disabled),
+      text-label-text-color: var(--color-primary),
+      text-disabled-label-text-color: var(--color-text-disabled),
+      filled-label-text-weight: 600,
+      outlined-label-text-weight: 600,
+      text-label-text-weight: 600,
+      // Hover and pressed are drawn as solid color steps from the sheet, not Material state layers.
+      filled-hover-state-layer-opacity: 0,
+      filled-pressed-state-layer-opacity: 0,
+      outlined-hover-state-layer-opacity: 0,
+      outlined-pressed-state-layer-opacity: 0,
+      text-hover-state-layer-opacity: 0,
+      text-pressed-state-layer-opacity: 0,
+    )
+  );
+  @include mat.form-field-overrides(
+    (
+      outlined-container-shape: var(--radius-control),
+      outlined-outline-color: var(--color-border-strong),
+      outlined-hover-outline-color: var(--color-primary),
+      outlined-focus-outline-color: var(--color-primary),
+      outlined-label-text-color: var(--color-text),
+      outlined-input-text-color: var(--color-text),
+      outlined-input-text-placeholder-color: var(--color-text-secondary),
+      outlined-disabled-outline-color: var(--color-divider),
+      outlined-disabled-input-text-color: var(--color-text-disabled),
+      outlined-error-outline-color: var(--color-error),
+      outlined-error-label-text-color: var(--color-error),
+      error-text-color: var(--color-error),
+    )
+  );
+}
+
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button,
+.mat-mdc-button {
+  font-family: var(--font-family);
+  letter-spacing: 0;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+
+  &:not(:disabled):not(.mat-mdc-button-disabled):active {
+    transform: scale($press-scale);
+  }
+}
+
+.mat-mdc-unelevated-button:not(:disabled):not(.mat-mdc-button-disabled):active {
+  --mat-button-filled-container-color: var(--color-primary-pressed);
+}
+
+.mat-mdc-outlined-button:not(:disabled):not(.mat-mdc-button-disabled):active {
+  background-color: var(--color-primary-tint-pressed);
+}
+
+// Text button: underline on hover, plain when pressed (sheet 2/3).
+.mat-mdc-button:not(:disabled):not(.mat-mdc-button-disabled) {
+  text-underline-offset: 4px;
+
+  &:active {
+    text-decoration: none;
+  }
+}
+
+// Hover only where a pointer can hover; on touch screens it would stick after a tap.
+@media (hover: hover) {
+  .mat-mdc-unelevated-button:not(:disabled):not(.mat-mdc-button-disabled):hover {
+    --mat-button-filled-container-color: var(--color-primary-hover);
+  }
+
+  .mat-mdc-outlined-button:not(:disabled):not(.mat-mdc-button-disabled):hover {
+    background-color: var(--color-primary-tint);
+  }
+
+  .mat-mdc-button:not(:disabled):not(.mat-mdc-button-disabled):hover {
+    text-decoration: underline;
+  }
+}
+
+// Icon buttons keep the 44px touch target.
+.mat-mdc-icon-button.mat-mdc-button-base {
+  --mat-icon-button-state-layer-size: var(--touch-target);
+  height: var(--touch-target);
+  padding: 10px;
+  width: var(--touch-target);
+}
+
+// An icon next to the label centers on it instead of sitting on the text baseline.
+.mat-mdc-button-base .mdc-button__label {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-1);
+}

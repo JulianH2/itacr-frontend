@@ -42,5 +42,16 @@ export const routes: Routes = [
     loadChildren: () =>
       import('@modules/manager/dashboard-page/manager.routes').then((m) => m.MANAGER_ROUTES),
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: 'offline',
+    loadChildren: () => import('@modules/system/system.routes').then((m) => m.SYSTEM_ROUTES),
+  },
+  {
+    path: '**',
+    title: 'Página no encontrada | ITACR',
+    loadComponent: () =>
+      import('@modules/system/not-found/not-found-page.component').then(
+        (m) => m.NotFoundPageComponent,
+      ),
+  },
 ];

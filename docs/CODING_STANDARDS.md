@@ -201,7 +201,7 @@ src/app/
 
 - Semantic HTML (`header`, `nav`, `main`, `button` for actions, `a` for navigation).
 - Every input has a visible `<label>` or `mat-label`.
-- Sufficient color contrast (WCAG AA). Use the Material `--mat-sys-*` variables, not hard-coded colors.
+- Sufficient color contrast (WCAG AA). Use the `--color-*` tokens from `src/styles/tokens.css` (see `docs/DESIGN_SYSTEM.md`), not hard-coded colors.
 - Touch targets of at least **44x44 px**.
 
 ---

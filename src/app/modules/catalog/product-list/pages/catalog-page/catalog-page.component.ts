@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 
 import { EmployeeRole } from '@shared/auth/auth.models';
 import { SessionService } from '@shared/auth/session.service';
+import { IconComponent } from '@shared/components/icon/icon.component';
+import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { provideCatalogApi } from '../../catalog.config';
@@ -21,7 +23,9 @@ import { CatalogStore } from '../../services/catalog-store.service';
     CategoryTabsComponent,
     OrderCounterComponent,
     ProductCardComponent,
+    IconComponent,
     MatButtonModule,
+    MxnPricePipe,
     RouterLink,
   ],
   providers: [provideCatalogApi(), CatalogStore],
@@ -34,6 +38,7 @@ export class CatalogPageComponent {
   private readonly session = inject(SessionService);
 
   protected readonly itemCount = this.orderDraft.itemCount;
+  protected readonly total = this.orderDraft.total;
 
   /** Only a waiter takes the order to the kitchen; customers just browse the menu. */
   protected readonly isWaiter = computed(

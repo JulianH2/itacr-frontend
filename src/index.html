@@ -6,23 +6,47 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Gestión de pedidos para restaurantes de comida rápida" />
-    <meta name="theme-color" content="#c00100" />
+    <meta name="theme-color" content="#5a3e37" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1715" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <script src="theme-init.js"></script>
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
-    <app-root></app-root>
+    <app-root>
+      <div class="splash" role="status">
+        <span class="splash__logo">
+          <svg
+            viewBox="0 0 32 32"
+            width="56"
+            height="56"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="16" cy="16" r="12" />
+            <path d="M12.5 10.5v11" />
+            <path d="M19.5 10.5v11" />
+            <path d="M19.5 17.5c-2 0-4.5.5-7 1.5" />
+          </svg>
+        </span>
+        <p class="splash__name">ITACR</p>
+        <p class="splash__tagline">Gestión para restaurantes de comida rápida</p>
+        <span class="splash__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="sr-only">Cargando ITACR…</span>
+      </div>
+    </app-root>
     <noscript>Activa JavaScript para usar ITACR.</noscript>
   </body>
 </html>
