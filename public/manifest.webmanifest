@@ -8,8 +8,8 @@
   "orientation": "any",
   "scope": "./",
   "start_url": "./",
-  "theme_color": "#c00100",
-  "background_color": "#ffffff",
+  "theme_color": "#5a3e37",
+  "background_color": "#faf1e4",
   "categories": ["food", "business"],
   "icons": [
     {
