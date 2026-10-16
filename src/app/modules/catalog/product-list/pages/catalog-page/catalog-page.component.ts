@@ -6,6 +6,8 @@ import { EmployeeRole } from '@shared/auth/auth.models';
 import { SessionService } from '@shared/auth/session.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import { ToastService } from '@shared/services/toast.service';
+import { PICKUP_ORDER_LIMITS } from '@shared/state/order-draft/order-draft.limits';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { provideCatalogApi } from '../../catalog.config';
@@ -36,6 +38,7 @@ export class CatalogPageComponent {
   protected readonly store = inject(CatalogStore);
   private readonly orderDraft = inject(OrderDraftService);
   private readonly session = inject(SessionService);
+  private readonly toast = inject(ToastService);
 
   protected readonly itemCount = this.orderDraft.itemCount;
   protected readonly total = this.orderDraft.total;
@@ -53,6 +56,22 @@ export class CatalogPageComponent {
   });
 
   protected addToOrder(product: Product): void {
-    this.orderDraft.add({ productId: product.id, name: product.name, unitPrice: product.price });
+    // A customer's order has the limits of the pickup endpoint; the waiter's has none in the app.
+    const limits = this.session.employee() === null ? PICKUP_ORDER_LIMITS : {};
+    const refusal = this.orderDraft.add(
+      { productId: product.id, name: product.name, unitPrice: product.price },
+      1,
+      limits,
+    );
+    if (refusal !== null) {
+      this.toast.show({
+        title: 'Límite del pedido',
+        message:
+          refusal === 'quantity-limit'
+            ? `Puedes pedir hasta ${PICKUP_ORDER_LIMITS.maxQuantity} unidades de cada producto.`
+            : `Un pedido admite hasta ${PICKUP_ORDER_LIMITS.maxProducts} productos distintos.`,
+        icon: 'cart',
+      });
+    }
   }
 }

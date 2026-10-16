@@ -6,6 +6,7 @@ import { of, throwError } from 'rxjs';
 
 import { EmployeeRole } from '@shared/auth/auth.models';
 import { SessionService } from '@shared/auth/session.service';
+import { ToastService } from '@shared/services/toast.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type { Category } from '../../models/catalog.models';
@@ -211,6 +212,51 @@ describe('CatalogPageComponent', () => {
 
       // Assert
       expect(cartHref(fixture)).toBeNull();
+    });
+  });
+
+  describe('limits of a customer order', () => {
+    async function renderFor(
+      role: EmployeeRole | null,
+    ): Promise<ComponentFixture<CatalogPageComponent>> {
+      const employee = role === null ? null : { id: 'e1', displayName: 'Ana M.', role };
+      TestBed.configureTestingModule({
+        providers: [{ provide: SessionService, useValue: { employee: signal(employee) } }],
+      });
+      return renderPage(createFakeApi());
+    }
+
+    it('should stop at 10 units of a product for a customer and explain it with a notice', async () => {
+      // Arrange
+      const fixture = await renderFor(null);
+      const draft = TestBed.inject(OrderDraftService);
+
+      // Act
+      for (let tap = 0; tap < 11; tap++) {
+        await clickButton(fixture, 'Agregar');
+      }
+
+      // Assert
+      expect(draft.itemCount()).toBe(10);
+      expect(
+        TestBed.inject(ToastService)
+          .toasts()
+          .map((toast) => toast.message),
+      ).toEqual(['Puedes pedir hasta 10 unidades de cada producto.']);
+    });
+
+    it('should not cap the units of a waiter in the app', async () => {
+      // Arrange
+      const fixture = await renderFor(EmployeeRole.Waiter);
+      const draft = TestBed.inject(OrderDraftService);
+
+      // Act
+      for (let tap = 0; tap < 11; tap++) {
+        await clickButton(fixture, 'Agregar');
+      }
+
+      // Assert
+      expect(draft.itemCount()).toBe(11);
     });
   });
 });
