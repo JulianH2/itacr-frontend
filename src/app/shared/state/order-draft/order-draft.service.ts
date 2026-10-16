@@ -1,5 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
 
+import type { DraftLimits, DraftRefusal } from './order-draft.limits';
 import type { OrderDraftItem, OrderDraftProduct } from './order-draft.model';
 
 const CENTS_PER_UNIT = 100;
@@ -33,22 +34,36 @@ export class OrderDraftService {
       ) / CENTS_PER_UNIT,
   );
 
-  /** Adds `quantity` units of a product, increasing the existing line when there is one. */
-  add(product: OrderDraftProduct, quantity = DEFAULT_ADD_QUANTITY): void {
+  /**
+   * Adds `quantity` units of a product, increasing the existing line when there is one. With `limits`, a product that
+   * would go over them is not added and the reason is returned; otherwise it returns null.
+   */
+  add(
+    product: OrderDraftProduct,
+    quantity = DEFAULT_ADD_QUANTITY,
+    limits: DraftLimits = {},
+  ): DraftRefusal | null {
     if (!isValidQuantity(quantity)) {
-      return;
+      return null;
     }
-    this.itemsState.update((items) => {
-      const existing = items.find((item) => item.productId === product.productId);
-      if (!existing) {
-        return [...items, { ...product, quantity }];
-      }
-      return items.map((item) =>
-        item.productId === product.productId
-          ? { ...item, quantity: item.quantity + quantity }
-          : item,
-      );
-    });
+    const current = this.itemsState();
+    const existing = current.find((item) => item.productId === product.productId);
+    if (existing === undefined && current.length >= (limits.maxProducts ?? Infinity)) {
+      return 'products-limit';
+    }
+    if ((existing?.quantity ?? 0) + quantity > (limits.maxQuantity ?? Infinity)) {
+      return 'quantity-limit';
+    }
+    this.itemsState.set(
+      existing === undefined
+        ? [...current, { ...product, quantity }]
+        : current.map((item) =>
+            item.productId === product.productId
+              ? { ...item, quantity: item.quantity + quantity }
+              : item,
+          ),
+    );
+    return null;
   }
 
   /** Removes the whole line of a product. Does nothing when the product is not in the draft. */
