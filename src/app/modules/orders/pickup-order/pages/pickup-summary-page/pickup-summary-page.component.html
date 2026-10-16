@@ -32,6 +32,8 @@
               </button>
               <app-qty-stepper
                 [value]="item.quantity"
+                [min]="0"
+                [max]="maxQuantity"
                 [subject]="item.name"
                 (valueChange)="setQuantity(item.productId, $event)"
               />
@@ -94,7 +96,7 @@
         <strong class="tabular" data-testid="pickup-total">{{ store.total() | mxnPrice }}</strong>
       </p>
 
-      @if (store.error(); as error) {
+      @if (store.limitError() ?? store.error(); as error) {
         <p class="pickup__error" role="alert">{{ error }}</p>
       }
 

@@ -246,4 +246,55 @@ describe('PickupOrderStore', () => {
     store.setPhone('7711234568');
     expect(store.phoneError()).toBeNull();
   });
+
+  describe('limits of the order', () => {
+    it('should not send an order with more than 20 products and say why', async () => {
+      // Arrange
+      draft.clear();
+      for (let index = 0; index < 21; index++) {
+        draft.add({ productId: `p${index}`, name: `Producto ${index}`, unitPrice: 10 });
+      }
+      fillForm();
+
+      // Act
+      const sent = await store.send();
+
+      // Assert
+      expect(store.limitError()).toBe(PICKUP_MESSAGES.tooManyProducts);
+      expect(store.canSend()).toBe(false);
+      expect(sent).toBe(false);
+      expect(requests).toHaveLength(0);
+    });
+
+    it('should not send an order with more than 10 units of a product and say why', async () => {
+      // Arrange: the draft is shared with the waiter flow, which allows more.
+      draft.clear();
+      draft.add(BURGER, 15);
+      fillForm();
+
+      // Act
+      const sent = await store.send();
+
+      // Assert
+      expect(store.limitError()).toBe(PICKUP_MESSAGES.quantityTooHigh);
+      expect(sent).toBe(false);
+      expect(requests).toHaveLength(0);
+    });
+
+    it('should send an order at the limits', async () => {
+      // Arrange
+      draft.clear();
+      for (let index = 0; index < 20; index++) {
+        draft.add({ productId: `p${index}`, name: `Producto ${index}`, unitPrice: 10 }, 10);
+      }
+      fillForm();
+
+      // Act
+      const sent = await store.send();
+
+      // Assert
+      expect(store.limitError()).toBeNull();
+      expect(sent).toBe(true);
+    });
+  });
 });

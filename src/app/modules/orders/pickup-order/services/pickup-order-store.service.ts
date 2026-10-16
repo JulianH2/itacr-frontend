@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
+import { PICKUP_ORDER_LIMITS } from '@shared/state/order-draft/order-draft.limits';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 import { PickupReceiptsService } from '@shared/state/pickup-receipts/pickup-receipts.service';
 
@@ -67,8 +68,24 @@ export class PickupOrderStore {
       : null,
   );
 
-  /** An order without products cannot be sent. */
-  readonly canSend = computed(() => this.draft.itemCount() > 0 && !this.sendingState());
+  /**
+   * The order is over what the server accepts (20 products, 10 units of each). The draft is shared with the waiter flow,
+   * so the limits are checked here too, not only when the customer adds a product.
+   */
+  readonly limitError = computed(() => {
+    const items = this.draft.items();
+    if (items.length > PICKUP_ORDER_LIMITS.maxProducts) {
+      return PICKUP_MESSAGES.tooManyProducts;
+    }
+    return items.some((item) => item.quantity > PICKUP_ORDER_LIMITS.maxQuantity)
+      ? PICKUP_MESSAGES.quantityTooHigh
+      : null;
+  });
+
+  /** An order without products, or over the limits, cannot be sent. */
+  readonly canSend = computed(
+    () => this.draft.itemCount() > 0 && this.limitError() === null && !this.sendingState(),
+  );
 
   setName(value: string): void {
     this.nameState.set(value);

@@ -154,4 +154,37 @@ describe('PickupSummaryPageComponent', () => {
     // Assert
     expect(page.querySelector<HTMLInputElement>('#pickup-phone')?.value).toBe('771123');
   });
+
+  it('should not let the customer go over 10 units of a product with the stepper', async () => {
+    // Arrange
+    const { fixture, page } = await renderPage(requests);
+    TestBed.inject(OrderDraftService).add(BURGER, 10);
+
+    // Act
+    fixture.detectChanges();
+
+    // Assert
+    const add = page.querySelector<HTMLButtonElement>('button[aria-label^="Agregar uno de"]');
+    expect(add?.disabled).toBe(true);
+  });
+
+  it('should block sending and explain it when the order has more than 20 products', async () => {
+    // Arrange
+    const { fixture, page } = await renderPage(requests);
+    const draft = TestBed.inject(OrderDraftService);
+    for (let index = 0; index < 21; index++) {
+      draft.add({ productId: `p${index}`, name: `Producto ${index}`, unitPrice: 10 });
+    }
+
+    // Act
+    fixture.detectChanges();
+
+    // Assert
+    expect(page.querySelector('.pickup__error')?.textContent).toContain(
+      PICKUP_MESSAGES.tooManyProducts,
+    );
+    expect(page.querySelector<HTMLButtonElement>('[data-testid="pickup-send"]')?.disabled).toBe(
+      true,
+    );
+  });
 });

@@ -6,6 +6,7 @@ import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { QtyStepperComponent } from '@shared/components/qty-stepper/qty-stepper.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import { PICKUP_ORDER_LIMITS } from '@shared/state/order-draft/order-draft.limits';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { NAME_MAX_LENGTH, PHONE_LENGTH } from '../../models/pickup-customer';
@@ -33,6 +34,7 @@ export class PickupSummaryPageComponent {
 
   protected readonly nameMaxLength = NAME_MAX_LENGTH;
   protected readonly phoneLength = PHONE_LENGTH;
+  protected readonly maxQuantity = PICKUP_ORDER_LIMITS.maxQuantity;
 
   protected setQuantity(productId: string, quantity: number): void {
     this.draft.changeQuantity(productId, quantity);
