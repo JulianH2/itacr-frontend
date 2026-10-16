@@ -54,16 +54,16 @@ flowchart TB
 
 ## 3. Routing and roles
 
-| Path        | Module                              | Who                        |
-| ----------- | ----------------------------------- | -------------------------- |
-| `/`         | home                                | Everyone                   |
-| `/login`    | identity                            | Guests                     |
-| `/catalog`  | catalog                             | Everyone                   |
-| `/orders`   | orders (take order, summary, sent)  | Waiter                     |
-| `/kitchen`  | kitchen (board)                     | Kitchen, Manager           |
-| `/tracking` | tracking                            | Everyone                   |
-| `/pickup`   | orders (pickup order, confirmation) | Everyone, planned in HU_06 |
-| `/manager`  | manager                             | Manager                    |
+| Path        | Module                              | Who              |
+| ----------- | ----------------------------------- | ---------------- |
+| `/`         | home                                | Everyone         |
+| `/login`    | identity                            | Guests           |
+| `/catalog`  | catalog                             | Everyone         |
+| `/orders`   | orders (take order, summary, sent)  | Waiter           |
+| `/kitchen`  | kitchen (board)                     | Kitchen, Manager |
+| `/tracking` | tracking                            | Everyone         |
+| `/pickup`   | orders (pickup order, confirmation) | Everyone         |
+| `/manager`  | manager                             | Manager          |
 
 - Every route is lazy-loaded, so the waiter flow downloads only what it uses.
 - `roleGuard(...)` checks the role from the session. The backend checks it again on every endpoint; the guard only keeps the UI honest.
@@ -102,9 +102,11 @@ flowchart LR
 
 A customer without an account orders for pickup from the phone, and the backend decisions are in its `docs/ARCHITECTURE.md`, section 6.2 (ITACR-42). The frontend rules are:
 
-- **Public routes, no guard:** `/`, `/login`, `/catalog`, `/pickup/**`, `/tracking/**`, and `/offline`. The pickup flow is `home` ("Ordenar para recoger") → `/catalog` → summary and customer data → confirmation. It lives in `modules/orders` as its own screens and reuses the order draft in `shared/state` like the waiter flow. **It has its own lazy route entry** (`/pickup` in `app.routes.ts`, no guard) with its own routes file, API token, and store (for example `providePickupApi()` and a `PickupStore`). It is never hung from `ORDERS_ROUTES`: `/orders` has `roleGuard(Waiter)` on the parent route, and its providers (`TakeOrderStore`, `provideOrdersApi()`) belong to the waiter flow.
+- **Public routes, no guard:** `/`, `/login`, `/catalog`, `/pickup/**`, `/tracking/**`, and `/offline`. The pickup flow is `home` ("Ordenar para recoger") → `/catalog` → `/pickup/summary` (products, name and phone) → `/pickup/orders` (confirmation and status). It lives in `modules/orders` as its own screens and reuses the order draft in `shared/state` like the waiter flow. **It has its own lazy route entry** (`/pickup` in `app.routes.ts`, no guard) with its own routes file, API token (`providePickupApi()`), and checkout store (`PickupOrderStore`). The status screen has its own `PickupTrackingStore`, provided by the page so that leaving it stops the polling. It is never hung from `ORDERS_ROUTES`: `/orders` has `roleGuard(Waiter)` on the parent route, and its providers (`TakeOrderStore`, `provideOrdersApi()`) belong to the waiter flow.
 - **Data asked:** name (2 to 60 characters) and phone (exactly 10 digits). The form checks them before sending with the same rules as the backend and the Spanish message "Este campo es obligatorio.", but the server is the authority and its Problem Details errors are shown under the field.
+- **Limits of the order:** at most 20 products and 10 units of each, like the backend. The catalog stops a customer at those numbers with a notice (`PICKUP_ORDER_LIMITS` in `shared/state/order-draft`), the stepper of the summary stops at 10, and sending is blocked with a Spanish message if the draft is over them anyway (the draft is shared with the waiter flow, which has no cap).
 - **Idempotent send:** the browser generates the `clientOrderId` when the customer starts the order and keeps it until the server confirms, so a retry never creates a second order. A new order gets a new id.
+- **Where the cart goes:** the catalog decides by session. A waiter goes to `/orders/summary`, a visitor without a session goes to `/pickup/summary`, and kitchen staff and managers get no cart.
 - **The receipts:** the backend allows 2 active orders per phone, so the browser keeps a **list** of active receipts (at most 2), each with its `clientOrderId` and order number, in `localStorage`. A new order adds its receipt, and each receipt is dropped when its order is delivered (or the server answers `404` for it), so a second order never makes the customer lose track of the first. The name and the phone are **not** stored. The confirmation screen reads the list and asks `GET /public/orders/{clientOrderId}` for the status of each one (CA3 of HU_06).
 - **Following the order:** the confirmation polls the status of each active receipt every 10 seconds while it is open and visible, and stops polling an order when it is delivered. One customer makes at most 12 requests per minute (2 receipts), under the limit of 60 per minute per IP, which several customers on the restaurant WiFi share.
 - **Errors:** `429` shows "Demasiados intentos. Espera un momento e inténtalo de nuevo."; `409` shows the message of the server (an order already sent, or two active orders for that phone); status 0 shows the no-connection message.

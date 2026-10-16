@@ -42,18 +42,20 @@
     }
   }
 
-  @if (isWaiter() && itemCount() > 0) {
-    <a class="catalog__cart" routerLink="/orders/summary">
-      <span class="catalog__cart-icon">
-        <app-icon name="cart" [size]="24" />
-        <span class="catalog__cart-count tabular" aria-hidden="true">{{ itemCount() }}</span>
-      </span>
-      <span class="catalog__cart-label">
-        <span class="sr-only">Ver pedido: </span>{{ itemCount() }}
-        {{ itemCount() === 1 ? 'producto' : 'productos' }}
-      </span>
-      <span class="catalog__cart-total tabular">{{ total() | mxnPrice }}</span>
-      <app-icon name="chevron-right" [size]="20" />
-    </a>
+  @if (cartLink(); as cartLink) {
+    @if (itemCount() > 0) {
+      <a class="catalog__cart" [routerLink]="cartLink">
+        <span class="catalog__cart-icon">
+          <app-icon name="cart" [size]="24" />
+          <span class="catalog__cart-count tabular" aria-hidden="true">{{ itemCount() }}</span>
+        </span>
+        <span class="catalog__cart-label">
+          <span class="sr-only">Ver pedido: </span>{{ itemCount() }}
+          {{ itemCount() === 1 ? 'producto' : 'productos' }}
+        </span>
+        <span class="catalog__cart-total tabular">{{ total() | mxnPrice }}</span>
+        <app-icon name="chevron-right" [size]="20" />
+      </a>
+    }
   }
 </main>
