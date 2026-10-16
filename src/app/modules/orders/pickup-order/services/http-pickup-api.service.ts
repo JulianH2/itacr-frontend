@@ -20,6 +20,8 @@ export class HttpPickupApiService implements PickupApi {
   }
 
   getOrder(clientOrderId: string): Observable<PickupOrder> {
-    return this.http.get<PickupOrder>(`${environment.apiBaseUrl}/public/orders/${clientOrderId}`);
+    return this.http.get<PickupOrder>(
+      `${environment.apiBaseUrl}/public/orders/${encodeURIComponent(clientOrderId)}`,
+    );
   }
 }

@@ -8,6 +8,9 @@ export const PICKUP_RECEIPTS_STORAGE = new InjectionToken<Storage>('PICKUP_RECEI
 
 const STORAGE_KEY = 'itacr.pickup-receipts';
 
+/** The id of an order is a GUID made by the browser; anything else in the storage was not written by this app. */
+const GUID_FORMAT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /** The backend lets a phone have 2 active orders, so a customer never needs more than 2 receipts. */
 export const MAX_RECEIPTS = 2;
 
@@ -66,7 +69,8 @@ function isReceipt(value: unknown): value is PickupReceipt {
     return false;
   }
   const candidate = value as Record<string, unknown>;
+  const id = candidate['clientOrderId'];
   return (
-    typeof candidate['clientOrderId'] === 'string' && typeof candidate['orderNumber'] === 'number'
+    typeof id === 'string' && GUID_FORMAT.test(id) && typeof candidate['orderNumber'] === 'number'
   );
 }

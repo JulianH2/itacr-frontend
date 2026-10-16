@@ -35,7 +35,8 @@ describe('PickupOrdersPageComponent', () => {
   }> {
     const api: PickupApi = {
       createOrder: () => of({} as PickupOrder),
-      getOrder: (id) => of(order(id, id === 'a' ? 1 : 2, statuses[id])),
+      getOrder: (id) =>
+        of(order(id, id === '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b' ? 1 : 2, statuses[id])),
     };
     await TestBed.configureTestingModule({
       imports: [PickupOrdersPageComponent],
@@ -60,7 +61,10 @@ describe('PickupOrdersPageComponent', () => {
   }
 
   beforeEach(() => {
-    statuses = { a: 'New', b: 'InPreparation' };
+    statuses = {
+      '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b': 'New',
+      '8d9e0f1a-2b3c-4d5e-8f6a-7b8c9d0e1f2a': 'InPreparation',
+    };
     storage = new MemoryStorage();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
   });
@@ -68,8 +72,14 @@ describe('PickupOrdersPageComponent', () => {
   // CA3
   it('should show the current status of the order when the customer comes back to the screen', async () => {
     // Arrange
-    storage.setItem('itacr.pickup-receipts', '[{"clientOrderId":"a","orderNumber":1}]');
-    statuses = { a: 'Ready', b: 'New' };
+    storage.setItem(
+      'itacr.pickup-receipts',
+      '[{"clientOrderId":"3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b","orderNumber":1}]',
+    );
+    statuses = {
+      '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b': 'Ready',
+      '8d9e0f1a-2b3c-4d5e-8f6a-7b8c9d0e1f2a': 'New',
+    };
 
     // Act
     const { page } = await renderPage();
@@ -85,7 +95,7 @@ describe('PickupOrdersPageComponent', () => {
     // Arrange
     storage.setItem(
       'itacr.pickup-receipts',
-      '[{"clientOrderId":"a","orderNumber":1},{"clientOrderId":"b","orderNumber":2}]',
+      '[{"clientOrderId":"3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b","orderNumber":1},{"clientOrderId":"8d9e0f1a-2b3c-4d5e-8f6a-7b8c9d0e1f2a","orderNumber":2}]',
     );
 
     // Act
@@ -111,7 +121,10 @@ describe('PickupOrdersPageComponent', () => {
 
   it('should never show the name or the phone of the customer', async () => {
     // Arrange
-    storage.setItem('itacr.pickup-receipts', '[{"clientOrderId":"a","orderNumber":1}]');
+    storage.setItem(
+      'itacr.pickup-receipts',
+      '[{"clientOrderId":"3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b","orderNumber":1}]',
+    );
 
     // Act
     const { page } = await renderPage();

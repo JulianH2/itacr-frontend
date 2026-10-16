@@ -73,14 +73,33 @@ describe('PickupReceiptsService', () => {
 
   it('should find the receipts again in a later visit', () => {
     // Arrange
-    createService().add({ clientOrderId: 'a', orderNumber: 7 });
+    createService().add({ clientOrderId: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b', orderNumber: 7 });
     TestBed.resetTestingModule();
 
     // Act
     const service = createService();
 
     // Assert
-    expect(service.receipts()).toEqual([{ clientOrderId: 'a', orderNumber: 7 }]);
+    expect(service.receipts()).toEqual([
+      { clientOrderId: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b', orderNumber: 7 },
+    ]);
+  });
+
+  it('should ignore a stored receipt whose id is not a GUID, because this app never wrote it', () => {
+    // Arrange
+    storage.setItem(
+      'itacr.pickup-receipts',
+      JSON.stringify([
+        { clientOrderId: '../kitchen/queue', orderNumber: 1 },
+        { clientOrderId: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b', orderNumber: 2 },
+      ]),
+    );
+
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service.receipts().map((receipt) => receipt.orderNumber)).toEqual([2]);
   });
 
   it('should ignore stored data that is not a list of receipts', () => {
