@@ -1,7 +1,11 @@
 import type { ComponentFixture } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
+import { EmployeeRole } from '@shared/auth/auth.models';
+import { SessionService } from '@shared/auth/session.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type { Category } from '../../models/catalog.models';
@@ -23,7 +27,10 @@ function createFakeApi(): CatalogApi {
 }
 
 async function renderPage(api: CatalogApi): Promise<ComponentFixture<CatalogPageComponent>> {
-  await TestBed.configureTestingModule({ imports: [CatalogPageComponent] })
+  await TestBed.configureTestingModule({
+    imports: [CatalogPageComponent],
+    providers: [provideRouter([])],
+  })
     .overrideComponent(CatalogPageComponent, {
       set: { providers: [{ provide: CATALOG_API, useValue: api }, CatalogStore] },
     })
@@ -145,5 +152,65 @@ describe('CatalogPageComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('No pudimos cargar el menú.');
     expect(text).toContain('Reintentar');
+  });
+
+  describe('cart link', () => {
+    async function renderWithSession(
+      role: EmployeeRole | null,
+    ): Promise<ComponentFixture<CatalogPageComponent>> {
+      const employee = role === null ? null : { id: 'e1', displayName: 'Ana M.', role };
+      TestBed.configureTestingModule({
+        providers: [{ provide: SessionService, useValue: { employee: signal(employee) } }],
+      });
+      const fixture = await renderPage(createFakeApi());
+      TestBed.inject(OrderDraftService).add({ productId: 'p1', name: 'Limonada', unitPrice: 32 });
+      fixture.detectChanges();
+      return fixture;
+    }
+
+    function cartHref(fixture: ComponentFixture<CatalogPageComponent>): string | null {
+      const cart = (fixture.nativeElement as HTMLElement).querySelector('.catalog__cart');
+      return cart?.getAttribute('href') ?? null;
+    }
+
+    it('should take a customer without a session to the pickup summary', async () => {
+      // Act
+      const fixture = await renderWithSession(null);
+
+      // Assert
+      expect(cartHref(fixture)).toBe('/pickup/summary');
+    });
+
+    it('should keep taking a waiter to the order summary', async () => {
+      // Act
+      const fixture = await renderWithSession(EmployeeRole.Waiter);
+
+      // Assert
+      expect(cartHref(fixture)).toBe('/orders/summary');
+    });
+
+    it.each([EmployeeRole.Kitchen, EmployeeRole.Manager])(
+      'should show no cart to %s staff, who only browse the menu',
+      async (role) => {
+        // Act
+        const fixture = await renderWithSession(role);
+
+        // Assert
+        expect(cartHref(fixture)).toBeNull();
+      },
+    );
+
+    it('should show no cart until there is a product in the order', async () => {
+      // Arrange
+      TestBed.configureTestingModule({
+        providers: [{ provide: SessionService, useValue: { employee: signal(null) } }],
+      });
+
+      // Act
+      const fixture = await renderPage(createFakeApi());
+
+      // Assert
+      expect(cartHref(fixture)).toBeNull();
+    });
   });
 });

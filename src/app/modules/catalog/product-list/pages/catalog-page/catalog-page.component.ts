@@ -40,10 +40,17 @@ export class CatalogPageComponent {
   protected readonly itemCount = this.orderDraft.itemCount;
   protected readonly total = this.orderDraft.total;
 
-  /** Only a waiter takes the order to the kitchen; customers just browse the menu. */
-  protected readonly isWaiter = computed(
-    () => this.session.employee()?.role === EmployeeRole.Waiter,
-  );
+  /**
+   * Where the cart leads. A waiter takes the order to the kitchen from `/orders/summary`; a customer without a session
+   * orders for pickup from `/pickup/summary`. Kitchen staff and managers only browse the menu, so they get no cart.
+   */
+  protected readonly cartLink = computed(() => {
+    const role = this.session.employee()?.role;
+    if (role === undefined) {
+      return '/pickup/summary';
+    }
+    return role === EmployeeRole.Waiter ? '/orders/summary' : null;
+  });
 
   protected addToOrder(product: Product): void {
     this.orderDraft.add({ productId: product.id, name: product.name, unitPrice: product.price });
