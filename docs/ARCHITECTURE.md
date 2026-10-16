@@ -54,15 +54,16 @@ flowchart TB
 
 ## 3. Routing and roles
 
-| Path        | Module                             | Who              |
-| ----------- | ---------------------------------- | ---------------- |
-| `/`         | home                               | Everyone         |
-| `/login`    | identity                           | Guests           |
-| `/catalog`  | catalog                            | Everyone         |
-| `/orders`   | orders (take order, summary, sent) | Waiter           |
-| `/kitchen`  | kitchen (board)                    | Kitchen, Manager |
-| `/tracking` | tracking                           | Everyone         |
-| `/manager`  | manager                            | Manager          |
+| Path        | Module                              | Who                        |
+| ----------- | ----------------------------------- | -------------------------- |
+| `/`         | home                                | Everyone                   |
+| `/login`    | identity                            | Guests                     |
+| `/catalog`  | catalog                             | Everyone                   |
+| `/orders`   | orders (take order, summary, sent)  | Waiter                     |
+| `/kitchen`  | kitchen (board)                     | Kitchen, Manager           |
+| `/tracking` | tracking                            | Everyone                   |
+| `/pickup`   | orders (pickup order, confirmation) | Everyone, planned in HU_06 |
+| `/manager`  | manager                             | Manager                    |
 
 - Every route is lazy-loaded, so the waiter flow downloads only what it uses.
 - `roleGuard(...)` checks the role from the session. The backend checks it again on every endpoint; the guard only keeps the UI honest.
@@ -97,6 +98,20 @@ flowchart LR
 - Sending an order uses a `clientOrderId` made in the browser, so a retry after a network error never creates a second order.
 - The kitchen board refreshes by polling every 5 s. Real time with SignalR comes in a later sprint (`environment.kitchenHubUrl`).
 
+### Customer pickup orders (HU_06)
+
+A customer without an account orders for pickup from the phone, and the backend decisions are in its `docs/ARCHITECTURE.md`, section 6.2 (ITACR-42). The frontend rules are:
+
+- **Public routes, no guard:** `/`, `/login`, `/catalog`, `/pickup/**`, `/tracking/**`, and `/offline`. The pickup flow is `home` ("Ordenar para recoger") → `/catalog` → summary and customer data → confirmation. It lives in `modules/orders` as its own screens, never inside the waiter screens, and reuses the order draft in `shared/state` like the waiter flow.
+- **Data asked:** name (2 to 60 characters) and phone (exactly 10 digits). The form checks them before sending with the same rules as the backend and the Spanish message "Este campo es obligatorio.", but the server is the authority and its Problem Details errors are shown under the field.
+- **Idempotent send:** the browser generates the `clientOrderId` when the customer starts the order and keeps it until the server confirms, so a retry never creates a second order. A new order gets a new id.
+- **The receipt:** after a successful send the browser stores only the `clientOrderId` and the order number in `localStorage`. The name and the phone are **not** stored. The confirmation screen reads the receipt and asks `GET /public/orders/{clientOrderId}` for the status (CA3 of HU_06).
+- **Following the order:** the confirmation polls the status every 10 seconds while it is open and visible, and stops when the order is delivered. One customer makes 6 requests per minute, well under the limit of 60 per minute per IP, which several customers on the restaurant WiFi share.
+- **Errors:** `429` shows "Demasiados intentos. Espera un momento e inténtalo de nuevo."; `409` shows the message of the server (an order already sent, or two active orders for that phone); status 0 shows the no-connection message.
+- **No offline queue for customers.** Offline sending (HU_07) is only for the waiter flow. Without a connection the customer sees a clear message and the order is not queued.
+- **No token on public calls:** requests to `/public/` do not carry the staff JWT, even when an employee is signed in on the same phone, so an expired token can never send a customer to the login page. This is a small change in `authInterceptor`, with its spec, in HU_06.
+- **Service worker:** `/public/orders/**` is live data and is never cached, like `/kitchen`.
+
 ## 6. PWA
 
 - Angular service worker (`ngsw-config.json`): the app shell is cached, so the app opens without a connection.
@@ -117,10 +132,11 @@ flowchart LR
 
 ## 9. Key decisions
 
-| Decision                                               | Instead of                           | Why                                                                      |
-| ------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------ |
-| `modules/` + `shared/` with lint boundaries (ITACR-39) | Folders by technical type            | A story stays inside one module; coupling between modules fails the lint |
-| Standalone components and signals                      | NgModules, NgRx                      | Less code for the size of the app; fine-grained updates                  |
-| Store per screen, provided in the route                | Global store                         | State is created and destroyed with the screen                           |
-| API behind an injection token with a mock              | Calling `HttpClient` from components | Screens can be built and tested before the endpoint exists               |
-| Polling for the kitchen board (ITACR-10)               | SignalR now                          | Simple and reliable for sprint 2; SignalR is planned                     |
+| Decision                                                  | Instead of                                      | Why                                                                      |
+| --------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `modules/` + `shared/` with lint boundaries (ITACR-39)    | Folders by technical type                       | A story stays inside one module; coupling between modules fails the lint |
+| Standalone components and signals                         | NgModules, NgRx                                 | Less code for the size of the app; fine-grained updates                  |
+| Store per screen, provided in the route                   | Global store                                    | State is created and destroyed with the screen                           |
+| API behind an injection token with a mock                 | Calling `HttpClient` from components            | Screens can be built and tested before the endpoint exists               |
+| Polling for the kitchen board (ITACR-10)                  | SignalR now                                     | Simple and reliable for sprint 2; SignalR is planned                     |
+| Receipt in `localStorage`, no customer account (ITACR-42) | Accounts, or name and phone stored in the phone | Nothing to protect or reset; personal data never stays on the device     |
