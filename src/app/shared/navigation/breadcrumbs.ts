@@ -5,6 +5,7 @@ export interface Breadcrumb {
 
 /** Spanish labels of the URL segments that are screens. Segments not listed (ids) are skipped. */
 const SEGMENT_LABELS: Readonly<Record<string, string>> = {
+  pickup: 'Pedido para recoger',
   orders: 'Pedidos',
   summary: 'Resumen',
   sent: 'Enviado',
