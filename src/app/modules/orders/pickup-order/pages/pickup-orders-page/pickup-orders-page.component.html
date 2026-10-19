@@ -1,0 +1,71 @@
+<main class="orders">
+  <header class="orders__header">
+    <h1 class="orders__title">Tu pedido</h1>
+    <a mat-stroked-button routerLink="/catalog">
+      <app-icon name="plus" [size]="20" />
+      Pedir algo más
+    </a>
+  </header>
+
+  @if (sentOrder(); as sent) {
+    <section class="orders__sent" role="status" aria-live="polite">
+      <span class="orders__check" aria-hidden="true"><app-icon name="check" [size]="40" /></span>
+      <div>
+        <h2 class="orders__sent-title">¡Pedido enviado!</h2>
+        <p class="orders__sent-text">
+          Tu número de orden es <strong class="tabular">#{{ sent.orderNumber }}</strong
+          >. Dilo al llegar a recogerlo.
+        </p>
+      </div>
+    </section>
+  }
+
+  @if (tracking.isOutdated()) {
+    <p class="orders__outdated" role="status">{{ outdatedMessage }}</p>
+  }
+
+  @if (tracking.isEmpty()) {
+    <app-empty-state
+      icon="bag"
+      heading="No tienes pedidos activos"
+      description="Cuando envíes un pedido para recoger, aquí verás cómo va."
+    >
+      <a mat-flat-button routerLink="/catalog">Ordenar para recoger</a>
+    </app-empty-state>
+  } @else if (tracking.isLoading()) {
+    <p class="orders__state" role="status">Buscando tu pedido…</p>
+  } @else {
+    <ul class="orders__list" aria-label="Tus pedidos">
+      @for (order of tracking.orders(); track order.clientOrderId) {
+        <li class="order" [attr.data-status]="order.status">
+          <header class="order__header">
+            <h2 class="order__number tabular">Orden #{{ order.orderNumber }}</h2>
+            <app-status-badge [tone]="tones[order.status]">
+              {{ statusLabel(order.status) }}
+            </app-status-badge>
+          </header>
+
+          <p
+            class="order__hint"
+            [attr.aria-live]="order.status === 'Ready' ? 'assertive' : 'polite'"
+          >
+            {{ statusHint(order.status) }}
+          </p>
+
+          <ul class="order__items">
+            @for (item of order.items; track $index) {
+              <li class="order__item">
+                <span class="tabular">{{ item.quantity }}×</span> {{ item.name }}
+              </li>
+            }
+          </ul>
+
+          <p class="order__total">
+            <span>Total a pagar al recoger</span>
+            <strong class="tabular">{{ order.total | mxnPrice }}</strong>
+          </p>
+        </li>
+      }
+    </ul>
+  }
+</main>

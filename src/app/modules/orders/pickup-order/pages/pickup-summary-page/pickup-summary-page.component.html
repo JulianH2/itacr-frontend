@@ -1,0 +1,114 @@
+<main class="pickup">
+  <header class="pickup__header">
+    <h1 class="pickup__title">Tu pedido para recoger</h1>
+    <a mat-stroked-button routerLink="/catalog">
+      <app-icon name="plus" [size]="20" />
+      Agregar productos
+    </a>
+  </header>
+
+  <div class="pickup__layout">
+    <div class="pickup__main">
+      @if (store.items().length === 0) {
+        <app-empty-state
+          icon="cart"
+          heading="Aún no hay productos"
+          description="Agrega productos desde el menú para armar tu pedido."
+        >
+          <a mat-flat-button routerLink="/catalog">Ver menú</a>
+        </app-empty-state>
+      } @else {
+        <ul class="pickup__items" aria-label="Productos de tu pedido">
+          @for (item of store.items(); track item.productId) {
+            <li class="pickup__item">
+              <span class="pickup__item-name">{{ item.name }}</span>
+              <button
+                type="button"
+                class="pickup__remove"
+                [attr.aria-label]="'Quitar ' + item.name + ' del pedido'"
+                (click)="remove(item.productId)"
+              >
+                <app-icon name="trash" />
+              </button>
+              <app-qty-stepper
+                [value]="item.quantity"
+                [min]="0"
+                [max]="maxQuantity"
+                [subject]="item.name"
+                (valueChange)="setQuantity(item.productId, $event)"
+              />
+              <span class="pickup__item-price tabular">
+                {{ item.unitPrice * item.quantity | mxnPrice }}
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <form class="pickup__side" novalidate (submit)="onSubmit($event)">
+      <h2 class="pickup__subtitle">Tus datos</h2>
+
+      <div class="field">
+        <label class="field__label" for="pickup-name">Nombre</label>
+        <input
+          id="pickup-name"
+          class="field__input"
+          type="text"
+          autocomplete="name"
+          [maxLength]="nameMaxLength"
+          [value]="store.name()"
+          [attr.aria-invalid]="store.nameError() !== null"
+          [attr.aria-describedby]="store.nameError() !== null ? 'pickup-name-error' : null"
+          (input)="onName($event)"
+        />
+        @if (store.nameError(); as message) {
+          <p id="pickup-name-error" class="field__error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="pickup-phone">Teléfono (10 dígitos)</label>
+        <input
+          id="pickup-phone"
+          class="field__input"
+          type="tel"
+          inputmode="numeric"
+          autocomplete="tel-national"
+          [maxLength]="phoneLength"
+          [value]="store.phone()"
+          [attr.aria-invalid]="store.phoneError() !== null"
+          [attr.aria-describedby]="store.phoneError() !== null ? 'pickup-phone-error' : null"
+          (input)="onPhone($event)"
+        />
+        @if (store.phoneError(); as message) {
+          <p id="pickup-phone-error" class="field__error" role="alert">{{ message }}</p>
+        }
+      </div>
+
+      <p class="pickup__note">
+        Usamos tu nombre y teléfono solo para identificar tu pedido. Pagas al recogerlo en el
+        restaurante.
+      </p>
+
+      <p class="pickup__total">
+        <span>Total</span>
+        <strong class="tabular" data-testid="pickup-total">{{ store.total() | mxnPrice }}</strong>
+      </p>
+
+      @if (store.limitError() ?? store.error(); as error) {
+        <p class="pickup__error" role="alert">{{ error }}</p>
+      }
+
+      <button
+        type="submit"
+        mat-flat-button
+        class="pickup__send"
+        data-testid="pickup-send"
+        [disabled]="!store.canSend()"
+      >
+        {{ store.isSending() ? 'Enviando…' : 'Enviar pedido' }}
+      </button>
+    </form>
+  </div>
+</main>

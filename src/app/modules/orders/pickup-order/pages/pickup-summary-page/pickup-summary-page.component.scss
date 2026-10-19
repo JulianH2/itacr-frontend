@@ -1,0 +1,194 @@
+$desktop: 900px;
+
+.pickup {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 auto;
+  max-width: var(--content-width);
+}
+
+.pickup__header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.pickup__title {
+  font: var(--mat-sys-headline-large);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.pickup__layout {
+  align-items: start;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.pickup__main {
+  min-width: 0;
+}
+
+// ---------- Items ----------
+.pickup__items {
+  display: grid;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pickup__item {
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  display: grid;
+  gap: var(--space-1) var(--space-2);
+  grid-template-columns: 1fr auto;
+  padding: var(--space-2);
+}
+
+.pickup__item-name {
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  font-weight: 600;
+}
+
+.pickup__item-price {
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  justify-self: end;
+}
+
+.pickup__remove {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  height: var(--touch-target);
+  justify-content: center;
+  justify-self: end;
+  margin: calc(var(--space-1) * -1) calc(var(--space-1) * -1) 0 0;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+  width: var(--touch-target);
+}
+
+@media (hover: hover) {
+  .pickup__remove:hover {
+    background: var(--color-error-tint);
+    color: var(--color-error);
+  }
+}
+
+// ---------- Customer data ----------
+.pickup__side {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.pickup__subtitle {
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.field {
+  display: grid;
+  gap: var(--space-half);
+}
+
+.field__label {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+}
+
+.field__input {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+
+  &:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--color-error);
+  }
+}
+
+.field__error {
+  color: var(--color-error);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.pickup__note {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.pickup__total {
+  align-items: baseline;
+  border-top: 1px solid var(--color-divider);
+  display: flex;
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  justify-content: space-between;
+  margin: 0;
+  padding-top: var(--space-2);
+
+  strong {
+    font: var(--mat-sys-display-small);
+    font-family: var(--font-family);
+  }
+}
+
+.pickup__error {
+  background: var(--color-error-tint);
+  border-radius: var(--radius-control);
+  color: var(--color-error);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+}
+
+.pickup__send {
+  width: 100%;
+}
+
+@media (min-width: $desktop) {
+  .pickup__layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+
+  .pickup__side {
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--space-3));
+  }
+}
