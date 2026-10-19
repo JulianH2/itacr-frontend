@@ -118,4 +118,68 @@ describe('OrderDraftService', () => {
     expect(service.itemCount()).toBe(0);
     expect(service.total()).toBe(0);
   });
+
+  describe('limits', () => {
+    const LIMITS = { maxQuantity: 3, maxProducts: 2 };
+
+    it('should add the product and return null when it is within the limits', () => {
+      // Act
+      const refusal = service.add(CLASSIC_BURGER, 3, LIMITS);
+
+      // Assert
+      expect(refusal).toBeNull();
+      expect(service.itemCount()).toBe(3);
+    });
+
+    it('should refuse one more unit of a product that is at the quantity limit', () => {
+      // Arrange
+      service.add(CLASSIC_BURGER, 3, LIMITS);
+
+      // Act
+      const refusal = service.add(CLASSIC_BURGER, 1, LIMITS);
+
+      // Assert
+      expect(refusal).toBe('quantity-limit');
+      expect(service.itemCount()).toBe(3);
+    });
+
+    it('should refuse a new product when the order already has the most products', () => {
+      // Arrange
+      service.add(CLASSIC_BURGER, 1, LIMITS);
+      service.add(FRIES, 1, LIMITS);
+
+      // Act
+      const refusal = service.add(
+        { productId: 'soda', name: 'Refresco', unitPrice: 29 },
+        1,
+        LIMITS,
+      );
+
+      // Assert
+      expect(refusal).toBe('products-limit');
+      expect(service.items()).toHaveLength(2);
+    });
+
+    it('should still let a product that is already in the order grow when the products limit is reached', () => {
+      // Arrange
+      service.add(CLASSIC_BURGER, 1, LIMITS);
+      service.add(FRIES, 1, LIMITS);
+
+      // Act
+      const refusal = service.add(FRIES, 1, LIMITS);
+
+      // Assert
+      expect(refusal).toBeNull();
+      expect(service.itemCount()).toBe(3);
+    });
+
+    it('should not limit anything when no limits are given', () => {
+      // Act
+      const refusal = service.add(CLASSIC_BURGER, 99);
+
+      // Assert
+      expect(refusal).toBeNull();
+      expect(service.itemCount()).toBe(99);
+    });
+  });
 });

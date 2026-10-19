@@ -19,6 +19,18 @@
             <app-icon class="action__chevron" name="chevron-right" />
           </a>
         </li>
+        @if (hasPickupOrders()) {
+          <li>
+            <a class="action" routerLink="/pickup/orders" data-testid="pickup-status">
+              <span class="action__icon"><app-icon name="clock" [size]="28" /></span>
+              <span class="action__text">
+                <span class="action__title">Ver mi pedido</span>
+                <span class="action__description">Revisa cómo va tu pedido para recoger.</span>
+              </span>
+              <app-icon class="action__chevron" name="chevron-right" />
+            </a>
+          </li>
+        }
         <li>
           <a class="action" routerLink="/login" data-testid="staff-access">
             <span class="action__icon"><app-icon name="key" [size]="28" /></span>

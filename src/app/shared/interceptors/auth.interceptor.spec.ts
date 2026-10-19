@@ -50,6 +50,31 @@ describe('authInterceptor', () => {
     backend.verify();
   });
 
+  // A public call must not depend on, or be redirected by, the session of an employee on the same phone.
+  it('should not send the token to the public endpoints even when an employee is signed in', () => {
+    // Arrange
+    session.start(loginResponse(EmployeeRole.Waiter));
+
+    // Act
+    http.get(`${environment.apiBaseUrl}/public/orders/abc`).subscribe();
+
+    // Assert
+    const request = backend.expectOne(`${environment.apiBaseUrl}/public/orders/abc`);
+    expect(request.request.headers.has('Authorization')).toBe(false);
+    request.flush({});
+  });
+
+  it('should not send the employee to the login page when a public call fails with 401', () => {
+    // Arrange
+    session.start(loginResponse(EmployeeRole.Waiter));
+
+    // Act
+    failWithUnauthorized(`${environment.apiBaseUrl}/public/orders`);
+
+    // Assert
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
   it('should send the bearer token when the request goes to the API', () => {
     // Arrange
     session.start(loginResponse(EmployeeRole.Waiter));

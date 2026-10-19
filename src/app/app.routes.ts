@@ -20,6 +20,12 @@ export const routes: Routes = [
       import('@modules/catalog/product-list/catalog.routes').then((m) => m.CATALOG_ROUTES),
   },
   {
+    // The customer's pickup flow: no guard, and its own route entry apart from the waiter's /orders.
+    path: 'pickup',
+    loadChildren: () =>
+      import('@modules/orders/pickup-order/pickup.routes').then((m) => m.PICKUP_ROUTES),
+  },
+  {
     path: 'orders',
     canActivate: [roleGuard(EmployeeRole.Waiter)],
     loadChildren: () =>
