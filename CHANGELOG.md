@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.3.0](https://github.com/JulianH2/itacr-frontend/compare/v0.2.0...v0.3.0) (2026-10-22)
+
+
+### Added
+
+* **catalog:** cap what a customer adds to the order at the pickup limits (ITACR-12) ([cca8a9c](https://github.com/JulianH2/itacr-frontend/commit/cca8a9c4f0cf8bf99380dcd7c5af81a19507e1f8))
+* **catalog:** take a customer without a session to the pickup summary (ITACR-12) ([345c742](https://github.com/JulianH2/itacr-frontend/commit/345c742e2c3c49d9edb5e37eac2bc501e74fc6a3))
+* **core:** add sprint, develop and release build environments (ITACR-41) ([a69a5a0](https://github.com/JulianH2/itacr-frontend/commit/a69a5a0d3dcd54c3df858d35ec380a609019b295))
+* **core:** add the app shell, the 404 and offline pages and the boot splash (ITACR-49) ([cc74fc8](https://github.com/JulianH2/itacr-frontend/commit/cc74fc8bcbd4e0aa31d54527b3f500dc13216b61))
+* **core:** add the qa build deployed from release (ITACR-41) ([5527f0c](https://github.com/JulianH2/itacr-frontend/commit/5527f0c223ae79234581e0af85680c685533398e))
+* **core:** keep the employee token off the public endpoints (ITACR-12) ([dfe7cf8](https://github.com/JulianH2/itacr-frontend/commit/dfe7cf852cfe4651a24609006af09ac0ecab2f22))
+* **core:** let the order draft refuse products over given limits (ITACR-12) ([effb860](https://github.com/JulianH2/itacr-frontend/commit/effb860102628eb5db0cc53ead1e1060687c5921))
+* **kitchen:** advance an order with a tap and follow it in its detail (ITACR-11) ([591051f](https://github.com/JulianH2/itacr-frontend/commit/591051f696cd02e7f122181386229e3334eeb4dc))
+* **kitchen:** advance an order with a tap on its card and undo it (ITACR-11) ([305dd4b](https://github.com/JulianH2/itacr-frontend/commit/305dd4b0606a98069d4217ba4e8f4326f36fc524))
+* **orders:** add pickup api with mock and the receipts of the device (ITACR-12) ([c15a2f3](https://github.com/JulianH2/itacr-frontend/commit/c15a2f310557585927c3514ebde919245356b9e6))
+* **orders:** add pickup order models and customer validation (ITACR-12) ([820067a](https://github.com/JulianH2/itacr-frontend/commit/820067a9c162e1034b3fde689d91f617b4ebba8a))
+* **orders:** add the order detail with its timeline and the recent orders (ITACR-11) ([ab58d6b](https://github.com/JulianH2/itacr-frontend/commit/ab58d6bf6abc35f72746ccf6a3bf242e31420bbc))
+* **orders:** add the pickup order and tracking stores (ITACR-12) ([2013cac](https://github.com/JulianH2/itacr-frontend/commit/2013cac3eb18be60ea08da3562a15fd7fbd10c4c))
+* **orders:** add the pickup summary and tracking pages with their own route (ITACR-12) ([2d95378](https://github.com/JulianH2/itacr-frontend/commit/2d953785f49d58c49c933bc837ad1fdbffe57567))
+* **orders:** offer the home a link to follow the pickup order (ITACR-12) ([c394cd1](https://github.com/JulianH2/itacr-frontend/commit/c394cd14cc011af4d40a6ede6191dc087e0b4595))
+* **orders:** pickup order flow for customers without an account (ITACR-12) ([d65d8c1](https://github.com/JulianH2/itacr-frontend/commit/d65d8c15ccd6867fb18ec2a730477e467333fca6))
+
+
+### Fixed
+
+* **orders:** accept only guid receipts and encode the id in the status url (ITACR-12) ([058ef1f](https://github.com/JulianH2/itacr-frontend/commit/058ef1ffe570f2eb5e460f57678851f2f95529c8))
+* **orders:** respect the customer limits in the pickup summary (ITACR-12) ([1482d0f](https://github.com/JulianH2/itacr-frontend/commit/1482d0ff70d3d745dc46dba4d6cb561557773774))
+
+
+### Changed
+
+* **core:** add the design system with tokens, themes and shared components (ITACR-49) ([7f65fa4](https://github.com/JulianH2/itacr-frontend/commit/7f65fa4b58264812d2e4ef54a26b4c9bc3acc2d9))
+* **core:** redesign the pwa with the mockup design system (ITACR-49) ([532aa3c](https://github.com/JulianH2/itacr-frontend/commit/532aa3caabee2576f6877bd136f7b4f857c37918))
+* **core:** replace the sprint, develop and release builds with one qa build (ITACR-41) ([294a987](https://github.com/JulianH2/itacr-frontend/commit/294a987794b18c59dbedc12d5de2934195837872))
+
+
+### Documentation
+
+* **orders:** define the public pickup flow for customers (ITACR-42) ([dc1a922](https://github.com/JulianH2/itacr-frontend/commit/dc1a922db056816dbd8aed8f5902c2002e046d44))
+* **orders:** define the public pickup flow for customers (ITACR-42) ([a654c04](https://github.com/JulianH2/itacr-frontend/commit/a654c04294ce849fe952d4a368fb079c9ac7438a))
+* **orders:** document the pickup screens and their mock (ITACR-12) ([c63765e](https://github.com/JulianH2/itacr-frontend/commit/c63765ec848475ec50f869f967f603222627b5f8))
+* **orders:** keep a list of receipts and give pickup its own route (ITACR-42) ([4673d21](https://github.com/JulianH2/itacr-frontend/commit/4673d218ca4659bf783cdc21109141e939977b04))
+* **repo:** document the design system, themes and motion rules (ITACR-49) ([81c20f6](https://github.com/JulianH2/itacr-frontend/commit/81c20f60827e2fee55508838f5d88140e80cb45c))
+* **repo:** document the kitchen taps, undo and the order detail (ITACR-11) ([fe62720](https://github.com/JulianH2/itacr-frontend/commit/fe62720073e281cf497e2a973b0ba920c7414afa))
+* **repo:** document the qa build and environment (ITACR-41) ([f0c6377](https://github.com/JulianH2/itacr-frontend/commit/f0c637741c53902477513e08fc8737169c88c4a6))
+
 ## [0.2.0](https://github.com/JulianH2/itacr-frontend/compare/v0.1.1...v0.2.0) (2026-10-09)
 
 
