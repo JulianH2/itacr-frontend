@@ -8,8 +8,11 @@ import { AUTH_API_URL } from '@shared/auth/auth-api.service';
 import { AuthService } from '@shared/auth/auth.service';
 import { SessionService } from '@shared/auth/session.service';
 
+/** Endpoints for customers without an account. They never carry the JWT of an employee who is signed in on the same phone. */
+const PUBLIC_API_URL = `${environment.apiBaseUrl}/public/`;
+
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  if (!request.url.startsWith(environment.apiBaseUrl)) {
+  if (!request.url.startsWith(environment.apiBaseUrl) || request.url.startsWith(PUBLIC_API_URL)) {
     return next(request);
   }
 

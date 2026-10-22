@@ -2,16 +2,25 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterLink } from '@angular/router';
 
+import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
+import { QtyStepperComponent } from '@shared/components/qty-stepper/qty-stepper.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { TakeOrderStore } from '../../services/take-order-store.service';
 
-/** Review of the order before it goes to the kitchen: products, total, and a table or "Para llevar". */
 @Component({
   selector: 'app-order-summary-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, RouterLink, MxnPricePipe],
+  imports: [
+    MatButtonModule,
+    RouterLink,
+    EmptyStateComponent,
+    IconComponent,
+    MxnPricePipe,
+    QtyStepperComponent,
+  ],
   templateUrl: './order-summary-page.component.html',
   styleUrl: './order-summary-page.component.scss',
 })
@@ -20,12 +29,8 @@ export class OrderSummaryPageComponent {
   private readonly draft = inject(OrderDraftService);
   private readonly router = inject(Router);
 
-  protected increase(productId: string, quantity: number): void {
-    this.draft.changeQuantity(productId, quantity + 1);
-  }
-
-  protected decrease(productId: string, quantity: number): void {
-    this.draft.changeQuantity(productId, quantity - 1);
+  protected setQuantity(productId: string, quantity: number): void {
+    this.draft.changeQuantity(productId, quantity);
   }
 
   protected remove(productId: string): void {

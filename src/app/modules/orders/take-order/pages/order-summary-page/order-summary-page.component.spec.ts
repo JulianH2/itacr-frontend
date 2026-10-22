@@ -1,7 +1,7 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
@@ -31,6 +31,8 @@ function createApi(requests: CreateOrderRequest[]): OrdersApi {
       };
       return of(order);
     },
+    getOrder: () => EMPTY,
+    getRecentOrders: () => of([]),
   };
 }
 

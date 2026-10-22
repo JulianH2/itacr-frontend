@@ -1,108 +1,160 @@
-// The app theme has no green or yellow, and the timer colors are part of the business rule of HU_04
-// (green, yellow, red), so the three timer colors are defined here instead of coming from the theme.
+// The timer colors are the business rule of HU_04 (on time, warning, late). They are drawn from the theme
+// tokens, so they stay readable in both the light and the dark palette.
 :host {
-  --kitchen-timer-ok: #2e7d32;
-  --kitchen-timer-warning: #f9a825;
-  --kitchen-timer-late: var(--mat-sys-error);
-  --kitchen-timer-text: #ffffff;
-  --kitchen-timer-warning-text: #000000;
+  --kitchen-timer-bg: var(--color-success);
+  --kitchen-timer-text: var(--color-on-success);
   display: block;
 }
 
 .order-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-subtle);
+  box-sizing: border-box;
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-sizing: border-box;
-  padding: 16px;
-  border-left: 8px solid var(--mat-sys-outline-variant);
-  border-radius: 12px;
-  background: var(--mat-sys-surface-container-high);
-  color: var(--mat-sys-on-surface);
+  gap: var(--space-1);
+  padding: var(--space-2);
+  position: relative;
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
 
-  &[data-origin='pickup'] {
-    border-left-color: var(--mat-sys-tertiary);
-  }
-
-  &[data-origin='waiter'] {
-    border-left-color: var(--mat-sys-primary);
+  &[data-level='warning'] {
+    --kitchen-timer-bg: var(--color-warning-tint);
+    --kitchen-timer-text: var(--color-warning-text);
   }
 
   &[data-level='late'] {
-    outline: 3px solid var(--kitchen-timer-late);
+    --kitchen-timer-bg: var(--color-error);
+    --kitchen-timer-text: var(--mat-sys-on-error);
+
+    border-color: var(--color-warning-text);
+    box-shadow: 0 0 0 1px var(--color-warning-text);
+  }
+
+  &:has(.order-card__tap:active:not(:disabled)) {
+    transform: scale(0.99);
   }
 }
 
 .order-card__header {
-  display: flex;
   align-items: center;
+  display: flex;
+  gap: var(--space-2);
   justify-content: space-between;
-  gap: 12px;
 }
 
-.order-card__number {
+.order-card__heading {
+  font: var(--mat-sys-headline-small);
+  font-family: var(--font-family);
   margin: 0;
-  font: var(--mat-sys-headline-large);
 }
 
 .order-card__timer {
-  padding: 4px 14px;
-  border-radius: 999px;
-  background: var(--kitchen-timer-ok);
+  align-items: center;
+  background: var(--kitchen-timer-bg);
+  border-radius: var(--radius-pill);
   color: var(--kitchen-timer-text);
-  font: var(--mat-sys-headline-medium);
-  font-variant-numeric: tabular-nums;
-
-  [data-level='warning'] & {
-    background: var(--kitchen-timer-warning);
-    color: var(--kitchen-timer-warning-text);
-  }
-
-  [data-level='late'] & {
-    background: var(--kitchen-timer-late);
-    color: var(--mat-sys-on-error);
-  }
+  display: inline-flex;
+  font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  gap: var(--space-half);
+  padding: var(--space-half) var(--space-1-5);
+  transition: background-color var(--duration-slow) var(--ease-standard);
 }
 
 .order-card__origin {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+  letter-spacing: 0.04em;
   margin: 0;
-  font: var(--mat-sys-title-large);
-  font-weight: 700;
-  color: var(--mat-sys-on-surface);
+  text-transform: uppercase;
 }
 
 .order-card__late {
   margin: 0;
-  color: var(--kitchen-timer-late);
-  font: var(--mat-sys-title-medium);
-  font-weight: 700;
-  text-transform: uppercase;
 }
 
 .order-card__items,
 .order-card__details {
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 
 .order-card__items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-1);
 }
 
 .order-card__item {
   font: var(--mat-sys-title-large);
+  font-family: var(--font-family);
+  font-weight: 500;
 }
 
 .order-card__quantity {
-  margin-right: 6px;
-  font-weight: 700;
+  margin-right: var(--space-half);
 }
 
 .order-card__details {
-  margin-left: 40px;
-  color: var(--mat-sys-on-surface-variant);
+  color: var(--color-text-secondary);
   font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  margin-left: var(--space-5);
+}
+
+// The card is the button: this label shows what a tap will do, styled like the mockup's "Avanzar".
+.order-card__hint {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  gap: var(--space-half);
+  justify-self: end;
+  margin: 0;
+}
+
+.order-card__hint--action {
+  background: var(--color-primary);
+  border-radius: var(--radius-control);
+  color: var(--color-on-primary);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+}
+
+.order-card[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.order-card__tap {
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+  inset: 0;
+  padding: 0;
+  position: absolute;
+
+  &:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  &:disabled {
+    cursor: progress;
+  }
+}
+
+@media (hover: hover) {
+  .order-card:has(.order-card__tap:hover:not(:disabled)) .order-card__hint--action {
+    background: var(--color-primary-hover);
+  }
 }

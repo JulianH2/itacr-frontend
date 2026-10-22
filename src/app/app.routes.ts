@@ -20,6 +20,12 @@ export const routes: Routes = [
       import('@modules/catalog/product-list/catalog.routes').then((m) => m.CATALOG_ROUTES),
   },
   {
+    // The customer's pickup flow: no guard, and its own route entry apart from the waiter's /orders.
+    path: 'pickup',
+    loadChildren: () =>
+      import('@modules/orders/pickup-order/pickup.routes').then((m) => m.PICKUP_ROUTES),
+  },
+  {
     path: 'orders',
     canActivate: [roleGuard(EmployeeRole.Waiter)],
     loadChildren: () =>
@@ -42,5 +48,16 @@ export const routes: Routes = [
     loadChildren: () =>
       import('@modules/manager/dashboard-page/manager.routes').then((m) => m.MANAGER_ROUTES),
   },
-  { path: '**', redirectTo: '' },
+  {
+    path: 'offline',
+    loadChildren: () => import('@modules/system/system.routes').then((m) => m.SYSTEM_ROUTES),
+  },
+  {
+    path: '**',
+    title: 'Página no encontrada | ITACR',
+    loadComponent: () =>
+      import('@modules/system/not-found/not-found-page.component').then(
+        (m) => m.NotFoundPageComponent,
+      ),
+  },
 ];

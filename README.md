@@ -90,6 +90,7 @@ itacr-frontend/
 │   ├── environments/         # Build-time configuration (API URL, SignalR hub URL, VAPID key)
 │   ├── index.html
 │   ├── index.production.html # index.html plus the production CSP
+│   ├── index.qa.html         # index.html plus the QA CSP
 │   └── styles.scss           # Angular Material theme and global styles
 ├── ngsw-config.json          # Service worker caching strategies
 ├── release-please-config.json # Release automation (with .release-please-manifest.json)
@@ -101,10 +102,11 @@ itacr-frontend/
 
 Angular bundles its configuration at build time from `src/environments/`:
 
-| File                                          | Used by                 |
-| --------------------------------------------- | ----------------------- |
-| `src/environments/environment.development.ts` | `ng serve`, `ng test`   |
-| `src/environments/environment.ts`             | `ng build` (production) |
+| File                                          | Used by                                                         |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| `src/environments/environment.development.ts` | `ng serve`, `ng test`                                           |
+| `src/environments/environment.ts`             | `npm run build` (production, deployed from `main`)              |
+| `src/environments/environment.qa.ts`          | `npm run build:qa` (QA, deployed from `release`; see [QA](#qa)) |
 
 The keys are defined by the `AppEnvironment` interface and documented in [.env.example](.env.example). Everything in these files is public once built, so **never put secrets in them**.
 
@@ -112,7 +114,11 @@ The keys are defined by the `AppEnvironment` interface and documented in [.env.e
 
 While an endpoint does not exist in itacr-backend yet, `useMockApi: true` in `environment.development.ts` makes `src/app/shared/mocks/mock-auth.interceptor.ts` answer the auth calls with test data that follows the API contract. Set it to `false` to call the real backend. Production builds never use it.
 
+The pickup flow of a customer (`/pickup`) also has its own mock, `MockPickupApiService`: it validates nothing the browser did not already check, refuses a third active order of the same phone with a `409`, and moves each order one step every 12 seconds (Recibido, En preparación, Listo, Entregado) so the whole flow can be seen without a kitchen. Open `/catalog` without signing in, add products, and the cart leads to `/pickup/summary`.
+
 The kitchen board (`/kitchen`) has its own mock, `MockKitchenApiService`, chosen by the same flag: it returns orders of different ages so the three timer colors show up, and adds a new order every few polls to hear the alert. With the flag on, log in as Cocina or Gerente and open `/kitchen`. The real board calls `GET /kitchen/queue` every 5 seconds and the service worker never caches it.
+
+A tap on a card moves the order one step (`POST /orders/{id}/status`): the card changes column at once and goes back with a message if the API refuses. For 6 seconds the board offers **Deshacer** (`POST /orders/{id}/status/undo`); the API accepts it for 15. The waiter sees the change in the order detail (`/orders/detail/:id`, `GET /orders/{id}`, refreshed every 10 seconds), opened from the confirmation or from **Últimos pedidos** on the dashboard (`GET /orders/recent`). The mock kitchen remembers the taps, but the mock orders of the waiter stay in New, because the two mocks do not share data.
 
 The simulated employees are the same as the Development test employees seeded by itacr-backend (`docs/database.md`), so the same logins work with both. Every employee's password is `Itacr2026!`, and 5 wrong PINs lock that employee for 15 minutes.
 
@@ -150,7 +156,20 @@ pm2 serve /home/site/wwwroot --no-daemon --spa
 
 - Azure generates the domains with a unique suffix; they are shown in each App Service > Overview > **Default domain**. `src/environments/environment.ts` uses the backend one for `apiBaseUrl` and `kitchenHubUrl`.
 - The backend only accepts this frontend if its domain is in the backend `Cors__Origins__0` setting (itacr-backend README, "Production settings").
-- **Content Security Policy:** `pm2 serve` cannot send HTTP headers, so the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep both index files in sync**, and add any new external origin (API, fonts, images) to the CSP. A `<meta>` CSP cannot set `frame-ancestors`.
+- **Content Security Policy:** `pm2 serve` cannot send HTTP headers, so the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs. A `<meta>` CSP cannot set `frame-ancestors`.
+
+### QA
+
+`release` deploys to its own environment, created in ITACR-43, so a sprint is tested before it reaches production:
+
+| URL      | Value                                                   |
+| -------- | ------------------------------------------------------- |
+| Frontend | `https://app-itacr-frontend-qa.azurewebsites.net`       |
+| API      | `https://app-itacr-backend-qa.azurewebsites.net/api/v1` |
+
+- `npm run build:qa` runs `ng build --configuration production,qa`: the production settings plus `environment.qa.ts` and `index.qa.html`, whose CSP allows the QA API instead of the production one.
+- The QA database has the four test employees of the table above, so the same logins work there.
+- `.github/workflows/deploy.yml` deploys `main` to `app-itacr-frontend-prod` with `AZURE_FRONTEND_PUBLISH_PROFILE` and `release` to `app-itacr-frontend-qa` with `AZURE_FRONTEND_QA_PUBLISH_PROFILE`. From any other branch it does nothing.
 
 ## Branching model
 

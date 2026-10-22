@@ -36,4 +36,25 @@ describe('HttpKitchenApiService', () => {
     request.flush(queue);
     expect(received).toEqual(queue);
   });
+
+  it('should post the next status of an order to its status path', () => {
+    // Act
+    service.changeStatus('order-1', 'InPreparation').subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/order-1/status`);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ status: 'InPreparation' });
+    request.flush({});
+  });
+
+  it('should post the undo of an order to its undo path', () => {
+    // Act
+    service.undoStatusChange('order-1').subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/order-1/status/undo`);
+    expect(request.request.method).toBe('POST');
+    request.flush({});
+  });
 });

@@ -2,9 +2,6 @@
   <header class="catalog__header">
     <h1 class="catalog__title">Menú</h1>
     <app-order-counter [count]="itemCount()" />
-    @if (isWaiter() && itemCount() > 0) {
-      <a mat-flat-button routerLink="/orders/summary" class="catalog__review">Ver pedido</a>
-    }
   </header>
 
   @if (store.hasCategoriesError()) {
@@ -37,11 +34,28 @@
     } @else {
       <ul class="catalog__grid">
         @for (product of store.products(); track product.id) {
-          <li>
+          <li class="catalog__item">
             <app-product-card [product]="product" (addRequested)="addToOrder($event)" />
           </li>
         }
       </ul>
+    }
+  }
+
+  @if (cartLink(); as cartLink) {
+    @if (itemCount() > 0) {
+      <a class="catalog__cart" [routerLink]="cartLink">
+        <span class="catalog__cart-icon">
+          <app-icon name="cart" [size]="24" />
+          <span class="catalog__cart-count tabular" aria-hidden="true">{{ itemCount() }}</span>
+        </span>
+        <span class="catalog__cart-label">
+          <span class="sr-only">Ver pedido: </span>{{ itemCount() }}
+          {{ itemCount() === 1 ? 'producto' : 'productos' }}
+        </span>
+        <span class="catalog__cart-total tabular">{{ total() | mxnPrice }}</span>
+        <app-icon name="chevron-right" [size]="20" />
+      </a>
     }
   }
 </main>

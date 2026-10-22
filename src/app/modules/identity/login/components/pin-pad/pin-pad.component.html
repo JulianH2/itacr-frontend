@@ -12,7 +12,6 @@
 <div class="pin-pad__keys">
   @for (digit of digits; track digit) {
     <button
-      mat-stroked-button
       type="button"
       class="pin-pad__key"
       [attr.data-testid]="'pin-key-' + digit"
@@ -24,7 +23,6 @@
   }
   <span class="pin-pad__spacer"></span>
   <button
-    mat-stroked-button
     type="button"
     class="pin-pad__key"
     data-testid="pin-key-0"
@@ -34,7 +32,6 @@
     0
   </button>
   <button
-    mat-icon-button
     type="button"
     class="pin-pad__key"
     aria-label="Borrar el último dígito"
@@ -42,6 +39,6 @@
     [disabled]="disabled()"
     (click)="removeLast()"
   >
-    <mat-icon>backspace</mat-icon>
+    <app-icon name="arrow-left" [size]="24" />
   </button>
 </div>

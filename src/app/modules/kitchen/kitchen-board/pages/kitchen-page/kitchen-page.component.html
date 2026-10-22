@@ -1,7 +1,11 @@
 <main class="kitchen">
   <header class="kitchen__header">
-    <h1 class="kitchen__title">Vista de Cocina</h1>
+    <h1 class="kitchen__title">
+      <span class="kitchen__title-icon"><app-icon name="kitchen" [size]="24" /></span>
+      Vista de Cocina
+    </h1>
     <div class="kitchen__tools">
+      <time class="kitchen__clock tabular">{{ clock() }}</time>
       @if (store.isOutdated()) {
         <p class="kitchen__outdated" role="status">
           Sin conexión. Mostrando la última actualización.
@@ -33,19 +37,40 @@
         [orders]="store.newOrders()"
         [now]="store.now()"
         [thresholds]="store.thresholds"
+        [busyIds]="store.busyIds()"
+        (advance)="store.advance($event)"
       />
       <app-kitchen-column
         title="En preparación"
         [orders]="store.inPreparationOrders()"
         [now]="store.now()"
         [thresholds]="store.thresholds"
+        [busyIds]="store.busyIds()"
+        (advance)="store.advance($event)"
       />
       <app-kitchen-column
         title="Listos"
         [orders]="store.readyOrders()"
         [now]="store.now()"
         [thresholds]="store.thresholds"
+        [busyIds]="store.busyIds()"
+        (advance)="store.advance($event)"
       />
     </div>
   }
+
+  @if (store.actionError(); as message) {
+    <p class="kitchen__action-error" role="alert">{{ message }}</p>
+  }
+
+  <div class="kitchen__undo-region" aria-live="polite">
+    @if (store.undoOffer(); as change) {
+      <div class="kitchen__undo">
+        <p class="kitchen__undo-text">
+          Pedido #{{ change.orderNumber }} pasó a {{ statusLabel(change.to) }}
+        </p>
+        <button type="button" class="kitchen__button" (click)="store.undo()">Deshacer</button>
+      </div>
+    }
+  </div>
 </main>

@@ -1,10 +1,16 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { type Observable, of, throwError } from 'rxjs';
+import { EMPTY, type Observable, of, throwError } from 'rxjs';
 
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
-import type { CreateOrderRequest, DiningTable, PlacedOrder } from '../models/take-order.models';
+import type {
+  CreateOrderRequest,
+  DiningTable,
+  OrderDetail,
+  PlacedOrder,
+  RecentOrder,
+} from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
 import { ORDERS_API, type OrdersApi } from './orders-api';
 import { TakeOrderStore } from './take-order-store.service';
@@ -39,6 +45,14 @@ class FakeOrdersApi implements OrdersApi {
     const error = this.nextError;
     this.nextError = null;
     return error === null ? of(placedOrder(request)) : throwError(() => error);
+  }
+
+  getOrder(): Observable<OrderDetail> {
+    return EMPTY;
+  }
+
+  getRecentOrders(): Observable<readonly RecentOrder[]> {
+    return of([]);
   }
 }
 
