@@ -57,7 +57,7 @@ export class MockOrdersApiService implements OrdersApi {
       channel: request.takeAway ? 'TakeAway' : 'DineIn',
       tableNumber: MOCK_TABLES.find((table) => table.id === request.tableId)?.number ?? null,
       total: MOCK_UNIT_PRICE,
-      createdAt: request.createdAt,
+      createdAt: request.createdAt ?? new Date().toISOString(),
       items,
     };
     this.orders.set(request.clientOrderId, order);

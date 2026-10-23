@@ -5,7 +5,12 @@ import { firstValueFrom, tap, timeout } from 'rxjs';
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
-import type { CreateOrderRequest, DiningTable, PlacedOrder } from '../models/take-order.models';
+import type {
+  CreateOrderRequest,
+  DiningTable,
+  PlacedOrder,
+  QueuedOrderRequest,
+} from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
 import {
   OfflineOrdersService,
@@ -105,11 +110,12 @@ export class TakeOrderStore {
     }
 
     const request = this.buildRequest();
+    const sentAt = new Date().toISOString();
     this.sendingState.set(true);
     this.errorState.set(null);
     try {
       if (!this.connection.online()) {
-        return await this.queue(request);
+        return await this.queue({ ...request, createdAt: sentAt });
       }
       const order = await firstValueFrom(
         this.api.createOrder(request).pipe(timeout(SEND_TIMEOUT_MS)),
@@ -120,7 +126,7 @@ export class TakeOrderStore {
       return true;
     } catch (error: unknown) {
       if (isNetworkError(error)) {
-        return await this.queue(request);
+        return await this.queue({ ...request, createdAt: sentAt });
       }
       this.errorState.set(orderErrorMessage(error));
       return false;
@@ -138,7 +144,7 @@ export class TakeOrderStore {
   }
 
   /** Saves the order on the device; the queue sends it with the same `clientOrderId` when the connection is back. */
-  private async queue(request: CreateOrderRequest): Promise<boolean> {
+  private async queue(request: QueuedOrderRequest): Promise<boolean> {
     const summary: QueuedOrder = {
       tableNumber: this.tables().find((table) => table.id === request.tableId)?.number ?? null,
       itemCount: this.draft.itemCount(),
@@ -169,11 +175,7 @@ export class TakeOrderStore {
     if (this.pending?.content !== key) {
       this.pending = { content: key, clientOrderId: crypto.randomUUID() };
     }
-    return {
-      clientOrderId: this.pending.clientOrderId,
-      ...content,
-      createdAt: new Date().toISOString(),
-    };
+    return { clientOrderId: this.pending.clientOrderId, ...content };
   }
 
   private resetOrder(): void {

@@ -11,6 +11,7 @@ import type {
   DiningTable,
   OrderDetail,
   PlacedOrder,
+  QueuedOrderRequest,
   RecentOrder,
 } from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
@@ -60,10 +61,10 @@ class FakeOrdersApi implements OrdersApi {
 }
 
 class FakeOfflineOrders {
-  readonly queued: { request: CreateOrderRequest; summary: PendingOrderSummary }[] = [];
+  readonly queued: { request: QueuedOrderRequest; summary: PendingOrderSummary }[] = [];
   failToSave = false;
 
-  enqueue(request: CreateOrderRequest, summary: PendingOrderSummary): Promise<void> {
+  enqueue(request: QueuedOrderRequest, summary: PendingOrderSummary): Promise<void> {
     if (this.failToSave) {
       return Promise.reject(new Error('QuotaExceededError'));
     }
@@ -141,7 +142,6 @@ describe('TakeOrderStore', () => {
         tableId: TABLE_FIVE.id,
         takeAway: false,
         items: [{ productId: 'burger', quantity: 2 }],
-        createdAt: expect.any(String),
       },
     ]);
     expect(store.sentOrder()?.tableNumber).toBe(5);
@@ -217,6 +217,22 @@ describe('TakeOrderStore', () => {
     expect(draft.itemCount()).toBe(0);
   });
 
+  // A device clock ahead of the server must not block online orders: the server uses its own time.
+  it('should leave the device time out of an order sent with a connection', async () => {
+    // Arrange
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2030-01-01T00:00:00.000Z'));
+    draft.add(BURGER);
+    store.setTakeAway(true);
+
+    // Act
+    await store.send();
+    vi.useRealTimers();
+
+    // Assert
+    expect(api.requests[0]).not.toHaveProperty('createdAt');
+  });
+
   // A Wi-Fi without internet reports online; the request fails and the order is saved the same way.
   it('should save the order with the same clientOrderId when the network fails while sending', async () => {
     // Arrange
@@ -230,6 +246,8 @@ describe('TakeOrderStore', () => {
     // Assert
     expect(sent).toBe(true);
     expect(offline.queued[0]?.request.clientOrderId).toBe(api.requests[0]?.clientOrderId);
+    expect(api.requests[0]).not.toHaveProperty('createdAt');
+    expect(Date.parse(offline.queued[0]?.request.createdAt ?? '')).not.toBeNaN();
     expect(store.queuedOrder()).toEqual({ tableNumber: null, itemCount: 1, total: 79 });
     expect(store.error()).toBeNull();
   });

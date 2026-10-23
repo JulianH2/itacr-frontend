@@ -6,7 +6,7 @@ import { SessionService } from '@shared/auth/session.service';
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
 import { ToastService } from '@shared/services/toast.service';
 
-import type { CreateOrderRequest, PendingOrder } from '../models/take-order.models';
+import type { PendingOrder, QueuedOrderRequest } from '../models/take-order.models';
 import { orderErrorMessage } from './order-error-message';
 import { ORDERS_API } from './orders-api';
 import { PENDING_ORDERS_STORAGE } from './pending-orders-storage';
@@ -74,7 +74,7 @@ export class OfflineOrdersService {
   }
 
   /** Saves the order on the device. Throws when the device cannot store it, so the waiter is not told it is safe. */
-  async enqueue(request: CreateOrderRequest, summary: PendingOrderSummary): Promise<void> {
+  async enqueue(request: QueuedOrderRequest, summary: PendingOrderSummary): Promise<void> {
     const employeeId = this.session.employee()?.id;
     if (employeeId === undefined) {
       throw new Error('A pending order needs a signed-in waiter');

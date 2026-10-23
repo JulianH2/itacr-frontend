@@ -16,6 +16,7 @@ import type {
   OrderDetail,
   PendingOrder,
   PlacedOrder,
+  QueuedOrderRequest,
   RecentOrder,
 } from '../models/take-order.models';
 import { OfflineOrdersService, type PendingOrderSummary } from './offline-orders.service';
@@ -24,7 +25,7 @@ import { MemoryPendingOrdersStorage, PENDING_ORDERS_STORAGE } from './pending-or
 
 const SUMMARY: PendingOrderSummary = { tableNumber: 5, itemCount: 1, total: 79 };
 
-function request(clientOrderId: string, createdAt: string): CreateOrderRequest {
+function request(clientOrderId: string, createdAt: string): QueuedOrderRequest {
   return {
     clientOrderId,
     tableId: 'table-5',
@@ -54,7 +55,7 @@ class FakeOrdersApi implements OrdersApi {
           channel: 'DineIn',
           tableNumber: 5,
           total: 79,
-          createdAt: order.createdAt,
+          createdAt: order.createdAt ?? '2026-10-22T18:00:00.000Z',
           items: [],
         })
       : throwError(() => error);
