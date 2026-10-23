@@ -15,6 +15,24 @@ export interface CreateOrderRequest {
   readonly tableId: string | null;
   readonly takeAway: boolean;
   readonly items: readonly CreateOrderItem[];
+  /** When the waiter sent it on the device. An order that waited offline keeps it, so the kitchen sees it in its place. */
+  readonly createdAt: string;
+}
+
+/** `pending` waits for the connection; `failed` was rejected by the API and only the waiter can discard it. */
+export type PendingOrderState = 'pending' | 'failed';
+
+/** An order saved on the device because it could not reach the API. It is not in the kitchen yet. */
+export interface PendingOrder {
+  readonly clientOrderId: string;
+  /** Only this waiter's session sends it, so another waiter on the same device never sends it as theirs. */
+  readonly employeeId: string;
+  readonly request: CreateOrderRequest;
+  readonly tableNumber: number | null;
+  readonly itemCount: number;
+  readonly total: number;
+  readonly state: PendingOrderState;
+  readonly error: string | null;
 }
 
 export type OrderChannel = 'DineIn' | 'TakeAway' | 'MobileApp';

@@ -1,12 +1,18 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { firstValueFrom, tap } from 'rxjs';
+import { firstValueFrom, tap, timeout } from 'rxjs';
 
+import { ConnectionStatusService } from '@shared/services/connection-status.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type { CreateOrderRequest, DiningTable, PlacedOrder } from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
+import {
+  OfflineOrdersService,
+  SEND_TIMEOUT_MS,
+  type PendingOrderSummary,
+} from './offline-orders.service';
+import { isNetworkError, orderErrorMessage } from './order-error-message';
 import { ORDERS_API } from './orders-api';
 
 const NO_TABLES: readonly DiningTable[] = [];
@@ -16,6 +22,9 @@ interface PendingOrder {
   readonly content: string;
   readonly clientOrderId: string;
 }
+
+/** An order saved on the device because there was no connection (HU_07 CA1). */
+export type QueuedOrder = PendingOrderSummary;
 
 /**
  * The order the waiter is about to send: its destination (a table or to take away), the send itself, and the
@@ -27,12 +36,15 @@ interface PendingOrder {
 export class TakeOrderStore {
   private readonly api = inject(ORDERS_API);
   private readonly draft = inject(OrderDraftService);
+  private readonly connection = inject(ConnectionStatusService);
+  private readonly offlineOrders = inject(OfflineOrdersService);
 
   private readonly tableIdState = signal<string | null>(null);
   private readonly takeAwayState = signal(false);
   private readonly sendingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly sentOrderState = signal<PlacedOrder | null>(null);
+  private readonly queuedOrderState = signal<QueuedOrder | null>(null);
   private pending: PendingOrder | null = null;
 
   private readonly tablesResource = rxResource({
@@ -55,6 +67,7 @@ export class TakeOrderStore {
   readonly isSending = this.sendingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly sentOrder = this.sentOrderState.asReadonly();
+  readonly queuedOrder = this.queuedOrderState.asReadonly();
 
   /** An order without products cannot be sent (HU_03 CA3). */
   readonly canSend = computed(() => this.draft.itemCount() > 0 && !this.sendingState());
@@ -78,8 +91,9 @@ export class TakeOrderStore {
   }
 
   /**
-   * Sends the order to the kitchen. Returns true when the API saved it (or already had it); then the draft is
-   * empty and {@link sentOrder} holds the confirmation.
+   * Sends the order to the kitchen. Returns true when the API saved it (or already had it), with the confirmation in
+   * {@link sentOrder}, or when there is no connection and the order was saved on the device, in {@link queuedOrder}.
+   * Either way the draft is empty.
    */
   async send(): Promise<boolean> {
     if (!this.canSend()) {
@@ -94,12 +108,21 @@ export class TakeOrderStore {
     this.sendingState.set(true);
     this.errorState.set(null);
     try {
-      const order = await firstValueFrom(this.api.createOrder(request));
+      if (!this.connection.online()) {
+        return await this.queue(request);
+      }
+      const order = await firstValueFrom(
+        this.api.createOrder(request).pipe(timeout(SEND_TIMEOUT_MS)),
+      );
       this.sentOrderState.set(order);
+      this.queuedOrderState.set(null);
       this.resetOrder();
       return true;
     } catch (error: unknown) {
-      this.errorState.set(errorMessage(error));
+      if (isNetworkError(error)) {
+        return await this.queue(request);
+      }
+      this.errorState.set(orderErrorMessage(error));
       return false;
     } finally {
       this.sendingState.set(false);
@@ -110,7 +133,28 @@ export class TakeOrderStore {
   startNewOrder(): void {
     this.resetOrder();
     this.sentOrderState.set(null);
+    this.queuedOrderState.set(null);
     this.errorState.set(null);
+  }
+
+  /** Saves the order on the device; the queue sends it with the same `clientOrderId` when the connection is back. */
+  private async queue(request: CreateOrderRequest): Promise<boolean> {
+    const summary: QueuedOrder = {
+      tableNumber: this.tables().find((table) => table.id === request.tableId)?.number ?? null,
+      itemCount: this.draft.itemCount(),
+      total: this.draft.total(),
+    };
+    try {
+      await this.offlineOrders.enqueue(request, summary);
+    } catch (error: unknown) {
+      console.error('Failed to save the order on the device', error);
+      this.errorState.set(TAKE_ORDER_MESSAGES.notSaved);
+      return false;
+    }
+    this.queuedOrderState.set(summary);
+    this.sentOrderState.set(null);
+    this.resetOrder();
+    return true;
   }
 
   private buildRequest(): CreateOrderRequest {
@@ -125,7 +169,11 @@ export class TakeOrderStore {
     if (this.pending?.content !== key) {
       this.pending = { content: key, clientOrderId: crypto.randomUUID() };
     }
-    return { clientOrderId: this.pending.clientOrderId, ...content };
+    return {
+      clientOrderId: this.pending.clientOrderId,
+      ...content,
+      createdAt: new Date().toISOString(),
+    };
   }
 
   private resetOrder(): void {
@@ -134,31 +182,4 @@ export class TakeOrderStore {
     this.takeAwayState.set(false);
     this.pending = null;
   }
-}
-
-function errorMessage(error: unknown): string {
-  if (!(error instanceof HttpErrorResponse)) {
-    return TAKE_ORDER_MESSAGES.unexpected;
-  }
-  if (error.status === 0) {
-    return TAKE_ORDER_MESSAGES.network;
-  }
-  return problemMessage(error.error) ?? TAKE_ORDER_MESSAGES.unexpected;
-}
-
-/** The first validation message of a Problem Details body, or its `detail`. */
-function problemMessage(body: unknown): string | null {
-  if (typeof body !== 'object' || body === null) {
-    return null;
-  }
-  const problem = body as Record<string, unknown>;
-  const errors = problem['errors'];
-  if (typeof errors === 'object' && errors !== null) {
-    for (const messages of Object.values(errors as Record<string, unknown>)) {
-      if (Array.isArray(messages) && typeof messages[0] === 'string') {
-        return messages[0];
-      }
-    }
-  }
-  return typeof problem['detail'] === 'string' ? problem['detail'] : null;
 }

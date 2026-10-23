@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { EMPTY, type Observable, of, throwError } from 'rxjs';
 
+import { ConnectionStatusService } from '@shared/services/connection-status.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type {
@@ -12,6 +14,7 @@ import type {
   RecentOrder,
 } from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
+import { OfflineOrdersService, type PendingOrderSummary } from './offline-orders.service';
 import { ORDERS_API, type OrdersApi } from './orders-api';
 import { TakeOrderStore } from './take-order-store.service';
 
@@ -56,15 +59,37 @@ class FakeOrdersApi implements OrdersApi {
   }
 }
 
+class FakeOfflineOrders {
+  readonly queued: { request: CreateOrderRequest; summary: PendingOrderSummary }[] = [];
+  failToSave = false;
+
+  enqueue(request: CreateOrderRequest, summary: PendingOrderSummary): Promise<void> {
+    if (this.failToSave) {
+      return Promise.reject(new Error('QuotaExceededError'));
+    }
+    this.queued.push({ request, summary });
+    return Promise.resolve();
+  }
+}
+
 describe('TakeOrderStore', () => {
   let api: FakeOrdersApi;
+  let offline: FakeOfflineOrders;
+  let online: ReturnType<typeof signal<boolean>>;
   let store: TakeOrderStore;
   let draft: OrderDraftService;
 
   beforeEach(() => {
     api = new FakeOrdersApi();
+    offline = new FakeOfflineOrders();
+    online = signal(true);
     TestBed.configureTestingModule({
-      providers: [TakeOrderStore, { provide: ORDERS_API, useValue: api }],
+      providers: [
+        TakeOrderStore,
+        { provide: ORDERS_API, useValue: api },
+        { provide: OfflineOrdersService, useValue: offline },
+        { provide: ConnectionStatusService, useValue: { online } },
+      ],
     });
     store = TestBed.inject(TakeOrderStore);
     draft = TestBed.inject(OrderDraftService);
@@ -116,6 +141,7 @@ describe('TakeOrderStore', () => {
         tableId: TABLE_FIVE.id,
         takeAway: false,
         items: [{ productId: 'burger', quantity: 2 }],
+        createdAt: expect.any(String),
       },
     ]);
     expect(store.sentOrder()?.tableNumber).toBe(5);
@@ -141,7 +167,7 @@ describe('TakeOrderStore', () => {
     // Arrange
     draft.add(BURGER);
     store.selectTable(TABLE_FIVE.id);
-    api.nextError = new HttpErrorResponse({ status: 0 });
+    api.nextError = new HttpErrorResponse({ status: 500 });
     await store.send();
 
     // Act
@@ -157,7 +183,7 @@ describe('TakeOrderStore', () => {
     // Arrange
     draft.add(BURGER);
     store.selectTable(TABLE_FIVE.id);
-    api.nextError = new HttpErrorResponse({ status: 0 });
+    api.nextError = new HttpErrorResponse({ status: 500 });
     await store.send();
 
     // Act
@@ -168,7 +194,31 @@ describe('TakeOrderStore', () => {
     expect(api.requests[1]?.clientOrderId).not.toBe(api.requests[0]?.clientOrderId);
   });
 
-  it('should show the connection message and keep the order when the network fails', async () => {
+  // HU_07 CA1
+  it('should save the order on the device without calling the API when there is no connection', async () => {
+    // Arrange
+    store.tables();
+    TestBed.tick();
+    draft.add(BURGER, 2);
+    store.selectTable(TABLE_FIVE.id);
+    online.set(false);
+
+    // Act
+    const sent = await store.send();
+
+    // Assert
+    expect(sent).toBe(true);
+    expect(api.requests).toHaveLength(0);
+    expect(offline.queued).toHaveLength(1);
+    expect(offline.queued[0]?.request).toMatchObject({ tableId: TABLE_FIVE.id, takeAway: false });
+    expect(Date.parse(offline.queued[0]?.request.createdAt ?? '')).not.toBeNaN();
+    expect(store.queuedOrder()).toEqual({ tableNumber: 5, itemCount: 2, total: 158 });
+    expect(store.sentOrder()).toBeNull();
+    expect(draft.itemCount()).toBe(0);
+  });
+
+  // A Wi-Fi without internet reports online; the request fails and the order is saved the same way.
+  it('should save the order with the same clientOrderId when the network fails while sending', async () => {
     // Arrange
     draft.add(BURGER);
     store.setTakeAway(true);
@@ -178,10 +228,28 @@ describe('TakeOrderStore', () => {
     const sent = await store.send();
 
     // Assert
+    expect(sent).toBe(true);
+    expect(offline.queued[0]?.request.clientOrderId).toBe(api.requests[0]?.clientOrderId);
+    expect(store.queuedOrder()).toEqual({ tableNumber: null, itemCount: 1, total: 79 });
+    expect(store.error()).toBeNull();
+  });
+
+  it('should keep the order and say so when the device cannot save it', async () => {
+    // Arrange
+    draft.add(BURGER);
+    store.setTakeAway(true);
+    online.set(false);
+    offline.failToSave = true;
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    // Act
+    const sent = await store.send();
+
+    // Assert
     expect(sent).toBe(false);
-    expect(store.error()).toBe(TAKE_ORDER_MESSAGES.network);
+    expect(store.error()).toBe(TAKE_ORDER_MESSAGES.notSaved);
+    expect(store.queuedOrder()).toBeNull();
     expect(draft.itemCount()).toBe(1);
-    expect(store.takeAway()).toBe(true);
   });
 
   it('should show the first validation message of the API when it rejects the order', async () => {

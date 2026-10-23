@@ -1,12 +1,11 @@
 import { Routes } from '@angular/router';
 
-import { provideOrdersApi } from './orders.config';
 import { TakeOrderStore } from './services/take-order-store.service';
 
 export const ORDERS_ROUTES: Routes = [
   {
     path: '',
-    providers: [provideOrdersApi(), TakeOrderStore],
+    providers: [TakeOrderStore],
     children: [
       {
         path: '',
