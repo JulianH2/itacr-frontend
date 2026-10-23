@@ -139,6 +139,15 @@ Service worker caching (`ngsw-config.json`):
 
 In production the API is on another domain, so only the data groups that list the full `azurewebsites.net` URL apply there.
 
+## Product photos
+
+The 18 photos of the menu live in `public/assets/images/products/`, one per seeded product, named after it without accents and in kebab case (`combo-clasico.webp`, `refresco-de-lima-limon.webp`). They match the `ImageUrl` of the products in `database/` of itacr-backend (`/assets/images/products/<name>.webp`).
+
+- **Format:** WebP, cropped to 4:3 and resized to 800 × 600 pixels, **under 100 KB each**. To replace one, keep the name and the size.
+- **Offline:** the service worker prefetches `/assets/images/products/**` (`ngsw-config.json`), so the photos work without a connection after the first visit.
+- **Credits:** every photo comes from Wikimedia Commons under a license that allows its use here. The author, source, and license of each one are in [CREDITS.md](public/assets/images/products/CREDITS.md), which is also served with the app.
+- With `useMockApi: true` the mock catalog uses the same files.
+
 ## Production
 
 The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, with the startup command:
