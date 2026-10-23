@@ -13,9 +13,11 @@ import {
   type TableStatus,
 } from '@shared/components/table-card/table-card.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import { ConnectionStatusService } from '@shared/services/connection-status.service';
 
 import { destinationLabel, formatTime, orderStatusLabel } from '../../models/order-status';
 import { ORDER_STATUS_TONES } from '../../models/order-status-tone';
+import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
 
@@ -31,7 +33,10 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
   month: 'short',
 });
 
-/** The waiter's home: start an order, go back to the one in progress, or open one sent recently. */
+/**
+ * The waiter's home: start an order, go back to the one in progress, or open one sent recently. It always shows the
+ * connection and how many orders are waiting to reach the kitchen (HU_07).
+ */
 @Component({
   selector: 'app-waiter-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -52,6 +57,31 @@ export class WaiterDashboardPageComponent {
   protected readonly store = inject(TakeOrderStore);
   private readonly session = inject(SessionService);
   private readonly api = inject(ORDERS_API);
+  private readonly offlineOrders = inject(OfflineOrdersService);
+
+  protected readonly online = inject(ConnectionStatusService).online;
+  protected readonly syncText = computed(() => {
+    const pending = this.offlineOrders.pendingCount();
+    if (pending === 1) {
+      return '1 pedido pendiente de sincronizar';
+    }
+    if (pending > 1) {
+      return `${pending} pedidos pendientes de sincronizar`;
+    }
+    return this.offlineOrders.orders().length > 0
+      ? 'Revisa los pedidos que no se pudieron enviar'
+      : 'Todos tus pedidos están en cocina';
+  });
+  protected readonly unsentOrders = computed(() =>
+    this.offlineOrders.orders().map((order) => ({
+      clientOrderId: order.clientOrderId,
+      title: `${destinationLabel(order.tableNumber)} · ${order.itemCount} ${order.itemCount === 1 ? 'producto' : 'productos'}`,
+      total: order.total,
+      time: formatTime(order.request.createdAt),
+      failed: order.state === 'failed',
+      error: order.error,
+    })),
+  );
 
   protected readonly displayName = computed(() => this.session.employee()?.displayName ?? '');
   protected readonly firstName = computed(() => this.displayName().split(' ')[0] ?? '');
@@ -82,4 +112,8 @@ export class WaiterDashboardPageComponent {
   }));
 
   protected readonly recentFailed = computed(() => this.recentResource.error() !== undefined);
+
+  protected discard(clientOrderId: string): void {
+    void this.offlineOrders.discard(clientOrderId);
+  }
 }

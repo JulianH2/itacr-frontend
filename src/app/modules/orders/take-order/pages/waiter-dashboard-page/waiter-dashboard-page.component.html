@@ -4,6 +4,15 @@
     <p class="dashboard__date">{{ today }}</p>
   </header>
 
+  <p class="dashboard__sync" role="status" data-testid="sync-status">
+    @if (online()) {
+      <app-status-badge tone="success" icon="check-circle">En línea</app-status-badge>
+    } @else {
+      <app-status-badge tone="neutral" icon="cloud-off">Sin conexión</app-status-badge>
+    }
+    <span class="dashboard__sync-text tabular">{{ syncText() }}</span>
+  </p>
+
   @if (store.itemCount() > 0) {
     <section class="dashboard__order" aria-labelledby="order-in-progress">
       <div>
@@ -82,6 +91,42 @@
     </div>
 
     <aside class="dashboard__aside">
+      @if (unsentOrders().length > 0) {
+        <section class="dashboard__recent-card" aria-labelledby="unsent-orders">
+          <h2 id="unsent-orders" class="dashboard__card-title">Sin enviar a cocina</h2>
+          <ul class="dashboard__recent">
+            @for (order of unsentOrders(); track order.clientOrderId) {
+              <li class="dashboard__unsent" data-testid="unsent-order">
+                <span class="dashboard__recent-text">
+                  <span class="dashboard__recent-title">{{ order.title }}</span>
+                  <span class="dashboard__recent-meta tabular">
+                    {{ order.time }} · {{ order.total | mxnPrice }}
+                  </span>
+                  @if (order.error; as error) {
+                    <span class="dashboard__unsent-error">{{ error }}</span>
+                  }
+                </span>
+                @if (order.failed) {
+                  <app-status-badge tone="warning">No se pudo enviar</app-status-badge>
+                  <button
+                    type="button"
+                    mat-button
+                    data-testid="discard-order"
+                    (click)="discard(order.clientOrderId)"
+                  >
+                    Descartar
+                  </button>
+                } @else {
+                  <app-status-badge tone="pending" icon="cloud-off">
+                    Pendiente de sincronizar
+                  </app-status-badge>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
       @if (recentOrders().length > 0) {
         <section class="dashboard__recent-card" aria-labelledby="recent-orders">
           <h2 id="recent-orders" class="dashboard__card-title">Pedidos recientes</h2>
