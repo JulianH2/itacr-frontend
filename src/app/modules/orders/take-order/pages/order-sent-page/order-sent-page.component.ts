@@ -7,7 +7,7 @@ import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 
 import { TakeOrderStore } from '../../services/take-order-store.service';
 
-/** Confirmation that the kitchen received the order. */
+/** Confirmation that the kitchen received the order, or that it was saved to send when the connection is back. */
 @Component({
   selector: 'app-order-sent-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -20,7 +20,7 @@ export class OrderSentPageComponent implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
-    if (this.store.sentOrder() === null) {
+    if (this.store.sentOrder() === null && this.store.queuedOrder() === null) {
       void this.router.navigateByUrl('/orders');
     }
   }

@@ -67,6 +67,17 @@
       }
     },
     {
+      "name": "dining-tables",
+      "version": 1,
+      "urls": ["/api/v1/dining-tables", "https://*.azurewebsites.net/api/v1/dining-tables"],
+      "cacheConfig": {
+        "strategy": "freshness",
+        "timeout": "3s",
+        "maxAge": "7d",
+        "maxSize": 1
+      }
+    },
+    {
       "name": "catalog-api-v2",
       "version": 1,
       "urls": ["/api/v1/catalog/**", "https://*.azurewebsites.net/api/v1/catalog/**"],

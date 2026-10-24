@@ -8,7 +8,7 @@ import type {
   OrderDetail,
   PlacedOrder,
   PlacedOrderItem,
-  RecentOrder,
+  ActiveOrder,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
@@ -57,7 +57,7 @@ export class MockOrdersApiService implements OrdersApi {
       channel: request.takeAway ? 'TakeAway' : 'DineIn',
       tableNumber: MOCK_TABLES.find((table) => table.id === request.tableId)?.number ?? null,
       total: MOCK_UNIT_PRICE,
-      createdAt: new Date().toISOString(),
+      createdAt: request.createdAt ?? new Date().toISOString(),
       items,
     };
     this.orders.set(request.clientOrderId, order);
@@ -86,15 +86,19 @@ export class MockOrdersApiService implements OrdersApi {
     return of(detail).pipe(delay(MOCK_LATENCY_MS));
   }
 
-  getRecentOrders(): Observable<readonly RecentOrder[]> {
-    const recent = [...this.orders.values()].reverse().map((order) => ({
-      id: order.id,
-      orderNumber: order.orderNumber,
-      channel: order.channel,
-      status: order.status,
-      tableNumber: order.tableNumber,
-      createdAt: order.createdAt,
-    }));
-    return of(recent).pipe(delay(MOCK_LATENCY_MS));
+  getActiveOrders(): Observable<readonly ActiveOrder[]> {
+    const active = [...this.orders.values()]
+      .filter((order) => order.status !== 'Delivered')
+      .reverse()
+      .map((order) => ({
+        id: order.id,
+        orderNumber: order.orderNumber,
+        channel: order.channel,
+        status: order.status,
+        tableNumber: order.tableNumber,
+        createdAt: order.createdAt,
+        lastStatusChangeAt: order.createdAt,
+      }));
+    return of(active).pipe(delay(MOCK_LATENCY_MS));
   }
 }

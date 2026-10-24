@@ -20,5 +20,23 @@
         Ver detalle
       </a>
     </div>
+  } @else if (store.queuedOrder(); as order) {
+    <section class="sent__card" role="status" aria-live="polite" data-testid="order-queued">
+      <span class="sent__check sent__check--queued" aria-hidden="true">
+        <app-icon name="cloud-off" [size]="56" />
+      </span>
+      <h1 class="sent__title">Pedido guardado</h1>
+      <p class="sent__message">Se enviará a cocina cuando vuelva la conexión.</p>
+      <p class="sent__destination">
+        {{ order.tableNumber !== null ? 'Mesa ' + order.tableNumber : 'Para llevar' }}
+      </p>
+      <p class="sent__total tabular">Total: {{ order.total | mxnPrice }}</p>
+    </section>
+
+    <div class="sent__actions">
+      <button type="button" mat-flat-button class="sent__new" (click)="startNewOrder()">
+        Tomar nuevo pedido
+      </button>
+    </div>
   }
 </main>

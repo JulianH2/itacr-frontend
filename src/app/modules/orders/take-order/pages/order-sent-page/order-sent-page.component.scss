@@ -31,6 +31,14 @@
   width: 104px;
 }
 
+// Saved, not sent: no celebration and no success color until the kitchen has it.
+.sent__check--queued {
+  animation: none;
+  background: var(--color-secondary-tint);
+  box-shadow: none;
+  color: var(--color-text);
+}
+
 .sent__title {
   font: var(--mat-sys-headline-large);
   font-family: var(--font-family);
@@ -41,6 +49,12 @@
   font: var(--mat-sys-title-large);
   font-family: var(--font-family);
   margin: 0;
+}
+
+.sent__message {
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-1);
 }
 
 .sent__destination,

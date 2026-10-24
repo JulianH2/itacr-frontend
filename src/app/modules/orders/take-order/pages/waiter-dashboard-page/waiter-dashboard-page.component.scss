@@ -68,8 +68,8 @@ $desktop: 900px;
 
 .dashboard__stats {
   display: grid;
-  gap: var(--space-2);
-  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-1);
+  grid-template-columns: repeat(3, 1fr);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -96,6 +96,8 @@ $desktop: 900px;
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-subtle);
+  display: grid;
+  gap: var(--space-2);
   padding: var(--space-3);
 }
 
@@ -103,6 +105,36 @@ $desktop: 900px;
   list-style: none;
   margin: var(--space-1) 0 0;
   padding: 0;
+}
+
+.dashboard__sync {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.dashboard__sync-text {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+}
+
+.dashboard__unsent {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  justify-content: space-between;
+  min-height: 56px;
+  padding: var(--space-1) 0;
+}
+
+.dashboard__unsent-error {
+  color: var(--color-error);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
 }
 
 .dashboard__recent li + li {
@@ -160,6 +192,6 @@ $desktop: 900px;
   }
 
   .dashboard__stats {
-    grid-template-columns: repeat(2, minmax(0, 280px));
+    grid-template-columns: repeat(3, minmax(0, 200px));
   }
 }

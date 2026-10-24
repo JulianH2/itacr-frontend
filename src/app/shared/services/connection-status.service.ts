@@ -1,7 +1,10 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, signal } from '@angular/core';
 
-/** Whether the browser reports a network connection. Presentation only: it does not drive any sync. */
+/**
+ * Whether the browser reports a network connection. It can say online on a Wi-Fi without internet, so whoever sends
+ * data still has to handle a network error.
+ */
 @Injectable({ providedIn: 'root' })
 export class ConnectionStatusService {
   private readonly view = inject(DOCUMENT).defaultView;
