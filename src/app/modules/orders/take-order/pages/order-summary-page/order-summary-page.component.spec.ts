@@ -32,7 +32,7 @@ function createApi(requests: CreateOrderRequest[]): OrdersApi {
       return of(order);
     },
     getOrder: () => EMPTY,
-    getRecentOrders: () => of([]),
+    getActiveOrders: () => of([]),
   };
 }
 

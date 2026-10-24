@@ -9,13 +9,13 @@ import type {
   DiningTable,
   OrderDetail,
   PlacedOrder,
-  RecentOrder,
+  ActiveOrder,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
 /**
  * Orders client for itacr-backend (`GET /dining-tables`, `POST /orders`, waiter role). Orders are never cached by
- * the service worker: `ngsw-config.json` has no data group for these URLs.
+ * the service worker; the tables are (`dining-tables` in `ngsw-config.json`), so a table can be picked offline.
  */
 @Injectable()
 export class HttpOrdersApiService implements OrdersApi {
@@ -33,7 +33,7 @@ export class HttpOrdersApiService implements OrdersApi {
     return this.http.get<OrderDetail>(`${environment.apiBaseUrl}/orders/${orderId}`);
   }
 
-  getRecentOrders(): Observable<readonly RecentOrder[]> {
-    return this.http.get<readonly RecentOrder[]>(`${environment.apiBaseUrl}/orders/recent`);
+  getActiveOrders(): Observable<readonly ActiveOrder[]> {
+    return this.http.get<readonly ActiveOrder[]>(`${environment.apiBaseUrl}/orders/active`);
   }
 }
