@@ -216,6 +216,23 @@ The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code qu
 - **Results:** in.xygeni.io > **Code Quality** and **Risks**, project `JulianH2/itacr-frontend`; the history of runs is in **Scan History**.
 - **Exclusions:** none beyond build output and dependencies (`bin/`, `obj/`, `node_modules/`); findings are fixed, never hidden.
 - GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.
+- **Check dependencies on your machine:** `npm audit` must report 0 vulnerabilities (the findings of Xygeni SCA were fixed this way in ITACR-51); Xygeni results of each run are in its dashboard and in the `Xygeni Scan` check of the PR.
+
+## Database versioning (DbUp)
+
+This repository has no database: the schema is versioned in [itacr-backend](https://github.com/JulianH2/itacr-backend) with [DbUp](https://dbup.readthedocs.io/), through numbered T-SQL scripts in `database/migrations/`, a history in `dbo.SchemaVersions`, and reversal scripts in `database/rollbacks/` (ITACR-52). The PWA only needs the API to run on top of it.
+
+To reproduce the migrator (status, rollback, reapplication) clone itacr-backend and follow the section "Database versioning (DbUp)" of its [README](https://github.com/JulianH2/itacr-backend#database-versioning-dbup); in short, with Docker running:
+
+```bash
+docker compose up -d sqlserver
+dotnet run --project database/Itacr.Database.Migrator
+dotnet run --project database/Itacr.Database.Migrator -- status
+dotnet run --project database/Itacr.Database.Migrator -- rollback V005__add_product_is_available.sql
+dotnet run --project database/Itacr.Database.Migrator
+```
+
+`rollback` only runs in Development. Connection strings are never committed: they live in `dotnet user-secrets` and in GitHub secrets.
 
 ## Commit convention
 
