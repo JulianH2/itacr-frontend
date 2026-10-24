@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.4.0](https://github.com/JulianH2/itacr-frontend/compare/v0.3.0...v0.4.0) (2026-10-24)
+
+
+### Added
+
+* **catalog:** add the 18 product photos in webp with their credits (ITACR-48) ([c9e62fd](https://github.com/JulianH2/itacr-frontend/commit/c9e62fd5e730c7529ada3e0d560cb9e816749e49))
+* **catalog:** add the 18 product photos in webp with their credits (ITACR-48) ([a664958](https://github.com/JulianH2/itacr-frontend/commit/a664958d0e7f152183d62a4840a0bc6c41953d88))
+* **catalog:** use the product photos in the mock catalog and the card (ITACR-48) ([16db901](https://github.com/JulianH2/itacr-frontend/commit/16db9018a8e68357dc335010939657714e01289b))
+* **core:** show an offline notice and warn about unsent orders on logout (ITACR-13) ([245abb5](https://github.com/JulianH2/itacr-frontend/commit/245abb55763049cf2ff7899765dff1c4f4796467))
+* **orders:** request the active orders of the waiter (ITACR-14) ([dd49531](https://github.com/JulianH2/itacr-frontend/commit/dd49531f7944fbb00dcacddd1e00ff02543af715))
+* **orders:** save orders on the device and send them when the connection is back (ITACR-13) ([8e7d8ef](https://github.com/JulianH2/itacr-frontend/commit/8e7d8ef7a572530f72456e96b950f78370402088))
+* **orders:** save orders on the device and send them when the connection is back (ITACR-13) ([7234ca0](https://github.com/JulianH2/itacr-frontend/commit/7234ca0084d811ceef81e2375442337443bb9cf2))
+* **orders:** show the active orders of the waiter with counters and filter (ITACR-14) ([77d93f0](https://github.com/JulianH2/itacr-frontend/commit/77d93f0f16970cf9203e130aeb09b14a8b6a43de))
+* **orders:** show the active orders with counters and filter on the dashboard (ITACR-14) ([67d0578](https://github.com/JulianH2/itacr-frontend/commit/67d0578c26102b997da26e5ba6eeba9404409342))
+* **orders:** show the unsent orders and the connection to the waiter (ITACR-13) ([880494d](https://github.com/JulianH2/itacr-frontend/commit/880494dfddce59e4225b21795c7e22789a8d8d1c))
+
+
+### Fixed
+
+* **auth:** send the password form only by post (ITACR-51) ([1321c7e](https://github.com/JulianH2/itacr-frontend/commit/1321c7e956090fea4572da59ed6c04699c611f39))
+* **catalog:** replace chicken burger photo without branding (ITACR-48) ([f4eb2ab](https://github.com/JulianH2/itacr-frontend/commit/f4eb2ab77f56a9bccb21592a8d70095ca4980ee3))
+* **deps:** update vulnerable handlebars, vite and source-map-js (ITACR-51) ([97a8eaa](https://github.com/JulianH2/itacr-frontend/commit/97a8eaa79b707f5a28447261092369c38b2cf94f))
+* **orders:** send the device time only for orders that waited offline (ITACR-13) ([1e5914e](https://github.com/JulianH2/itacr-frontend/commit/1e5914e9b21c1e3eaa2c97c267f1c438c0c9a36d))
+* **repo:** pin third-party actions to a commit sha (ITACR-51) ([9210af4](https://github.com/JulianH2/itacr-frontend/commit/9210af4f32f29c3bf2f0d8992028f79a2972cdd3))
+* **repo:** pin third-party actions to a commit sha (ITACR-51) ([1a10aec](https://github.com/JulianH2/itacr-frontend/commit/1a10aec33ab616a3e2ef575eb232427e41253bd4))
+
+
+### Documentation
+
+* **catalog:** document the product photo rules (ITACR-48) ([deeb428](https://github.com/JulianH2/itacr-frontend/commit/deeb428e938f8b70c76635ff824058a4abbbaa51))
+* **orders:** describe the waiter dashboard (ITACR-14) ([e2631f1](https://github.com/JulianH2/itacr-frontend/commit/e2631f1f4184f2258fed8ee14d333b6681374cf0))
+* **orders:** document the offline order queue (ITACR-13) ([a5efd1b](https://github.com/JulianH2/itacr-frontend/commit/a5efd1b9032210f5c46f201d4479b02daf754b95))
+* **repo:** document the branch rulesets (ITACR-46) ([77e6680](https://github.com/JulianH2/itacr-frontend/commit/77e66809ad5ba90b55d3cada7e188535901265e6))
+* **repo:** document the branch rulesets (ITACR-46) ([a6a4147](https://github.com/JulianH2/itacr-frontend/commit/a6a4147ab32c75047f8e93c9243482dd2732a5f3))
+* **repo:** document xygeni and the database versioning (ITACR-53) ([3634890](https://github.com/JulianH2/itacr-frontend/commit/363489001749e7acc4f44c59b222b0e263856edb))
+* **repo:** document xygeni and the database versioning (ITACR-53) ([a47abdc](https://github.com/JulianH2/itacr-frontend/commit/a47abdcb336ba4256140b6a031d151e54537039b))
+
 ## [0.3.0](https://github.com/JulianH2/itacr-frontend/compare/v0.2.0...v0.3.0) (2026-10-22)
 
 
