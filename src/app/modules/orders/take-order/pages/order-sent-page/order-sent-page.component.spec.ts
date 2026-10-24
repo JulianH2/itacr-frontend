@@ -1,10 +1,13 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
 import { EMPTY, of } from 'rxjs';
 
+import { ConnectionStatusService } from '@shared/services/connection-status.service';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type { PlacedOrder } from '../../models/take-order.models';
+import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API, type OrdersApi } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
 import { OrderSentPageComponent } from './order-sent-page.component';
@@ -25,14 +28,23 @@ const API: OrdersApi = {
   getDiningTables: () => of([{ id: 'table-5', number: 5 }]),
   createOrder: () => of(SENT_ORDER),
   getOrder: () => EMPTY,
-  getRecentOrders: () => of([]),
+  getActiveOrders: () => of([]),
 };
 
 describe('OrderSentPageComponent', () => {
+  let online: ReturnType<typeof signal<boolean>>;
+
   beforeEach(async () => {
+    online = signal(true);
     await TestBed.configureTestingModule({
       imports: [OrderSentPageComponent],
-      providers: [provideRouter([]), TakeOrderStore, { provide: ORDERS_API, useValue: API }],
+      providers: [
+        provideRouter([]),
+        TakeOrderStore,
+        { provide: ORDERS_API, useValue: API },
+        { provide: ConnectionStatusService, useValue: { online } },
+        { provide: OfflineOrdersService, useValue: { enqueue: () => Promise.resolve() } },
+      ],
     }).compileComponents();
   });
 
@@ -91,5 +103,23 @@ describe('OrderSentPageComponent', () => {
 
     // Assert
     expect(navigate).toHaveBeenCalledWith('/orders');
+  });
+
+  // HU_07 CA1
+  it('should say the order was saved and will reach the kitchen when the connection is back', async () => {
+    // Arrange
+    online.set(false);
+    await sendOrder();
+
+    // Act
+    const fixture = TestBed.createComponent(OrderSentPageComponent);
+    await fixture.whenStable();
+
+    // Assert
+    const page = fixture.nativeElement as HTMLElement;
+    const queued = page.querySelector('[data-testid="order-queued"]');
+    expect(queued?.textContent).toContain('Pedido guardado');
+    expect(queued?.textContent).toContain('Se enviará a cocina cuando vuelva la conexión.');
+    expect(page.textContent).not.toContain('¡Pedido enviado a cocina!');
   });
 });

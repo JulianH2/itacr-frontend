@@ -13,7 +13,7 @@ This repository contains the frontend: the Angular PWA. The backend (ASP.NET Cor
 | Framework      | Angular 22 (standalone components, signals, zoneless, strict TypeScript)             |
 | UI             | Angular Material 3 (custom red/orange theme), SCSS                                   |
 | PWA            | `@angular/pwa` (Angular Service Worker), Web App Manifest                            |
-| Offline data   | IndexedDB (orders queue) + Background Sync                                           |
+| Offline data   | IndexedDB (orders queue), synced when the connection comes back                      |
 | Real time      | SignalR client (`@microsoft/signalr`, KDS updates)                                   |
 | Notifications  | Push API with VAPID keys                                                             |
 | Tests          | Vitest + jsdom via `ng test`                                                         |
@@ -48,6 +48,10 @@ npx http-server -p 8080 -c-1 dist/itacr-frontend/browser
 ```
 
 Open `http://localhost:8080`, then use DevTools > Application > Service workers, and DevTools > Network > **Offline**.
+
+### Waiter dashboard (HU_08)
+
+`/orders` lists the orders of the signed-in waiter that are not delivered (`GET /orders/active`), with the counters Activos, Listos and Pendientes (orders still on the device waiting for the connection) and a filter by Todos, En cocina and Listos. The list is asked again every 15 seconds only while the page is visible, and right away when the tab comes back to the front. With `useMockApi: true` it lists the orders created in the same session.
 
 ## npm scripts
 
@@ -139,6 +143,15 @@ Service worker caching (`ngsw-config.json`):
 
 In production the API is on another domain, so only the data groups that list the full `azurewebsites.net` URL apply there.
 
+## Product photos
+
+The 18 photos of the menu live in `public/assets/images/products/`, one per seeded product, named after it without accents and in kebab case (`combo-clasico.webp`, `refresco-de-lima-limon.webp`). They match the `ImageUrl` of the products in `database/` of itacr-backend (`/assets/images/products/<name>.webp`).
+
+- **Format:** WebP, cropped to 4:3 and resized to 800 × 600 pixels, **under 100 KB each**. To replace one, keep the name and the size.
+- **Offline:** the service worker prefetches `/assets/images/products/**` (`ngsw-config.json`), so the photos work without a connection after the first visit.
+- **Credits:** every photo comes from Wikimedia Commons under a license that allows its use here. The author, source, and license of each one are in [CREDITS.md](public/assets/images/products/CREDITS.md), which is also served with the app.
+- With `useMockApi: true` the mock catalog uses the same files.
+
 ## Production
 
 The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, with the startup command:
@@ -193,6 +206,33 @@ hotfix/ITACR-N-description (from main) --PR--> main, then the same branch --PR--
 - CI validates that each PR comes from an allowed branch and prints the allowed flow when it does not.
 
 Full workflow and sprint close checklist: [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Code quality analysis (Xygeni)
+
+The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code quality and security: quality findings, vulnerable dependencies, exposed secrets, and workflow risks (ITACR-50).
+
+- **Installation (once, repository owner):** sign in to in.xygeni.io with GitHub, install the Xygeni GitHub App on `JulianH2`, and import `JulianH2/itacr-frontend` in **Manage Scans**. Create an API token in Xygeni and save it as the repository secret `XYGENI_TOKEN` (Settings > Secrets and variables > Actions); never commit it.
+- **Automatic run:** `.github/workflows/xygeni-scan.yml` runs the Xygeni scanner on every PR into `sprint-*`, `develop`, `release`, and `main`, every night, and by hand (**Actions** > **Xygeni Scan** > **Run workflow**). The Xygeni GitHub App also runs scheduled scans.
+- **Results:** in.xygeni.io > **Code Quality** and **Risks**, project `JulianH2/itacr-frontend`; the history of runs is in **Scan History**.
+- **Exclusions:** none beyond build output and dependencies (`bin/`, `obj/`, `node_modules/`); findings are fixed, never hidden.
+- GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.
+- **Check dependencies on your machine:** `npm audit` must report 0 vulnerabilities (the findings of Xygeni SCA were fixed this way in ITACR-51); Xygeni results of each run are in its dashboard and in the `Xygeni Scan` check of the PR.
+
+## Database versioning (DbUp)
+
+This repository has no database: the schema is versioned in [itacr-backend](https://github.com/JulianH2/itacr-backend) with [DbUp](https://dbup.readthedocs.io/), through numbered T-SQL scripts in `database/migrations/`, a history in `dbo.SchemaVersions`, and reversal scripts in `database/rollbacks/` (ITACR-52). The PWA only needs the API to run on top of it.
+
+To reproduce the migrator (status, rollback, reapplication) clone itacr-backend and follow the section "Database versioning (DbUp)" of its [README](https://github.com/JulianH2/itacr-backend#database-versioning-dbup); in short, with Docker running:
+
+```bash
+docker compose up -d sqlserver
+dotnet run --project database/Itacr.Database.Migrator
+dotnet run --project database/Itacr.Database.Migrator -- status
+dotnet run --project database/Itacr.Database.Migrator -- rollback V005__add_product_is_available.sql
+dotnet run --project database/Itacr.Database.Migrator
+```
+
+`rollback` only runs in Development. Connection strings are never committed: they live in `dotnet user-secrets` and in GitHub secrets.
 
 ## Commit convention
 

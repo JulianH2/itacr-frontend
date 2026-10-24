@@ -18,8 +18,8 @@ const PLACEHOLDER_ICON_SIZE = 32;
           class="product-card__image"
           [src]="imageUrl"
           [alt]="'Foto de ' + product().name"
-          width="160"
-          height="160"
+          width="400"
+          height="300"
           loading="lazy"
           (error)="failedImageUrl.set(imageUrl)"
         />

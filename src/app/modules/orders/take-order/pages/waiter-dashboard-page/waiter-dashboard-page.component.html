@@ -4,6 +4,15 @@
     <p class="dashboard__date">{{ today }}</p>
   </header>
 
+  <p class="dashboard__sync" role="status" data-testid="sync-status">
+    @if (online()) {
+      <app-status-badge tone="success" icon="check-circle">En línea</app-status-badge>
+    } @else {
+      <app-status-badge tone="neutral" icon="cloud-off">Sin conexión</app-status-badge>
+    }
+    <span class="dashboard__sync-text tabular">{{ syncText() }}</span>
+  </p>
+
   @if (store.itemCount() > 0) {
     <section class="dashboard__order" aria-labelledby="order-in-progress">
       <div>
@@ -35,27 +44,33 @@
 
   <div class="dashboard__layout">
     <div class="dashboard__main">
-      @if (recentOrders().length > 0) {
-        <ul class="dashboard__stats">
-          <li>
-            <app-stat-card
-              label="En cocina"
-              icon="clock"
-              [value]="stats().inKitchen"
-              caption="De tus pedidos recientes"
-            />
-          </li>
-          <li>
-            <app-stat-card
-              label="Listos"
-              icon="check"
-              tone="success"
-              [value]="stats().ready"
-              caption="Esperando entrega"
-            />
-          </li>
-        </ul>
-      }
+      <ul class="dashboard__stats" data-testid="stats">
+        <li>
+          <app-stat-card
+            label="Activos"
+            icon="clock"
+            [value]="stats().active"
+            caption="En cocina o por entregar"
+          />
+        </li>
+        <li>
+          <app-stat-card
+            label="Listos"
+            icon="check"
+            tone="success"
+            [value]="stats().ready"
+            caption="Esperando entrega"
+          />
+        </li>
+        <li>
+          <app-stat-card
+            label="Pendientes"
+            icon="cloud-off"
+            [value]="stats().pending"
+            caption="Por sincronizar"
+          />
+        </li>
+      </ul>
 
       <section aria-labelledby="tables-title">
         <h2 id="tables-title" class="dashboard__section-title">Mesas</h2>
@@ -82,32 +97,91 @@
     </div>
 
     <aside class="dashboard__aside">
-      @if (recentOrders().length > 0) {
-        <section class="dashboard__recent-card" aria-labelledby="recent-orders">
-          <h2 id="recent-orders" class="dashboard__card-title">Pedidos recientes</h2>
+      @if (unsentOrders().length > 0) {
+        <section class="dashboard__recent-card" aria-labelledby="unsent-orders">
+          <h2 id="unsent-orders" class="dashboard__card-title">Sin enviar a cocina</h2>
           <ul class="dashboard__recent">
-            @for (order of recentOrders(); track order.id) {
-              <li>
-                <a
-                  class="dashboard__recent-link"
-                  [routerLink]="['/orders/detail', order.id]"
-                  data-testid="recent-order"
-                >
-                  <span class="dashboard__recent-text">
-                    <span class="dashboard__recent-title">{{ order.title }}</span>
-                    <span class="dashboard__recent-meta tabular">{{ order.time }}</span>
+            @for (order of unsentOrders(); track order.clientOrderId) {
+              <li class="dashboard__unsent" data-testid="unsent-order">
+                <span class="dashboard__recent-text">
+                  <span class="dashboard__recent-title">{{ order.title }}</span>
+                  <span class="dashboard__recent-meta tabular">
+                    {{ order.time }} · {{ order.total | mxnPrice }}
                   </span>
-                  <app-status-badge [tone]="order.tone">{{ order.status }}</app-status-badge>
-                </a>
+                  @if (order.error; as error) {
+                    <span class="dashboard__unsent-error">{{ error }}</span>
+                  }
+                </span>
+                @if (order.failed) {
+                  <app-status-badge tone="warning">No se pudo enviar</app-status-badge>
+                  <button
+                    type="button"
+                    mat-button
+                    data-testid="discard-order"
+                    (click)="discard(order.clientOrderId)"
+                  >
+                    Descartar
+                  </button>
+                } @else {
+                  <app-status-badge tone="pending" icon="cloud-off">
+                    Pendiente de sincronizar
+                  </app-status-badge>
+                }
               </li>
             }
           </ul>
         </section>
-      } @else if (recentFailed()) {
-        <p class="dashboard__card-text" role="status">
-          No pudimos cargar tus últimos pedidos. Vuelve a abrir esta pantalla para intentarlo.
-        </p>
       }
+
+      <section class="dashboard__recent-card" aria-labelledby="active-orders">
+        <h2 id="active-orders" class="dashboard__card-title">Pedidos activos</h2>
+        <app-segmented-control
+          label="Filtrar pedidos"
+          variant="chips"
+          testIdPrefix="filter-"
+          [options]="filterOptions"
+          [(value)]="statusFilter"
+        />
+        @if (loading()) {
+          <p class="dashboard__card-text" role="status">Cargando tus pedidos…</p>
+        } @else {
+          @if (failed()) {
+            <p class="dashboard__card-text" role="alert" data-testid="active-error">
+              No pudimos actualizar tus pedidos.
+              <button type="button" mat-button data-testid="retry" (click)="reload()">
+                Reintentar
+              </button>
+            </p>
+          }
+          @if (visibleOrders().length > 0) {
+            <ul class="dashboard__recent">
+              @for (order of visibleOrders(); track order.id) {
+                <li>
+                  <a
+                    class="dashboard__recent-link"
+                    [routerLink]="['/orders/detail', order.id]"
+                    data-testid="active-order"
+                  >
+                    <span class="dashboard__recent-text">
+                      <span class="dashboard__recent-title">{{ order.title }}</span>
+                      <span class="dashboard__recent-meta tabular">{{ order.time }}</span>
+                    </span>
+                    <app-status-badge [tone]="order.tone">{{ order.status }}</app-status-badge>
+                  </a>
+                </li>
+              }
+            </ul>
+          } @else if (!failed()) {
+            <p class="dashboard__card-text" data-testid="active-empty">
+              @if (statusFilter() === 'all') {
+                Aún no tienes pedidos activos.
+              } @else {
+                No hay pedidos con este filtro.
+              }
+            </p>
+          }
+        }
+      </section>
     </aside>
   </div>
 </div>
