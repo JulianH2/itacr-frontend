@@ -1,6 +1,6 @@
 {
   "name": "itacr-frontend",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "ITACR Progressive Web App for fast-food restaurant order management",
   "scripts": {
     "ng": "ng",
