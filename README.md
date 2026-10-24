@@ -49,6 +49,10 @@ npx http-server -p 8080 -c-1 dist/itacr-frontend/browser
 
 Open `http://localhost:8080`, then use DevTools > Application > Service workers, and DevTools > Network > **Offline**.
 
+### Waiter dashboard (HU_08)
+
+`/orders` lists the orders of the signed-in waiter that are not delivered (`GET /orders/active`), with the counters Activos, Listos and Pendientes (orders still on the device waiting for the connection) and a filter by Todos, En cocina and Listos. The list is asked again every 15 seconds only while the page is visible, and right away when the tab comes back to the front. With `useMockApi: true` it lists the orders created in the same session.
+
 ## npm scripts
 
 | Script                 | Description                                                   |

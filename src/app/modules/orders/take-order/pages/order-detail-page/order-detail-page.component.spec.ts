@@ -33,7 +33,7 @@ describe('OrderDetailPageComponent', () => {
       getDiningTables: () => EMPTY,
       createOrder: () => EMPTY,
       getOrder,
-      getRecentOrders: () => of([]),
+      getActiveOrders: () => of([]),
     };
     await TestBed.configureTestingModule({
       imports: [OrderDetailPageComponent],

@@ -61,12 +61,12 @@ describe('HttpOrdersApiService', () => {
     request.flush({});
   });
 
-  it('should request the recent orders of the waiter', () => {
+  it('should request the active orders of the waiter', () => {
     // Act
-    service.getRecentOrders().subscribe();
+    service.getActiveOrders().subscribe();
 
     // Assert
-    const request = http.expectOne(`${environment.apiBaseUrl}/orders/recent`);
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/active`);
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });

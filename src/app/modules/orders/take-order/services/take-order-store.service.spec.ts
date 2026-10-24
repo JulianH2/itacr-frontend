@@ -12,7 +12,7 @@ import type {
   OrderDetail,
   PlacedOrder,
   QueuedOrderRequest,
-  RecentOrder,
+  ActiveOrder,
 } from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
 import { OfflineOrdersService, type PendingOrderSummary } from './offline-orders.service';
@@ -55,7 +55,7 @@ class FakeOrdersApi implements OrdersApi {
     return EMPTY;
   }
 
-  getRecentOrders(): Observable<readonly RecentOrder[]> {
+  getActiveOrders(): Observable<readonly ActiveOrder[]> {
     return of([]);
   }
 }

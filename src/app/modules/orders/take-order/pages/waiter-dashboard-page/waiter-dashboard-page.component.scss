@@ -68,8 +68,8 @@ $desktop: 900px;
 
 .dashboard__stats {
   display: grid;
-  gap: var(--space-2);
-  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-1);
+  grid-template-columns: repeat(3, 1fr);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -96,6 +96,8 @@ $desktop: 900px;
   border: 1px solid var(--color-card-border);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-subtle);
+  display: grid;
+  gap: var(--space-2);
   padding: var(--space-3);
 }
 
@@ -190,6 +192,6 @@ $desktop: 900px;
   }
 
   .dashboard__stats {
-    grid-template-columns: repeat(2, minmax(0, 280px));
+    grid-template-columns: repeat(3, minmax(0, 200px));
   }
 }
