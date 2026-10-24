@@ -1,7 +1,7 @@
-import { computed, signal } from '@angular/core';
+import { ApplicationRef, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { EMPTY, of } from 'rxjs';
+import { EMPTY, type Observable, of, throwError } from 'rxjs';
 
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
 
@@ -11,7 +11,7 @@ import { ORDERS_API, type OrdersApi } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
 import { WaiterDashboardPageComponent } from './waiter-dashboard-page.component';
 
-const RECENT: readonly ActiveOrder[] = [
+const ACTIVE: readonly ActiveOrder[] = [
   {
     id: 'order-2',
     orderNumber: 13,
@@ -19,6 +19,7 @@ const RECENT: readonly ActiveOrder[] = [
     status: 'Ready',
     tableNumber: null,
     createdAt: '2026-10-14T18:05:00Z',
+    lastStatusChangeAt: '2026-10-14T18:20:00Z',
   },
   {
     id: 'order-1',
@@ -27,6 +28,7 @@ const RECENT: readonly ActiveOrder[] = [
     status: 'InPreparation',
     tableNumber: 5,
     createdAt: '2026-10-14T18:00:00Z',
+    lastStatusChangeAt: '2026-10-14T18:03:00Z',
   },
 ];
 
@@ -59,9 +61,10 @@ const offlineOrders = {
 };
 
 async function render(
-  recent: readonly ActiveOrder[],
+  active: readonly ActiveOrder[] | Observable<readonly ActiveOrder[]>,
   unsent: readonly PendingOrder[] = [],
   online = true,
+  getActiveOrders: OrdersApi['getActiveOrders'] | null = null,
 ): Promise<HTMLElement> {
   offlineOrders.orders.set(unsent);
   offlineOrders.pendingCount = computed(
@@ -71,7 +74,9 @@ async function render(
     getDiningTables: () => of([]),
     createOrder: () => EMPTY,
     getOrder: () => EMPTY,
-    getActiveOrders: () => of(recent),
+    getActiveOrders:
+      getActiveOrders ??
+      (() => (Array.isArray(active) ? of(active) : (active as Observable<never>))),
   };
   await TestBed.configureTestingModule({
     imports: [WaiterDashboardPageComponent],
@@ -88,28 +93,112 @@ async function render(
   return fixture.nativeElement as HTMLElement;
 }
 
+function ids(page: HTMLElement): (string | undefined)[] {
+  return Array.from(page.querySelectorAll('[data-testid="active-order"]')).map((link) =>
+    link.querySelector('.dashboard__recent-title')?.textContent?.trim(),
+  );
+}
+
 describe('WaiterDashboardPageComponent', () => {
-  it('should list the last orders with their status and link each one to its detail', async () => {
+  // HU_08
+  it('should list the active orders with their status and link each one to its detail', async () => {
     // Act
-    const page = await render(RECENT);
+    const page = await render(ACTIVE);
 
     // Assert
-    const links = Array.from(
-      page.querySelectorAll<HTMLAnchorElement>('[data-testid="recent-order"]'),
-    );
-    expect(
-      links.map((link) => link.querySelector('.dashboard__recent-title')?.textContent?.trim()),
-    ).toEqual(['Orden #13 · Para llevar', 'Orden #12 · Mesa 5']);
+    expect(ids(page)).toEqual(['Orden #13 · Para llevar', 'Orden #12 · Mesa 5']);
+    const links = page.querySelectorAll<HTMLAnchorElement>('[data-testid="active-order"]');
+    expect(links[0]?.textContent).toContain('Listo desde');
     expect(links[1]?.textContent).toContain('En preparación');
     expect(links[1]?.getAttribute('href')).toBe('/orders/detail/order-1');
   });
 
-  it('should not show the section when the waiter has sent no orders', async () => {
+  // HU_08
+  it('should count the active, ready and pending orders', async () => {
+    // Act
+    const page = await render(ACTIVE, [pendingOrder('a')]);
+
+    // Assert
+    const values = Array.from(page.querySelectorAll('[data-testid="stats"] .stat__value')).map(
+      (value) => value.textContent?.trim(),
+    );
+    expect(values).toEqual(['2', '1', '1']);
+  });
+
+  // HU_08
+  it('should filter the orders by kitchen and ready', async () => {
+    // Arrange
+    const page = await render(ACTIVE);
+
+    // Act
+    page.querySelector<HTMLButtonElement>('[data-testid="filter-ready"]')?.click();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(ids(page)).toEqual(['Orden #13 · Para llevar']);
+
+    // Act
+    page.querySelector<HTMLButtonElement>('[data-testid="filter-kitchen"]')?.click();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(ids(page)).toEqual(['Orden #12 · Mesa 5']);
+  });
+
+  // HU_08
+  it('should say the waiter has no active orders', async () => {
     // Act
     const page = await render([]);
 
     // Assert
-    expect(page.textContent).not.toContain('Últimos pedidos');
+    expect(page.querySelector('[data-testid="active-empty"]')?.textContent).toContain(
+      'Aún no tienes pedidos activos.',
+    );
+  });
+
+  // HU_08
+  it('should say the orders could not be loaded and let the waiter retry', async () => {
+    // Act
+    const page = await render(throwError(() => new Error('offline')));
+
+    // Assert
+    expect(page.querySelector('[data-testid="active-error"]')?.textContent).toContain(
+      'No pudimos actualizar tus pedidos.',
+    );
+    expect(page.querySelector('[data-testid="active-empty"]')).toBeNull();
+    expect(page.querySelector('[data-testid="retry"]')).not.toBeNull();
+  });
+
+  // HU_08
+  it('should ask for the active orders again when the page comes back to the front', async () => {
+    // Arrange
+    const getActiveOrders = vi.fn(() => of(ACTIVE));
+    await render(ACTIVE, [], true, getActiveOrders);
+    const calls = getActiveOrders.mock.calls.length;
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(getActiveOrders.mock.calls.length).toBe(calls + 1);
+  });
+
+  // HU_08
+  it('should not ask for the active orders while the page is hidden', async () => {
+    // Arrange
+    const getActiveOrders = vi.fn(() => of(ACTIVE));
+    await render(ACTIVE, [], true, getActiveOrders);
+    const calls = getActiveOrders.mock.calls.length;
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+    hidden.mockRestore();
+
+    // Assert
+    expect(getActiveOrders.mock.calls.length).toBe(calls);
   });
 
   // HU_07

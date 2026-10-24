@@ -1,11 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { rxResource } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
+import { filter, fromEvent, merge, timer } from 'rxjs';
 
 import { SessionService } from '@shared/auth/session.service';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import {
+  SegmentedControlComponent,
+  type SegmentedOption,
+} from '@shared/components/segmented-control/segmented-control.component';
 import { StatCardComponent } from '@shared/components/stat-card/stat-card.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import {
@@ -21,6 +33,17 @@ import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
 
+/** How often the active orders are asked again while the page is in front of the waiter. */
+export const ACTIVE_ORDERS_REFRESH_MS = 15_000;
+
+type OrderFilter = 'all' | 'kitchen' | 'ready';
+
+const FILTER_OPTIONS: readonly SegmentedOption[] = [
+  { value: 'all', label: 'Todos' },
+  { value: 'kitchen', label: 'En cocina' },
+  { value: 'ready', label: 'Listos' },
+];
+
 export interface DashboardTable {
   readonly number: number;
   readonly status: TableStatus;
@@ -34,8 +57,8 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
 });
 
 /**
- * The waiter's home: start an order, go back to the one in progress, or open one sent recently. It always shows the
- * connection and how many orders are waiting to reach the kitchen (HU_07).
+ * The waiter's home: start an order, go back to the one in progress, or follow the orders that are not delivered yet
+ * (HU_08). It always shows the connection and how many orders are waiting to reach the kitchen (HU_07).
  */
 @Component({
   selector: 'app-waiter-dashboard-page',
@@ -46,6 +69,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
     EmptyStateComponent,
     IconComponent,
     MxnPricePipe,
+    SegmentedControlComponent,
     StatCardComponent,
     StatusBadgeComponent,
     TableCardComponent,
@@ -90,28 +114,63 @@ export class WaiterDashboardPageComponent {
   /** Tables with their status. Empty until the tables story supplies them; the grid is ready for it. */
   protected readonly tables = signal<readonly DashboardTable[]>([]);
 
-  private readonly recentResource = rxResource({ stream: () => this.api.getActiveOrders() });
+  private readonly activeResource = rxResource({ stream: () => this.api.getActiveOrders() });
 
-  protected readonly recentOrders = computed(() =>
-    (this.recentResource.hasValue() ? this.recentResource.value() : []).map((order) => ({
+  protected readonly filterOptions = FILTER_OPTIONS;
+  protected readonly statusFilter = signal<string>('all');
+
+  private readonly activeOrders = computed(() =>
+    (this.activeResource.hasValue() ? this.activeResource.value() : []).map((order) => ({
       id: order.id,
       title: `Orden #${order.orderNumber} · ${destinationLabel(order.tableNumber)}`,
       status: orderStatusLabel(order.status),
       tone: ORDER_STATUS_TONES[order.status],
       statusKey: order.status,
-      time: formatTime(order.createdAt),
+      time:
+        order.status === 'Ready'
+          ? `Listo desde ${formatTime(order.lastStatusChangeAt)}`
+          : formatTime(order.createdAt),
     })),
   );
 
-  /** Counts over the orders loaded above, not over the whole shift. */
+  protected readonly visibleOrders = computed(() => {
+    const selected = this.statusFilter() as OrderFilter;
+    return this.activeOrders().filter((order) => {
+      if (selected === 'all') {
+        return true;
+      }
+      return (order.statusKey === 'Ready') === (selected === 'ready');
+    });
+  });
+
+  /** Active and ready come from the loaded orders; pending are the ones still on the device (HU_07). */
   protected readonly stats = computed(() => ({
-    inKitchen: this.recentOrders().filter(
-      (order) => order.statusKey === 'New' || order.statusKey === 'InPreparation',
-    ).length,
-    ready: this.recentOrders().filter((order) => order.statusKey === 'Ready').length,
+    active: this.activeOrders().length,
+    ready: this.activeOrders().filter((order) => order.statusKey === 'Ready').length,
+    pending: this.offlineOrders.pendingCount(),
   }));
 
-  protected readonly recentFailed = computed(() => this.recentResource.error() !== undefined);
+  protected readonly loading = computed(
+    () => this.activeResource.isLoading() && !this.activeResource.hasValue(),
+  );
+  protected readonly failed = computed(() => this.activeResource.error() !== undefined);
+
+  constructor() {
+    // Polling only while the page is visible; coming back to the tab asks right away.
+    merge(
+      timer(ACTIVE_ORDERS_REFRESH_MS, ACTIVE_ORDERS_REFRESH_MS),
+      fromEvent(document, 'visibilitychange'),
+    )
+      .pipe(
+        filter(() => !document.hidden && this.online() && !this.activeResource.isLoading()),
+        takeUntilDestroyed(inject(DestroyRef)),
+      )
+      .subscribe(() => this.reload());
+  }
+
+  protected reload(): void {
+    this.activeResource.reload();
+  }
 
   protected discard(clientOrderId: string): void {
     void this.offlineOrders.discard(clientOrderId);
