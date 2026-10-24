@@ -9,7 +9,7 @@ import type {
   DiningTable,
   OrderDetail,
   PlacedOrder,
-  RecentOrder,
+  ActiveOrder,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
@@ -33,7 +33,7 @@ export class HttpOrdersApiService implements OrdersApi {
     return this.http.get<OrderDetail>(`${environment.apiBaseUrl}/orders/${orderId}`);
   }
 
-  getRecentOrders(): Observable<readonly RecentOrder[]> {
-    return this.http.get<readonly RecentOrder[]>(`${environment.apiBaseUrl}/orders/recent`);
+  getActiveOrders(): Observable<readonly ActiveOrder[]> {
+    return this.http.get<readonly ActiveOrder[]>(`${environment.apiBaseUrl}/orders/active`);
   }
 }

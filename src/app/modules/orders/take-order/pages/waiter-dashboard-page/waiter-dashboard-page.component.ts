@@ -90,7 +90,7 @@ export class WaiterDashboardPageComponent {
   /** Tables with their status. Empty until the tables story supplies them; the grid is ready for it. */
   protected readonly tables = signal<readonly DashboardTable[]>([]);
 
-  private readonly recentResource = rxResource({ stream: () => this.api.getRecentOrders() });
+  private readonly recentResource = rxResource({ stream: () => this.api.getActiveOrders() });
 
   protected readonly recentOrders = computed(() =>
     (this.recentResource.hasValue() ? this.recentResource.value() : []).map((order) => ({

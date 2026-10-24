@@ -5,13 +5,13 @@ import { EMPTY, of } from 'rxjs';
 
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
 
-import type { PendingOrder, RecentOrder } from '../../models/take-order.models';
+import type { PendingOrder, ActiveOrder } from '../../models/take-order.models';
 import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API, type OrdersApi } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
 import { WaiterDashboardPageComponent } from './waiter-dashboard-page.component';
 
-const RECENT: readonly RecentOrder[] = [
+const RECENT: readonly ActiveOrder[] = [
   {
     id: 'order-2',
     orderNumber: 13,
@@ -59,7 +59,7 @@ const offlineOrders = {
 };
 
 async function render(
-  recent: readonly RecentOrder[],
+  recent: readonly ActiveOrder[],
   unsent: readonly PendingOrder[] = [],
   online = true,
 ): Promise<HTMLElement> {
@@ -71,7 +71,7 @@ async function render(
     getDiningTables: () => of([]),
     createOrder: () => EMPTY,
     getOrder: () => EMPTY,
-    getRecentOrders: () => of(recent),
+    getActiveOrders: () => of(recent),
   };
   await TestBed.configureTestingModule({
     imports: [WaiterDashboardPageComponent],

@@ -28,7 +28,7 @@ const API: OrdersApi = {
   getDiningTables: () => of([{ id: 'table-5', number: 5 }]),
   createOrder: () => of(SENT_ORDER),
   getOrder: () => EMPTY,
-  getRecentOrders: () => of([]),
+  getActiveOrders: () => of([]),
 };
 
 describe('OrderSentPageComponent', () => {

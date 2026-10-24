@@ -73,14 +73,16 @@ export interface OrderDetail {
   readonly timeline: readonly OrderTimelineEntry[];
 }
 
-/** One of the last orders of the waiter (`GET /orders/recent`), to open its detail. */
-export interface RecentOrder {
+/** One of the last orders of the waiter (`GET /orders/active`), to open its detail. */
+export interface ActiveOrder {
   readonly id: string;
   readonly orderNumber: number;
   readonly channel: OrderChannel;
   readonly status: OrderStatus;
   readonly tableNumber: number | null;
   readonly createdAt: string;
+  /** Instant of its last status change, to tell how long it has been ready. */
+  readonly lastStatusChangeAt: string;
 }
 
 export interface PlacedOrderItem {
