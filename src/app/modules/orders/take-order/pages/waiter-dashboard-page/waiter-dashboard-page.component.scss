@@ -105,6 +105,36 @@ $desktop: 900px;
   padding: 0;
 }
 
+.dashboard__sync {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  margin: 0;
+}
+
+.dashboard__sync-text {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+}
+
+.dashboard__unsent {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  justify-content: space-between;
+  min-height: 56px;
+  padding: var(--space-1) 0;
+}
+
+.dashboard__unsent-error {
+  color: var(--color-error);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+}
+
 .dashboard__recent li + li {
   border-top: 1px solid var(--color-divider);
 }

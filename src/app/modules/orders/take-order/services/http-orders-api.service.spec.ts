@@ -38,6 +38,7 @@ describe('HttpOrdersApiService', () => {
       tableId: 'table-5',
       takeAway: false,
       items: [{ productId: 'burger', quantity: 2 }],
+      createdAt: '2026-10-22T18:00:00.000Z',
     };
 
     // Act

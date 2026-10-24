@@ -60,3 +60,4 @@
 </div>
 
 <app-toast-host />
+<app-offline-dialog [open]="isOfflineNoticeOpen()" (dismissed)="isOfflineNoticeOpen.set(false)" />

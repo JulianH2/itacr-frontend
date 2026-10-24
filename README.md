@@ -13,7 +13,7 @@ This repository contains the frontend: the Angular PWA. The backend (ASP.NET Cor
 | Framework      | Angular 22 (standalone components, signals, zoneless, strict TypeScript)             |
 | UI             | Angular Material 3 (custom red/orange theme), SCSS                                   |
 | PWA            | `@angular/pwa` (Angular Service Worker), Web App Manifest                            |
-| Offline data   | IndexedDB (orders queue) + Background Sync                                           |
+| Offline data   | IndexedDB (orders queue), synced when the connection comes back                      |
 | Real time      | SignalR client (`@microsoft/signalr`, KDS updates)                                   |
 | Notifications  | Push API with VAPID keys                                                             |
 | Tests          | Vitest + jsdom via `ng test`                                                         |

@@ -15,6 +15,8 @@ import { mockAuthInterceptor } from '@shared/mocks/mock-auth.interceptor';
 import { AppUpdateService } from '@shared/services/app-update.service';
 
 import { routes } from './app.routes';
+import { provideOrdersApi } from './modules/orders/take-order/orders.config';
+import { OfflineOrdersService } from './modules/orders/take-order/services/offline-orders.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,5 +35,10 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAppInitializer(() => inject(AppUpdateService).start()),
+    // Orders saved offline are sent from any screen, so the queue and its API live in root (HU_07).
+    provideOrdersApi(),
+    provideAppInitializer(() => {
+      void inject(OfflineOrdersService).start();
+    }),
   ],
 };

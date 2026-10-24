@@ -15,7 +15,7 @@ import type { OrdersApi } from './orders-api';
 
 /**
  * Orders client for itacr-backend (`GET /dining-tables`, `POST /orders`, waiter role). Orders are never cached by
- * the service worker: `ngsw-config.json` has no data group for these URLs.
+ * the service worker; the tables are (`dining-tables` in `ngsw-config.json`), so a table can be picked offline.
  */
 @Injectable()
 export class HttpOrdersApiService implements OrdersApi {
