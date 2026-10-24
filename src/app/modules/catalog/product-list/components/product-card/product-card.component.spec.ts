@@ -9,7 +9,7 @@ const PRODUCT: Product = {
   name: 'Combo Clásico',
   description: 'Hamburguesa, papas y refresco.',
   price: 119,
-  imageUrl: '/assets/images/products/combo-clasico.png',
+  imageUrl: '/assets/images/products/combo-clasico.webp',
   isCombo: true,
 };
 
