@@ -95,7 +95,7 @@ itacr-frontend/
 │   │   ├── app.config.ts     # Providers: router, HttpClient, service worker
 │   │   ├── app.routes.ts     # One lazy route per screen
 │   │   └── app.ts            # App shell (toolbar + router outlet)
-│   ├── environments/         # Build-time configuration (API URL, SignalR hub URL, VAPID key)
+│   ├── environments/         # Build-time configuration (API URL, SignalR hub URL)
 │   ├── index.html
 │   ├── index.production.html # index.html plus the production CSP
 │   ├── index.qa.html         # index.html plus the QA CSP
