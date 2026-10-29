@@ -3,9 +3,11 @@ import {
   Component,
   DestroyRef,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
@@ -29,6 +31,7 @@ import { ConnectionStatusService } from '@shared/services/connection-status.serv
 
 import { destinationLabel, formatTime, orderStatusLabel } from '../../models/order-status';
 import { ORDER_STATUS_TONES } from '../../models/order-status-tone';
+import type { ActiveOrder } from '../../models/take-order.models';
 import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
@@ -82,6 +85,7 @@ export class WaiterDashboardPageComponent {
   private readonly session = inject(SessionService);
   private readonly api = inject(ORDERS_API);
   private readonly offlineOrders = inject(OfflineOrdersService);
+  private readonly document = inject(DOCUMENT);
 
   protected readonly online = inject(ConnectionStatusService).online;
   protected readonly syncText = computed(() => {
@@ -116,11 +120,14 @@ export class WaiterDashboardPageComponent {
 
   private readonly activeResource = rxResource({ stream: () => this.api.getActiveOrders() });
 
+  /** The last orders that loaded, kept when a refresh fails so the list stays on screen. */
+  private readonly lastLoaded = signal<readonly ActiveOrder[] | null>(null);
+
   protected readonly filterOptions = FILTER_OPTIONS;
   protected readonly statusFilter = signal<string>('all');
 
   private readonly activeOrders = computed(() =>
-    (this.activeResource.hasValue() ? this.activeResource.value() : []).map((order) => ({
+    (this.lastLoaded() ?? []).map((order) => ({
       id: order.id,
       title: `Orden #${order.orderNumber} · ${destinationLabel(order.tableNumber)}`,
       status: orderStatusLabel(order.status),
@@ -151,18 +158,24 @@ export class WaiterDashboardPageComponent {
   }));
 
   protected readonly loading = computed(
-    () => this.activeResource.isLoading() && !this.activeResource.hasValue(),
+    () => this.activeResource.isLoading() && this.lastLoaded() === null,
   );
   protected readonly failed = computed(() => this.activeResource.error() !== undefined);
 
   constructor() {
+    effect(() => {
+      if (this.activeResource.hasValue()) {
+        this.lastLoaded.set(this.activeResource.value());
+      }
+    });
+
     // Polling only while the page is visible; coming back to the tab asks right away.
     merge(
       timer(ACTIVE_ORDERS_REFRESH_MS, ACTIVE_ORDERS_REFRESH_MS),
-      fromEvent(document, 'visibilitychange'),
+      fromEvent(this.document, 'visibilitychange'),
     )
       .pipe(
-        filter(() => !document.hidden && this.online() && !this.activeResource.isLoading()),
+        filter(() => !this.document.hidden && this.online() && !this.activeResource.isLoading()),
         takeUntilDestroyed(inject(DestroyRef)),
       )
       .subscribe(() => this.reload());

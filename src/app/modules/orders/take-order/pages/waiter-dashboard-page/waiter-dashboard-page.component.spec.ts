@@ -201,6 +201,45 @@ describe('WaiterDashboardPageComponent', () => {
     expect(getActiveOrders.mock.calls.length).toBe(calls);
   });
 
+  // HU_08, ITACR-58
+  it('should keep the list on screen with a notice when a refresh fails', async () => {
+    // Arrange
+    let calls = 0;
+    const page = await render(ACTIVE, [], true, () =>
+      ++calls === 1 ? of(ACTIVE) : throwError(() => new Error('offline')),
+    );
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(ids(page)).toEqual(['Orden #13 · Para llevar', 'Orden #12 · Mesa 5']);
+    expect(page.querySelector('[data-testid="active-error"]')?.textContent).toContain(
+      'Mostramos los últimos que cargaron.',
+    );
+    expect(page.querySelector('[data-testid="active-empty"]')).toBeNull();
+  });
+
+  // HU_08, ITACR-58
+  it('should drop the notice when the next refresh works', async () => {
+    // Arrange
+    let calls = 0;
+    const page = await render(ACTIVE, [], true, () =>
+      ++calls === 2 ? throwError(() => new Error('offline')) : of(ACTIVE),
+    );
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(page.querySelector('[data-testid="active-error"]')).toBeNull();
+    expect(ids(page)).toHaveLength(2);
+  });
+
   // HU_07
   it('should show the connection and that every order is in the kitchen when nothing is pending', async () => {
     // Act

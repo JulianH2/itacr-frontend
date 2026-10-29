@@ -148,6 +148,9 @@
           @if (failed()) {
             <p class="dashboard__card-text" role="alert" data-testid="active-error">
               No pudimos actualizar tus pedidos.
+              @if (visibleOrders().length > 0) {
+                Mostramos los últimos que cargaron.
+              }
               <button type="button" mat-button data-testid="retry" (click)="reload()">
                 Reintentar
               </button>
