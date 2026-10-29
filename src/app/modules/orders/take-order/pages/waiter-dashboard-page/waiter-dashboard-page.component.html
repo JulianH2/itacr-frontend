@@ -4,6 +4,11 @@
     <p class="dashboard__date">{{ today }}</p>
   </header>
 
+  <app-push-prompt
+    [target]="pushTarget"
+    description="Te avisamos en este teléfono cuando cocina tenga listo uno de tus pedidos, con el número de orden y la mesa."
+  />
+
   <p class="dashboard__sync" role="status" data-testid="sync-status">
     @if (online()) {
       <app-status-badge tone="success" icon="check-circle">En línea</app-status-badge>

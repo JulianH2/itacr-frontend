@@ -26,8 +26,10 @@ import {
   TableCardComponent,
   type TableStatus,
 } from '@shared/components/table-card/table-card.component';
+import { PushPromptComponent } from '@shared/components/push-prompt/push-prompt.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
+import type { PushTarget } from '@shared/services/push-notifications.service';
 
 import { destinationLabel, formatTime, orderStatusLabel } from '../../models/order-status';
 import { ORDER_STATUS_TONES } from '../../models/order-status-tone';
@@ -72,6 +74,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
     EmptyStateComponent,
     IconComponent,
     MxnPricePipe,
+    PushPromptComponent,
     SegmentedControlComponent,
     StatCardComponent,
     StatusBadgeComponent,
@@ -81,6 +84,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
   styleUrl: './waiter-dashboard-page.component.scss',
 })
 export class WaiterDashboardPageComponent {
+  protected readonly pushTarget: PushTarget = { kind: 'waiter' };
   protected readonly store = inject(TakeOrderStore);
   private readonly session = inject(SessionService);
   private readonly api = inject(ORDERS_API);
