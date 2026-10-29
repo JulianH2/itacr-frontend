@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.5.0](https://github.com/JulianH2/itacr-frontend/compare/v0.4.0...v0.5.0) (2026-10-29)
+
+
+### Added
+
+* **core:** ask for push permission and record opened notices (ITACR-15) ([5006a0d](https://github.com/JulianH2/itacr-frontend/commit/5006a0df91d324a22bbcf15360f0ad312329ebe6))
+* **orders:** add Marcar como entregado to the order detail (ITACR-16) ([5b255e4](https://github.com/JulianH2/itacr-frontend/commit/5b255e498d1049f8a95ebb6f9865fe23f22b1a74))
+* **orders:** add the calls to deliver an order and to list the ready pickups (ITACR-16) ([ec8a071](https://github.com/JulianH2/itacr-frontend/commit/ec8a071476d8365df62b1e21e79a68e91e013478))
+* **orders:** let a waiter mark a ready order as delivered (ITACR-16) ([819b43f](https://github.com/JulianH2/itacr-frontend/commit/819b43f374536db94039b1d4a7130123a13909a2))
+* **orders:** list the ready pickup orders on the waiter dashboard (ITACR-16) ([ee1cca0](https://github.com/JulianH2/itacr-frontend/commit/ee1cca025a2f9a8080dd8bf5e4f9b66270090ea5))
+* **orders:** offer order ready notices to the waiter and the pickup customer (ITACR-15) ([a582d0f](https://github.com/JulianH2/itacr-frontend/commit/a582d0f99f16093558d2d8e7cd56782320b47d40))
+* **orders:** offer order ready notices to the waiter and the pickup customer (ITACR-15) ([6e5c533](https://github.com/JulianH2/itacr-frontend/commit/6e5c533f812a9e71772836683c26d7b24b397a8d))
+* **repo:** add a static server that sends the frame-ancestors header (ITACR-57) ([62e65eb](https://github.com/JulianH2/itacr-frontend/commit/62e65eb1f3daef1fc7cf8655dbaec319cfadf9ee))
+
+
+### Fixed
+
+* **orders:** keep the active orders on screen when a refresh fails (ITACR-58) ([529e388](https://github.com/JulianH2/itacr-frontend/commit/529e38878aff33dd19c0f2b54ad7e4393e00a22d))
+* **orders:** keep the active orders on screen when a refresh fails (ITACR-58) ([bc1cbac](https://github.com/JulianH2/itacr-frontend/commit/bc1cbacfc4d67a08676b5f3a03a6d9131abbfe8d))
+* **repo:** answer 404 when a file disappears while it is served (ITACR-57) ([3a4f3b6](https://github.com/JulianH2/itacr-frontend/commit/3a4f3b6c1b023b9a54e72e762afbc94dba6a1a26))
+* **repo:** answer 404 when a file disappears while it is served (ITACR-57) ([69cfb61](https://github.com/JulianH2/itacr-frontend/commit/69cfb61e9d99c28690bf90a892b68fad7439f1df))
+* **repo:** send the frame-ancestors header from the frontend (ITACR-57) ([542ec6c](https://github.com/JulianH2/itacr-frontend/commit/542ec6cba25b2bf33e8e554375387acacd43e3b1))
+
+
+### Documentation
+
+* **orders:** describe delivering an order (ITACR-16) ([1b030bd](https://github.com/JulianH2/itacr-frontend/commit/1b030bd18c56d6ec467abe5e594d2da73cf361cd))
+* **orders:** document the order ready notices (ITACR-15) ([9061d07](https://github.com/JulianH2/itacr-frontend/commit/9061d071074b8b7662d5de8e084695fed218a710))
+* **repo:** document the startup command and the security headers (ITACR-57) ([0fe60f4](https://github.com/JulianH2/itacr-frontend/commit/0fe60f4454621f6483e9c800939a7085cfa5a11c))
+
 ## [0.4.0](https://github.com/JulianH2/itacr-frontend/compare/v0.3.0...v0.4.0) (2026-10-24)
 
 
