@@ -6,6 +6,5 @@ export const environment: AppEnvironment = {
   production: true,
   apiBaseUrl: `${BACKEND_URL}/api/v1`,
   kitchenHubUrl: `${BACKEND_URL}/hubs/kitchen`,
-  vapidPublicKey: '',
   useMockApi: false,
 };
