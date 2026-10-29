@@ -3,9 +3,11 @@ import {
   Component,
   DestroyRef,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
@@ -24,11 +26,14 @@ import {
   TableCardComponent,
   type TableStatus,
 } from '@shared/components/table-card/table-card.component';
+import { PushPromptComponent } from '@shared/components/push-prompt/push-prompt.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
+import type { PushTarget } from '@shared/services/push-notifications.service';
 
 import { destinationLabel, formatTime, orderStatusLabel } from '../../models/order-status';
 import { ORDER_STATUS_TONES } from '../../models/order-status-tone';
+import type { ActiveOrder } from '../../models/take-order.models';
 import { OfflineOrdersService } from '../../services/offline-orders.service';
 import { ORDERS_API } from '../../services/orders-api';
 import { TakeOrderStore } from '../../services/take-order-store.service';
@@ -69,6 +74,7 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
     EmptyStateComponent,
     IconComponent,
     MxnPricePipe,
+    PushPromptComponent,
     SegmentedControlComponent,
     StatCardComponent,
     StatusBadgeComponent,
@@ -78,10 +84,12 @@ const DATE_FORMAT = new Intl.DateTimeFormat('es-MX', {
   styleUrl: './waiter-dashboard-page.component.scss',
 })
 export class WaiterDashboardPageComponent {
+  protected readonly pushTarget: PushTarget = { kind: 'waiter' };
   protected readonly store = inject(TakeOrderStore);
   private readonly session = inject(SessionService);
   private readonly api = inject(ORDERS_API);
   private readonly offlineOrders = inject(OfflineOrdersService);
+  private readonly document = inject(DOCUMENT);
 
   protected readonly online = inject(ConnectionStatusService).online;
   protected readonly syncText = computed(() => {
@@ -116,11 +124,18 @@ export class WaiterDashboardPageComponent {
 
   private readonly activeResource = rxResource({ stream: () => this.api.getActiveOrders() });
 
+  /** The last orders that loaded, kept when a refresh fails so the list stays on screen. */
+  private readonly lastLoaded = signal<readonly ActiveOrder[] | null>(null);
+
+  /** Pickup orders of customers that are Ready: no waiter took them, so a waiter finds them here to hand them over (HU_10). */
+  private readonly pickupResource = rxResource({ stream: () => this.api.getReadyPickupOrders() });
+  private readonly lastPickups = signal<readonly ActiveOrder[]>([]);
+
   protected readonly filterOptions = FILTER_OPTIONS;
   protected readonly statusFilter = signal<string>('all');
 
   private readonly activeOrders = computed(() =>
-    (this.activeResource.hasValue() ? this.activeResource.value() : []).map((order) => ({
+    (this.lastLoaded() ?? []).map((order) => ({
       id: order.id,
       title: `Orden #${order.orderNumber} · ${destinationLabel(order.tableNumber)}`,
       status: orderStatusLabel(order.status),
@@ -130,6 +145,14 @@ export class WaiterDashboardPageComponent {
         order.status === 'Ready'
           ? `Listo desde ${formatTime(order.lastStatusChangeAt)}`
           : formatTime(order.createdAt),
+    })),
+  );
+
+  protected readonly readyPickups = computed(() =>
+    this.lastPickups().map((order) => ({
+      id: order.id,
+      title: `Orden #${order.orderNumber} · Para recoger`,
+      time: `Listo desde ${formatTime(order.lastStatusChangeAt)}`,
     })),
   );
 
@@ -151,18 +174,29 @@ export class WaiterDashboardPageComponent {
   }));
 
   protected readonly loading = computed(
-    () => this.activeResource.isLoading() && !this.activeResource.hasValue(),
+    () => this.activeResource.isLoading() && this.lastLoaded() === null,
   );
   protected readonly failed = computed(() => this.activeResource.error() !== undefined);
 
   constructor() {
+    effect(() => {
+      if (this.activeResource.hasValue()) {
+        this.lastLoaded.set(this.activeResource.value());
+      }
+    });
+    effect(() => {
+      if (this.pickupResource.hasValue()) {
+        this.lastPickups.set(this.pickupResource.value());
+      }
+    });
+
     // Polling only while the page is visible; coming back to the tab asks right away.
     merge(
       timer(ACTIVE_ORDERS_REFRESH_MS, ACTIVE_ORDERS_REFRESH_MS),
-      fromEvent(document, 'visibilitychange'),
+      fromEvent(this.document, 'visibilitychange'),
     )
       .pipe(
-        filter(() => !document.hidden && this.online() && !this.activeResource.isLoading()),
+        filter(() => !this.document.hidden && this.online() && !this.activeResource.isLoading()),
         takeUntilDestroyed(inject(DestroyRef)),
       )
       .subscribe(() => this.reload());
@@ -170,6 +204,7 @@ export class WaiterDashboardPageComponent {
 
   protected reload(): void {
     this.activeResource.reload();
+    this.pickupResource.reload();
   }
 
   protected discard(clientOrderId: string): void {

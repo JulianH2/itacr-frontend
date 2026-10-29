@@ -65,6 +65,7 @@ async function render(
   unsent: readonly PendingOrder[] = [],
   online = true,
   getActiveOrders: OrdersApi['getActiveOrders'] | null = null,
+  pickups: readonly ActiveOrder[] = [],
 ): Promise<HTMLElement> {
   offlineOrders.orders.set(unsent);
   offlineOrders.pendingCount = computed(
@@ -74,6 +75,8 @@ async function render(
     getDiningTables: () => of([]),
     createOrder: () => EMPTY,
     getOrder: () => EMPTY,
+    deliverOrder: () => EMPTY,
+    getReadyPickupOrders: () => of(pickups),
     getActiveOrders:
       getActiveOrders ??
       (() => (Array.isArray(active) ? of(active) : (active as Observable<never>))),
@@ -199,6 +202,79 @@ describe('WaiterDashboardPageComponent', () => {
 
     // Assert
     expect(getActiveOrders.mock.calls.length).toBe(calls);
+  });
+
+  // HU_08, ITACR-58
+  it('should keep the list on screen with a notice when a refresh fails', async () => {
+    // Arrange
+    let calls = 0;
+    const page = await render(ACTIVE, [], true, () =>
+      ++calls === 1 ? of(ACTIVE) : throwError(() => new Error('offline')),
+    );
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(ids(page)).toEqual(['Orden #13 · Para llevar', 'Orden #12 · Mesa 5']);
+    expect(page.querySelector('[data-testid="active-error"]')?.textContent).toContain(
+      'Mostramos los últimos que cargaron.',
+    );
+    expect(page.querySelector('[data-testid="active-empty"]')).toBeNull();
+  });
+
+  // HU_08, ITACR-58
+  it('should drop the notice when the next refresh works', async () => {
+    // Arrange
+    let calls = 0;
+    const page = await render(ACTIVE, [], true, () =>
+      ++calls === 2 ? throwError(() => new Error('offline')) : of(ACTIVE),
+    );
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(page.querySelector('[data-testid="active-error"]')).toBeNull();
+    expect(ids(page)).toHaveLength(2);
+  });
+
+  // HU_10
+  it('should list the pickup orders that are ready, so a waiter can hand one over', async () => {
+    // Act
+    const page = await render(ACTIVE, [], true, null, [
+      {
+        id: 'pickup-1',
+        orderNumber: 21,
+        channel: 'MobileApp',
+        status: 'Ready',
+        tableNumber: null,
+        createdAt: '2026-10-14T17:50:00Z',
+        lastStatusChangeAt: '2026-10-14T18:10:00Z',
+      },
+    ]);
+
+    // Assert
+    const links = Array.from(
+      page.querySelectorAll<HTMLAnchorElement>('[data-testid="ready-pickup"]'),
+    );
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent).toContain('Orden #21 · Para recoger');
+    expect(links[0]?.getAttribute('href')).toBe('/orders/detail/pickup-1');
+  });
+
+  // HU_10
+  it('should not show the pickup section when no pickup order is waiting', async () => {
+    // Act
+    const page = await render(ACTIVE);
+
+    // Assert
+    expect(page.querySelector('[data-testid="ready-pickup"]')).toBeNull();
+    expect(page.textContent).not.toContain('Para recoger (listos)');
   });
 
   // HU_07

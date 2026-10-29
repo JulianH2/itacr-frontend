@@ -20,6 +20,13 @@
     </section>
   }
 
+  @if (pushTarget(); as target) {
+    <app-push-prompt
+      [target]="target"
+      description="Activa los avisos y te diremos en este teléfono cuando tu pedido esté listo para recoger."
+    />
+  }
+
   @if (tracking.isOutdated()) {
     <p class="orders__outdated" role="status">{{ outdatedMessage }}</p>
   }

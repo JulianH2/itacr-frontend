@@ -4,6 +4,7 @@ import { type Observable, delay, of, throwError } from 'rxjs';
 
 import type {
   CreateOrderRequest,
+  DeliveredOrder,
   DiningTable,
   OrderDetail,
   PlacedOrder,
@@ -80,10 +81,33 @@ export class MockOrdersApiService implements OrdersApi {
       total: order.total,
       createdAt: order.createdAt,
       readyAt: null,
+      deliveredAt: null,
       items: order.items,
       timeline: [{ status: 'New', changedAt: order.createdAt, undone: false }],
     };
     return of(detail).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  /** The mock kitchen never marks an order Ready, so the mock never has one to deliver. */
+  deliverOrder(orderId: string): Observable<DeliveredOrder> {
+    const order = [...this.orders.values()].find((candidate) => candidate.id === orderId);
+    if (!order) {
+      return throwError(() => new HttpErrorResponse({ status: 404 }));
+    }
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          status: 409,
+          error: {
+            detail:
+              'El pedido todavía no está listo. Solo se puede entregar cuando cocina lo marca como listo.',
+          },
+        }),
+    );
+  }
+
+  getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
+    return of([]).pipe(delay(MOCK_LATENCY_MS));
   }
 
   getActiveOrders(): Observable<readonly ActiveOrder[]> {
