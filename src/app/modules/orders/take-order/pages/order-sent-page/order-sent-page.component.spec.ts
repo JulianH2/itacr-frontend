@@ -29,6 +29,8 @@ const API: OrdersApi = {
   createOrder: () => of(SENT_ORDER),
   getOrder: () => EMPTY,
   getActiveOrders: () => of([]),
+  deliverOrder: () => EMPTY,
+  getReadyPickupOrders: () => of([]),
 };
 
 describe('OrderSentPageComponent', () => {

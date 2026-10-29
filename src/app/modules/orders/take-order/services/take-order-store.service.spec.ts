@@ -7,12 +7,13 @@ import { ConnectionStatusService } from '@shared/services/connection-status.serv
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type {
+  ActiveOrder,
   CreateOrderRequest,
+  DeliveredOrder,
   DiningTable,
   OrderDetail,
   PlacedOrder,
   QueuedOrderRequest,
-  ActiveOrder,
 } from '../models/take-order.models';
 import { TAKE_ORDER_MESSAGES } from '../take-order.messages';
 import { OfflineOrdersService, type PendingOrderSummary } from './offline-orders.service';
@@ -56,6 +57,14 @@ class FakeOrdersApi implements OrdersApi {
   }
 
   getActiveOrders(): Observable<readonly ActiveOrder[]> {
+    return of([]);
+  }
+
+  deliverOrder(): Observable<DeliveredOrder> {
+    return EMPTY;
+  }
+
+  getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
     return of([]);
   }
 }

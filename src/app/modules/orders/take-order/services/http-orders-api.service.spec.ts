@@ -70,4 +70,24 @@ describe('HttpOrdersApiService', () => {
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
+
+  it('should deliver an order with a post to its deliver route', () => {
+    // Act
+    service.deliverOrder('order-1').subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/order-1/deliver`);
+    expect(request.request.method).toBe('POST');
+    request.flush({ id: 'order-1', status: 'Delivered', deliveredAt: '2026-10-14T18:25:00Z' });
+  });
+
+  it('should request the pickup orders that are ready', () => {
+    // Act
+    service.getReadyPickupOrders().subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/pickups/ready`);
+    expect(request.request.method).toBe('GET');
+    request.flush([]);
+  });
 });

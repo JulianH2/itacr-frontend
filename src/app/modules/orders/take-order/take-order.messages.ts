@@ -3,5 +3,7 @@ export const TAKE_ORDER_MESSAGES = {
   network: 'No pudimos enviar el pedido. Revisa tu conexión e inténtalo de nuevo.',
   unexpected: 'No pudimos enviar el pedido. Inténtalo de nuevo.',
   queued: 'Pedido guardado. Se enviará a cocina cuando vuelva la conexión.',
+  deliverNetwork: 'No pudimos entregar el pedido. Revisa tu conexión e inténtalo de nuevo.',
+  deliverUnexpected: 'No pudimos entregar el pedido. Inténtalo de nuevo.',
   notSaved: 'No pudimos guardar el pedido en este dispositivo. Inténtalo de nuevo.',
 } as const;
