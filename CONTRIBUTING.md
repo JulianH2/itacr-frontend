@@ -410,7 +410,7 @@ An issue is **Done** only when all of the following are true:
 
 ## 13. Deployment to Azure
 
-The Azure resources are created by hand in the Azure Portal; this repository never creates or changes them. The PWA is served by App Service `app-itacr-frontend-prod` with `pm2 serve /home/site/wwwroot --no-daemon --spa`.
+The Azure resources are created by hand in the Azure Portal; this repository never creates or changes them. The PWA is served by App Service `app-itacr-frontend-prod` with the startup command `node /home/site/wwwroot/server.cjs` (the static server of `server/server.cjs`, which sends the security headers; see the README, section Production), and the same goes for the QA app.
 
 ### 13.1 Deploy workflow
 

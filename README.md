@@ -158,13 +158,13 @@ The 18 photos of the menu live in `public/assets/images/products/`, one per seed
 
 ## Production
 
-The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, with the startup command:
+The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, plus `server.cjs` (the source is `server/server.cjs`, which the deploy copies next to `index.html`), with the startup command:
 
 ```
-pm2 serve /home/site/wwwroot --no-daemon --spa
+node /home/site/wwwroot/server.cjs
 ```
 
-`--spa` answers every unknown path with `index.html`, so routes such as `/login` work after a reload.
+`server.cjs` is a small server without dependencies. It answers every unknown path without an extension with `index.html`, so routes such as `/login` work after a reload, and it sends the security headers on every answer: `Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`, so no other site can put the app in a frame (clickjacking, CWE-1021, ITACR-57). `pm2 serve`, the previous startup command, cannot send headers. Check it after a deploy with `curl -I https://<frontend domain>/`: both headers must be there. Its tests are `npm run test:server`.
 
 | URL      | Value                                                                                |
 | -------- | ------------------------------------------------------------------------------------ |
@@ -173,7 +173,7 @@ pm2 serve /home/site/wwwroot --no-daemon --spa
 
 - Azure generates the domains with a unique suffix; they are shown in each App Service > Overview > **Default domain**. `src/environments/environment.ts` uses the backend one for `apiBaseUrl` and `kitchenHubUrl`.
 - The backend only accepts this frontend if its domain is in the backend `Cors__Origins__0` setting (itacr-backend README, "Production settings").
-- **Content Security Policy:** `pm2 serve` cannot send HTTP headers, so the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs. A `<meta>` CSP cannot set `frame-ancestors`.
+- **Content Security Policy:** `frame-ancestors` is ignored in a `<meta>` tag, so it goes in the header of `server.cjs`. The other directives stay in the page: the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs.
 
 ### QA
 
