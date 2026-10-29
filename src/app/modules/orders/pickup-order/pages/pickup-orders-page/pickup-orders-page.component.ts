@@ -1,11 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
+import { PushPromptComponent } from '@shared/components/push-prompt/push-prompt.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import type { PushTarget } from '@shared/services/push-notifications.service';
 
 import {
   PICKUP_STATUS_TONES,
@@ -29,6 +31,7 @@ import { PICKUP_MESSAGES } from '../../pickup-order.messages';
     EmptyStateComponent,
     IconComponent,
     MxnPricePipe,
+    PushPromptComponent,
     StatusBadgeComponent,
   ],
   providers: [PickupTrackingStore],
@@ -43,4 +46,11 @@ export class PickupOrdersPageComponent {
   protected readonly outdatedMessage = PICKUP_MESSAGES.trackingUnavailable;
   protected readonly statusLabel = pickupStatusLabel;
   protected readonly statusHint = pickupStatusHint;
+
+  /** The newest order of this phone; its customer gets the notices of this and the next orders (HU_09 CA2). */
+  protected readonly pushTarget = computed<PushTarget | null>(() => {
+    const clientOrderId =
+      this.sentOrder()?.clientOrderId ?? this.tracking.orders()[0]?.clientOrderId;
+    return clientOrderId === undefined ? null : { kind: 'pickup', clientOrderId };
+  });
 }

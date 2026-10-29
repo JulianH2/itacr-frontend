@@ -53,6 +53,10 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 `/orders` lists the orders of the signed-in waiter that are not delivered (`GET /orders/active`), with the counters Activos, Listos and Pendientes (orders still on the device waiting for the connection) and a filter by Todos, En cocina and Listos. The list is asked again every 15 seconds only while the page is visible, and right away when the tab comes back to the front. With `useMockApi: true` it lists the orders created in the same session.
 
+### Delivering an order (HU_10)
+
+In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
+
 ## npm scripts
 
 | Script                 | Description                                                   |
@@ -91,7 +95,7 @@ itacr-frontend/
 │   │   ├── app.config.ts     # Providers: router, HttpClient, service worker
 │   │   ├── app.routes.ts     # One lazy route per screen
 │   │   └── app.ts            # App shell (toolbar + router outlet)
-│   ├── environments/         # Build-time configuration (API URL, SignalR hub URL, VAPID key)
+│   ├── environments/         # Build-time configuration (API URL, SignalR hub URL)
 │   ├── index.html
 │   ├── index.production.html # index.html plus the production CSP
 │   ├── index.qa.html         # index.html plus the QA CSP
@@ -154,13 +158,13 @@ The 18 photos of the menu live in `public/assets/images/products/`, one per seed
 
 ## Production
 
-The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, with the startup command:
+The PWA runs on Azure App Service `app-itacr-frontend-prod` (Linux, Node LTS, plan `asp-itacr-prod-westus` shared with the backend, resource group `rg-itacr-prod-westus`). App Service only serves the files of `dist/itacr-frontend/browser`, plus `server.cjs` (the source is `server/server.cjs`, which the deploy copies next to `index.html`), with the startup command:
 
 ```
-pm2 serve /home/site/wwwroot --no-daemon --spa
+node /home/site/wwwroot/server.cjs
 ```
 
-`--spa` answers every unknown path with `index.html`, so routes such as `/login` work after a reload.
+`server.cjs` is a small server without dependencies. It answers every unknown path without an extension with `index.html`, so routes such as `/login` work after a reload, and it sends the security headers on every answer: `Content-Security-Policy: frame-ancestors 'none'` and `X-Frame-Options: DENY`, so no other site can put the app in a frame (clickjacking, CWE-1021, ITACR-57). `pm2 serve`, the previous startup command, cannot send headers. Check it after a deploy with `curl -I https://<frontend domain>/`: both headers must be there. Its tests are `npm run test:server`.
 
 | URL      | Value                                                                                |
 | -------- | ------------------------------------------------------------------------------------ |
@@ -169,7 +173,7 @@ pm2 serve /home/site/wwwroot --no-daemon --spa
 
 - Azure generates the domains with a unique suffix; they are shown in each App Service > Overview > **Default domain**. `src/environments/environment.ts` uses the backend one for `apiBaseUrl` and `kitchenHubUrl`.
 - The backend only accepts this frontend if its domain is in the backend `Cors__Origins__0` setting (itacr-backend README, "Production settings").
-- **Content Security Policy:** `pm2 serve` cannot send HTTP headers, so the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs. A `<meta>` CSP cannot set `frame-ancestors`.
+- **Content Security Policy:** `frame-ancestors` is ignored in a `<meta>` tag, so it goes in the header of `server.cjs`. The other directives stay in the page: the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs.
 
 ### QA
 
@@ -212,7 +216,7 @@ Full workflow and sprint close checklist: [CONTRIBUTING.md](CONTRIBUTING.md).
 The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code quality and security: quality findings, vulnerable dependencies, exposed secrets, and workflow risks (ITACR-50).
 
 - **Installation (once, repository owner):** sign in to in.xygeni.io with GitHub, install the Xygeni GitHub App on `JulianH2`, and import `JulianH2/itacr-frontend` in **Manage Scans**. Create an API token in Xygeni and save it as the repository secret `XYGENI_TOKEN` (Settings > Secrets and variables > Actions); never commit it.
-- **Automatic run:** `.github/workflows/xygeni-scan.yml` runs the Xygeni scanner on every PR into `sprint-*`, `develop`, `release`, and `main`, every night, and by hand (**Actions** > **Xygeni Scan** > **Run workflow**). The Xygeni GitHub App also runs scheduled scans.
+- **Automatic run:** `.github/workflows/xygeni-scan.yml` runs the Xygeni scanner on every PR into `sprint-*`, `develop`, `release`, and `main`, every night, and by hand (**Actions** > **Xygeni Scan** > **Run workflow**). The Xygeni GitHub App also runs scheduled scans. Dependabot PRs skip it: GitHub does not give them the repository secrets, so the scan would fail without `XYGENI_TOKEN`; the nightly scan of `develop` covers those updates after they are merged (ITACR-55).
 - **Results:** in.xygeni.io > **Code Quality** and **Risks**, project `JulianH2/itacr-frontend`; the history of runs is in **Scan History**.
 - **Exclusions:** none beyond build output and dependencies (`bin/`, `obj/`, `node_modules/`); findings are fixed, never hidden.
 - GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.

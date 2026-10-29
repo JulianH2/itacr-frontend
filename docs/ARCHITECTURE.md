@@ -125,6 +125,16 @@ The waiter keeps sending orders when the restaurant WiFi drops; they reach the k
 - **What the waiter sees:** the dashboard always shows the connection and how many orders are waiting, plus the list of unsent orders (pending or rejected). Pending orders are not in the kitchen. When the connection drops, a native modal `<dialog>` ("Sin conexión", "Continuar sin conexión") opens over the current screen, so the waiter stays where they were (CA4); it closes by itself when the connection comes back. It is not `MatDialog`, which would pull the CDK overlay into the initial bundle.
 - **Tables offline:** `GET /dining-tables` is cached by the service worker (`dining-tables` data group, freshness), so a table can be picked without a connection. The catalog was already cached.
 
+### Order ready notices (HU_09)
+
+When the kitchen marks an order as Ready, the waiter who took it, or the customer of a pickup order, gets a push notification on the phone. The backend decides who and builds the text (its `docs/database.md`, "Order ready notices"); the PWA only asks for the permission and saves the subscription.
+
+- **Asking:** `PushPromptComponent` explains the notice and shows "Activar avisos". Browsers only show the permission prompt in answer to a tap, so it never asks on load. It is on the waiter dashboard and on the customer's order screen (`/pickup/orders`). It shows nothing where notices are impossible (no service worker, as in `ng serve`, or no Notification API), a short note when the browser blocked them, and with permission already granted it quietly saves the browser again (another waiter signed in on the phone, or a new pickup order).
+- **Subscribing:** `PushNotificationsService` asks the API for the VAPID public key (`GET /public/push/public-key`; 404 means notices are off there), subscribes with `SwPush.requestSubscription`, and posts `{ endpoint, p256dh, auth }` to `POST /push/subscriptions` (waiter, with the JWT) or `POST /public/orders/{clientOrderId}/push-subscription` (customer, no token). The customer's subscription belongs to their phone number, so their next orders are notified too.
+- **Opening:** the notice uses the payload format of the Angular service worker, with `onActionClick` set to `navigateLastFocusedOrOpen`, so a tap opens the order (`/orders/detail/{id}` or `/pickup/orders`) even with the app closed, without code of ours in the worker (CA3).
+- **Read:** the link carries `?notification=<id>`. `NotificationReadService`, started by an app initializer, posts `POST /public/notifications/{id}/read` and removes the parameter from the address, which also works when the tap is what opened the app.
+- **Without notices** (not accepted, blocked, or iPhone without the app installed, HU_11) the change is still shown in the app (CA4).
+
 ## 6. PWA
 
 - Angular service worker (`ngsw-config.json`): the app shell is cached, so the app opens without a connection.
@@ -140,7 +150,7 @@ The waiter keeps sending orders when the restaurant WiFi drops; they reach the k
 
 ## 8. Build and deployment
 
-- `environment.ts` (production) and `environment.development.ts` hold the API URL, the SignalR hub URL, the VAPID key, and `useMockApi`. They are build-time values, not secrets.
+- `environment.ts` (production) and `environment.development.ts` hold the API URL, the SignalR hub URL, and `useMockApi`. The VAPID public key of the push notices is not here: the PWA asks the API for it (`GET /public/push/public-key`), so each environment uses its own pair without a new build. They are build-time values, not secrets.
 - The deploy workflow runs on `main`: tests, production build, and publish to Azure App Service. release-please versions the app and writes the CHANGELOG.
 
 ## 9. Key decisions
