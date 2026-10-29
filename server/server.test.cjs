@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { after, before, describe, it } = require('node:test');
+const { after, before, describe, it, mock } = require('node:test');
 
 const { createServer } = require('./server.cjs');
 
@@ -87,6 +87,28 @@ describe('static server of the PWA (ITACR-57)', () => {
     } finally {
       fs.rmSync(outside);
     }
+  });
+
+  it('should answer 404, and keep running, when a file disappears while it is being served', async () => {
+    const target = path.join(root, 'main-ABC123.js');
+    const realStat = fs.statSync;
+    let calls = 0;
+    const stat = mock.method(fs, 'statSync', (file, ...rest) => {
+      if (file === target && ++calls === 2) {
+        throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+      }
+      return realStat(file, ...rest);
+    });
+    try {
+      const response = await fetch(baseUrl + '/main-ABC123.js');
+
+      assert.equal(response.status, 404);
+      assert.equal(response.headers.get('x-frame-options'), 'DENY');
+    } finally {
+      stat.mock.restore();
+    }
+
+    assert.equal((await fetch(baseUrl + '/')).status, 200);
   });
 
   it('should only accept GET and HEAD', async () => {
