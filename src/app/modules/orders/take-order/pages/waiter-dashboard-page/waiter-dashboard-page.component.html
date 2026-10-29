@@ -133,6 +133,29 @@
         </section>
       }
 
+      @if (readyPickups().length > 0) {
+        <section class="dashboard__recent-card" aria-labelledby="ready-pickups">
+          <h2 id="ready-pickups" class="dashboard__card-title">Para recoger (listos)</h2>
+          <ul class="dashboard__recent">
+            @for (order of readyPickups(); track order.id) {
+              <li>
+                <a
+                  class="dashboard__recent-link"
+                  [routerLink]="['/orders/detail', order.id]"
+                  data-testid="ready-pickup"
+                >
+                  <span class="dashboard__recent-text">
+                    <span class="dashboard__recent-title">{{ order.title }}</span>
+                    <span class="dashboard__recent-meta tabular">{{ order.time }}</span>
+                  </span>
+                  <app-status-badge tone="success">Listo</app-status-badge>
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
       <section class="dashboard__recent-card" aria-labelledby="active-orders">
         <h2 id="active-orders" class="dashboard__card-title">Pedidos activos</h2>
         <app-segmented-control
