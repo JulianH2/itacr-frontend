@@ -37,3 +37,14 @@ function problemMessage(body: unknown): string | null {
   }
   return typeof problem['detail'] === 'string' ? problem['detail'] : null;
 }
+
+/** The message the waiter sees when delivering an order fails: the API explains a conflict, the rest is a generic text. */
+export function deliverErrorMessage(error: unknown): string {
+  if (!(error instanceof HttpErrorResponse)) {
+    return TAKE_ORDER_MESSAGES.deliverUnexpected;
+  }
+  if (error.status === 0) {
+    return TAKE_ORDER_MESSAGES.deliverNetwork;
+  }
+  return problemMessage(error.error) ?? TAKE_ORDER_MESSAGES.deliverUnexpected;
+}
