@@ -15,6 +15,7 @@ concurrency:
 
 env:
   AZURE_WEBAPP_NAME: ${{ github.ref_name == 'main' && 'app-itacr-frontend-prod' || 'app-itacr-frontend-qa' }}
+  AZURE_RESOURCE_GROUP: rg-itacr-prod-westus
   BUILD_SCRIPT: ${{ github.ref_name == 'main' && 'build' || 'build:qa' }}
   BUILD_OUTPUT: dist/itacr-frontend/browser
 
@@ -66,6 +67,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Download build
         uses: actions/download-artifact@v8
@@ -73,9 +77,18 @@ jobs:
           name: browser
           path: browser
 
+      # OIDC, no publish profile: the service principal has Website Contributor on the two frontend App Services only.
+      - name: Sign in to Azure
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          allow-no-subscriptions: true
+
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@02a81bead70021f5284939794bcec79c271ab383 # v3.0.8
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ github.ref_name == 'main' && secrets.AZURE_FRONTEND_PUBLISH_PROFILE || secrets.AZURE_FRONTEND_QA_PUBLISH_PROFILE }}
+          resource-group-name: ${{ env.AZURE_RESOURCE_GROUP }}
           package: browser
