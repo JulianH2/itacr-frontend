@@ -89,6 +89,15 @@ function send(response, status, headers, body) {
   response.end(body);
 }
 
+function sendNotFound(response, request) {
+  send(
+    response,
+    404,
+    { 'Content-Type': 'text/plain; charset=utf-8' },
+    request.method === 'HEAD' ? '' : 'Not found',
+  );
+}
+
 /** Creates the server for the files of `root`. It does not listen yet. */
 function createServer(root) {
   const base = path.resolve(root);
@@ -102,16 +111,18 @@ function createServer(root) {
     const { pathname } = new URL(request.url ?? '/', 'http://localhost');
     const file = resolveFile(base, pathname);
     if (file === null) {
-      send(
-        response,
-        404,
-        { 'Content-Type': 'text/plain; charset=utf-8' },
-        request.method === 'HEAD' ? '' : 'Not found',
-      );
+      sendNotFound(response, request);
       return;
     }
 
-    const stats = fs.statSync(file);
+    // The file can disappear between resolveFile and here (a deploy replacing the folder); that is a 404, not a crash.
+    let stats;
+    try {
+      stats = fs.statSync(file);
+    } catch {
+      sendNotFound(response, request);
+      return;
+    }
     const headers = {
       'Content-Type': CONTENT_TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream',
       'Content-Length': stats.size,
