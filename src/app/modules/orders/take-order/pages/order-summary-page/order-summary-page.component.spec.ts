@@ -33,6 +33,8 @@ function createApi(requests: CreateOrderRequest[]): OrdersApi {
     },
     getOrder: () => EMPTY,
     getActiveOrders: () => of([]),
+    deliverOrder: () => EMPTY,
+    getReadyPickupOrders: () => of([]),
   };
 }
 

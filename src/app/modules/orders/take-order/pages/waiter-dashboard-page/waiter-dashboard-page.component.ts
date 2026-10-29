@@ -123,6 +123,10 @@ export class WaiterDashboardPageComponent {
   /** The last orders that loaded, kept when a refresh fails so the list stays on screen. */
   private readonly lastLoaded = signal<readonly ActiveOrder[] | null>(null);
 
+  /** Pickup orders of customers that are Ready: no waiter took them, so a waiter finds them here to hand them over (HU_10). */
+  private readonly pickupResource = rxResource({ stream: () => this.api.getReadyPickupOrders() });
+  private readonly lastPickups = signal<readonly ActiveOrder[]>([]);
+
   protected readonly filterOptions = FILTER_OPTIONS;
   protected readonly statusFilter = signal<string>('all');
 
@@ -137,6 +141,14 @@ export class WaiterDashboardPageComponent {
         order.status === 'Ready'
           ? `Listo desde ${formatTime(order.lastStatusChangeAt)}`
           : formatTime(order.createdAt),
+    })),
+  );
+
+  protected readonly readyPickups = computed(() =>
+    this.lastPickups().map((order) => ({
+      id: order.id,
+      title: `Orden #${order.orderNumber} · Para recoger`,
+      time: `Listo desde ${formatTime(order.lastStatusChangeAt)}`,
     })),
   );
 
@@ -168,6 +180,11 @@ export class WaiterDashboardPageComponent {
         this.lastLoaded.set(this.activeResource.value());
       }
     });
+    effect(() => {
+      if (this.pickupResource.hasValue()) {
+        this.lastPickups.set(this.pickupResource.value());
+      }
+    });
 
     // Polling only while the page is visible; coming back to the tab asks right away.
     merge(
@@ -183,6 +200,7 @@ export class WaiterDashboardPageComponent {
 
   protected reload(): void {
     this.activeResource.reload();
+    this.pickupResource.reload();
   }
 
   protected discard(clientOrderId: string): void {

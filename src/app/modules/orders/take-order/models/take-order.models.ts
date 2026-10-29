@@ -69,8 +69,16 @@ export interface OrderDetail {
   readonly total: number;
   readonly createdAt: string;
   readonly readyAt: string | null;
+  readonly deliveredAt: string | null;
   readonly items: readonly OrderDetailItem[];
   readonly timeline: readonly OrderTimelineEntry[];
+}
+
+/** An order after the waiter handed it over (`POST /orders/{id}/deliver`). */
+export interface DeliveredOrder {
+  readonly id: string;
+  readonly status: 'Delivered';
+  readonly deliveredAt: string;
 }
 
 /** One of the last orders of the waiter (`GET /orders/active`), to open its detail. */

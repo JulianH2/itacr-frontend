@@ -53,6 +53,10 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 `/orders` lists the orders of the signed-in waiter that are not delivered (`GET /orders/active`), with the counters Activos, Listos and Pendientes (orders still on the device waiting for the connection) and a filter by Todos, En cocina and Listos. The list is asked again every 15 seconds only while the page is visible, and right away when the tab comes back to the front. With `useMockApi: true` it lists the orders created in the same session.
 
+### Delivering an order (HU_10)
+
+In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
+
 ## npm scripts
 
 | Script                 | Description                                                   |

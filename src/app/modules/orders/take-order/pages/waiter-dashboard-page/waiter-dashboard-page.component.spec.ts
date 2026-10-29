@@ -65,6 +65,7 @@ async function render(
   unsent: readonly PendingOrder[] = [],
   online = true,
   getActiveOrders: OrdersApi['getActiveOrders'] | null = null,
+  pickups: readonly ActiveOrder[] = [],
 ): Promise<HTMLElement> {
   offlineOrders.orders.set(unsent);
   offlineOrders.pendingCount = computed(
@@ -74,6 +75,8 @@ async function render(
     getDiningTables: () => of([]),
     createOrder: () => EMPTY,
     getOrder: () => EMPTY,
+    deliverOrder: () => EMPTY,
+    getReadyPickupOrders: () => of(pickups),
     getActiveOrders:
       getActiveOrders ??
       (() => (Array.isArray(active) ? of(active) : (active as Observable<never>))),
@@ -238,6 +241,40 @@ describe('WaiterDashboardPageComponent', () => {
     // Assert
     expect(page.querySelector('[data-testid="active-error"]')).toBeNull();
     expect(ids(page)).toHaveLength(2);
+  });
+
+  // HU_10
+  it('should list the pickup orders that are ready, so a waiter can hand one over', async () => {
+    // Act
+    const page = await render(ACTIVE, [], true, null, [
+      {
+        id: 'pickup-1',
+        orderNumber: 21,
+        channel: 'MobileApp',
+        status: 'Ready',
+        tableNumber: null,
+        createdAt: '2026-10-14T17:50:00Z',
+        lastStatusChangeAt: '2026-10-14T18:10:00Z',
+      },
+    ]);
+
+    // Assert
+    const links = Array.from(
+      page.querySelectorAll<HTMLAnchorElement>('[data-testid="ready-pickup"]'),
+    );
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent).toContain('Orden #21 · Para recoger');
+    expect(links[0]?.getAttribute('href')).toBe('/orders/detail/pickup-1');
+  });
+
+  // HU_10
+  it('should not show the pickup section when no pickup order is waiting', async () => {
+    // Act
+    const page = await render(ACTIVE);
+
+    // Assert
+    expect(page.querySelector('[data-testid="ready-pickup"]')).toBeNull();
+    expect(page.textContent).not.toContain('Para recoger (listos)');
   });
 
   // HU_07

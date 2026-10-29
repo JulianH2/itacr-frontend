@@ -38,6 +38,24 @@ $marker-size: 40px;
   margin: var(--space-half) 0 0;
 }
 
+.detail__deliver {
+  display: flex;
+}
+
+.detail__error {
+  color: var(--color-error);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.detail__summary {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
 .detail__status {
   margin: var(--space-half) 0 0;
 }
