@@ -11,13 +11,14 @@ import { MemoryStorage } from '@shared/testing/memory-storage';
 import { EmployeeRole } from '@shared/auth/auth.models';
 
 import type {
+  ActiveOrder,
   CreateOrderRequest,
+  DeliveredOrder,
   DiningTable,
   OrderDetail,
   PendingOrder,
   PlacedOrder,
   QueuedOrderRequest,
-  ActiveOrder,
 } from '../models/take-order.models';
 import { OfflineOrdersService, type PendingOrderSummary } from './offline-orders.service';
 import { ORDERS_API, type OrdersApi } from './orders-api';
@@ -66,6 +67,14 @@ class FakeOrdersApi implements OrdersApi {
   }
 
   getActiveOrders(): Observable<readonly ActiveOrder[]> {
+    return of([]);
+  }
+
+  deliverOrder(): Observable<DeliveredOrder> {
+    return EMPTY;
+  }
+
+  getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
     return of([]);
   }
 }

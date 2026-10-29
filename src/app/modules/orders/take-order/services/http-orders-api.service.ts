@@ -6,6 +6,7 @@ import { environment } from '@env/environment';
 
 import type {
   CreateOrderRequest,
+  DeliveredOrder,
   DiningTable,
   OrderDetail,
   PlacedOrder,
@@ -35,5 +36,16 @@ export class HttpOrdersApiService implements OrdersApi {
 
   getActiveOrders(): Observable<readonly ActiveOrder[]> {
     return this.http.get<readonly ActiveOrder[]>(`${environment.apiBaseUrl}/orders/active`);
+  }
+
+  deliverOrder(orderId: string): Observable<DeliveredOrder> {
+    return this.http.post<DeliveredOrder>(
+      `${environment.apiBaseUrl}/orders/${orderId}/deliver`,
+      null,
+    );
+  }
+
+  getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
+    return this.http.get<readonly ActiveOrder[]>(`${environment.apiBaseUrl}/orders/pickups/ready`);
   }
 }
