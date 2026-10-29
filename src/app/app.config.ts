@@ -13,6 +13,7 @@ import { environment } from '@env/environment';
 import { authInterceptor } from '@shared/interceptors/auth.interceptor';
 import { mockAuthInterceptor } from '@shared/mocks/mock-auth.interceptor';
 import { AppUpdateService } from '@shared/services/app-update.service';
+import { NotificationReadService } from '@shared/services/notification-read.service';
 
 import { routes } from './app.routes';
 import { provideOrdersApi } from './modules/orders/take-order/orders.config';
@@ -35,6 +36,7 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAppInitializer(() => inject(AppUpdateService).start()),
+    provideAppInitializer(() => inject(NotificationReadService).start()),
     // Orders saved offline are sent from any screen, so the queue and its API live in root (HU_07).
     provideOrdersApi(),
     provideAppInitializer(() => {
