@@ -420,11 +420,11 @@ The Azure resources are created by hand in the Azure Portal; this repository nev
 2. `npm test`.
 3. `npm run build` (production configuration).
 4. Checks that `dist/itacr-frontend/browser` contains `index.html` and `ngsw.json`.
-5. Deploys that folder to `app-itacr-frontend-prod` with `azure/webapps-deploy` and the `AZURE_FRONTEND_PUBLISH_PROFILE` secret.
+5. Signs in to Azure with OIDC and deploys that folder to `app-itacr-frontend-prod` with `azure/webapps-deploy`.
 
 If a test or the build fails, nothing is deployed.
 
-**One-time setup (repository owner):** App Service `app-itacr-frontend-prod` > Overview > **Download publish profile**, then paste the whole file into the repository secret `AZURE_FRONTEND_PUBLISH_PROFILE` (Settings > Secrets and variables > Actions). Delete the downloaded file afterwards, and never commit it. Downloading it requires App Service > Configuration > **SCM Basic Auth Publishing Credentials** turned on. If the file is ever exposed, reset it (Overview > **Reset publish profile**) and update the secret.
+**No publish profile (ITACR-56).** The deploy signs in with the app registration `github-itacr-frontend-deploy` through OIDC: federated credentials for the branches `main` and `release` (subject `repo:JulianH2@132315504/itacr-frontend@1394612328:ref:refs/heads/<branch>`), and **Website Contributor** on `app-itacr-frontend-prod` and `app-itacr-frontend-qa` only. The repository secrets are `AZURE_CLIENT_ID`, `AZURE_TENANT_ID` and `AZURE_SUBSCRIPTION_ID`, none of them a password. **SCM and FTP Basic Auth Publishing Credentials** are off on both App Services, so a publish profile could not deploy even if one leaked. It is a separate identity from the backend's, so a frontend workflow can never touch the database firewall.
 
 ### 13.2 New versions of the PWA
 

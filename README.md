@@ -186,7 +186,7 @@ node /home/site/wwwroot/server.cjs
 
 - `npm run build:qa` runs `ng build --configuration production,qa`: the production settings plus `environment.qa.ts` and `index.qa.html`, whose CSP allows the QA API instead of the production one.
 - The QA database has the four test employees of the table above, so the same logins work there.
-- `.github/workflows/deploy.yml` deploys `main` to `app-itacr-frontend-prod` with `AZURE_FRONTEND_PUBLISH_PROFILE` and `release` to `app-itacr-frontend-qa` with `AZURE_FRONTEND_QA_PUBLISH_PROFILE`. From any other branch it does nothing.
+- `.github/workflows/deploy.yml` deploys `main` to `app-itacr-frontend-prod` and `release` to `app-itacr-frontend-qa`, signing in to Azure with OIDC (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`; no publish profile, ITACR-56). From any other branch it does nothing.
 
 ## Branching model
 
