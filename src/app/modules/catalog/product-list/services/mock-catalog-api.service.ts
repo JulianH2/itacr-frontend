@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { type Observable, delay, of } from 'rxjs';
 
-import type { Category, Product } from '../models/catalog.models';
+import type { Category, ComboOption, Product } from '../models/catalog.models';
 import type { CatalogApi } from './catalog-api';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from './mock-catalog.data';
+import { MOCK_CATEGORIES, MOCK_COMBO_OPTIONS, MOCK_PRODUCTS } from './mock-catalog.data';
 
 const MOCK_LATENCY_MS = 300;
 
@@ -17,5 +17,9 @@ export class MockCatalogApiService implements CatalogApi {
   getProducts(categoryId: string): Observable<readonly Product[]> {
     const products = MOCK_PRODUCTS.filter((product) => product.categoryId === categoryId);
     return of(products).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  getComboOptions(): Observable<readonly ComboOption[]> {
+    return of(MOCK_COMBO_OPTIONS).pipe(delay(MOCK_LATENCY_MS));
   }
 }
