@@ -191,7 +191,7 @@ describe('TakeOrderStore', () => {
       },
       { productId: 'burger', quantity: 1 },
     ]);
-    expect(JSON.stringify(api.requests[0])).not.toContain('156');
+    expect(JSON.stringify(api.requests[0])).not.toMatch(/price/i);
   });
 
   it('should send without a table when the order is to take away', async () => {
