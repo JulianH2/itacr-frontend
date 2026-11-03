@@ -8,9 +8,11 @@ import { firstValueFrom, interval } from 'rxjs';
 import { EmployeeRole } from '@shared/auth/auth.models';
 import { SessionService } from '@shared/auth/session.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { ItemChoicesComponent } from '@shared/components/item-choices/item-choices.component';
 import type { IconName } from '@shared/components/icon/icon-paths';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import { choiceLines } from '@shared/state/order-draft/order-draft.model';
 import { ToastService } from '@shared/services/toast.service';
 
 import { destinationLabel, formatTime, orderStatusLabel } from '../../models/order-status';
@@ -41,11 +43,20 @@ type StepState = 'done' | 'current' | 'undone';
 @Component({
   selector: 'app-order-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MatButtonModule, RouterLink, IconComponent, MxnPricePipe, StatusBadgeComponent],
+  imports: [
+    MatButtonModule,
+    RouterLink,
+    IconComponent,
+    ItemChoicesComponent,
+    MxnPricePipe,
+    StatusBadgeComponent,
+  ],
   templateUrl: './order-detail-page.component.html',
   styleUrl: './order-detail-page.component.scss',
 })
 export class OrderDetailPageComponent {
+  protected readonly choices = choiceLines;
+
   private readonly api = inject(ORDERS_API);
   private readonly session = inject(SessionService);
   private readonly toast = inject(ToastService);

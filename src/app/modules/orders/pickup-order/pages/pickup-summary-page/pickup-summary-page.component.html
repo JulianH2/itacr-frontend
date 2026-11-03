@@ -19,14 +19,17 @@
         </app-empty-state>
       } @else {
         <ul class="pickup__items" aria-label="Productos de tu pedido">
-          @for (item of store.items(); track item.productId) {
+          @for (item of store.items(); track item.lineId) {
             <li class="pickup__item">
-              <span class="pickup__item-name">{{ item.name }}</span>
+              <div>
+                <span class="pickup__item-name">{{ item.name }}</span>
+                <app-item-choices [lines]="choices(item.customization)" />
+              </div>
               <button
                 type="button"
                 class="pickup__remove"
                 [attr.aria-label]="'Quitar ' + item.name + ' del pedido'"
-                (click)="remove(item.productId)"
+                (click)="remove(item.lineId)"
               >
                 <app-icon name="trash" />
               </button>
@@ -35,7 +38,7 @@
                 [min]="0"
                 [max]="maxQuantity"
                 [subject]="item.name"
-                (valueChange)="setQuantity(item.productId, $event)"
+                (valueChange)="setQuantity(item.lineId, $event)"
               />
               <span class="pickup__item-price tabular">
                 {{ item.unitPrice * item.quantity | mxnPrice }}

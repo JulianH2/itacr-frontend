@@ -3,6 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PICKUP_ORDER_LIMITS } from '@shared/state/order-draft/order-draft.limits';
+import { toRequestItem } from '@shared/state/order-draft/order-draft.model';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 import { PickupReceiptsService } from '@shared/state/pickup-receipts/pickup-receipts.service';
 
@@ -134,9 +135,7 @@ export class PickupOrderStore {
     const content = {
       name: this.nameState().trim(),
       phone: this.phoneState(),
-      items: this.draft
-        .items()
-        .map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      items: this.draft.items().map(toRequestItem),
     };
     const key = JSON.stringify(content);
     if (this.pending?.content !== key) {
