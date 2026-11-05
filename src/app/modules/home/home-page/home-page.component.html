@@ -43,7 +43,28 @@
             <app-icon class="action__chevron" name="chevron-right" />
           </a>
         </li>
+        @if (appInstall.canInstall()) {
+          <li>
+            <button class="action" type="button" data-testid="install-app" (click)="install()">
+              <span class="action__icon"><app-icon name="download" [size]="28" /></span>
+              <span class="action__text">
+                <span class="action__title">Instalar</span>
+                <span class="action__description"
+                  >Agrega ITACR a tu pantalla de inicio y ábrela con un toque.</span
+                >
+              </span>
+              <app-icon class="action__chevron" name="chevron-right" />
+            </button>
+          </li>
+        }
       </ul>
+
+      @if (appInstall.showIosHint()) {
+        <p class="install-hint" data-testid="install-ios-hint">
+          Para instalar ITACR en tu iPhone o iPad, toca <strong>Compartir</strong> en Safari y luego
+          <strong>Agregar a inicio</strong>.
+        </p>
+      }
     </div>
 
     <app-hero-art />
