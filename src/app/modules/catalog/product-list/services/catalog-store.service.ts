@@ -2,11 +2,12 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { map, tap } from 'rxjs';
 
-import type { Category, Product } from '../models/catalog.models';
+import type { Category, ComboOption, Product } from '../models/catalog.models';
 import { CATALOG_API } from './catalog-api';
 
 const NO_PRODUCTS: readonly Product[] = [];
 const NO_CATEGORIES: readonly Category[] = [];
+const NO_COMBO_OPTIONS: readonly ComboOption[] = [];
 
 /**
  * State of the catalog page: the categories, the selected one and its products.
@@ -45,6 +46,20 @@ export class CatalogStore {
 
   readonly products = computed(() => this.productsResource.value() ?? NO_PRODUCTS);
 
+  private readonly comboOptionsResource = rxResource({
+    stream: () =>
+      this.api
+        .getComboOptions()
+        .pipe(
+          tap({ error: (error: unknown) => console.error('Failed to load combo options', error) }),
+        ),
+  });
+
+  /** What a combo can be customized with. Empty until it loads, and when it could not be loaded. */
+  readonly comboOptions = computed(() =>
+    this.comboOptionsResource.hasValue() ? this.comboOptionsResource.value() : NO_COMBO_OPTIONS,
+  );
+
   readonly isLoadingCategories = this.categoriesResource.isLoading;
   readonly hasCategoriesError = computed(() => this.categoriesResource.error() !== undefined);
   readonly isLoadingProducts = this.productsResource.isLoading;
@@ -60,5 +75,9 @@ export class CatalogStore {
 
   reloadProducts(): void {
     this.productsResource.reload();
+  }
+
+  reloadComboOptions(): void {
+    this.comboOptionsResource.reload();
   }
 }

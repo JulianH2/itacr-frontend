@@ -57,6 +57,16 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
 
+### Customizing a combo (HU_12)
+
+Tapping **Agregar** on a combo opens a guided flow (`ComboCustomizerComponent`, a native modal dialog) with four steps: **tamaño** and **bebida** (required), then **extras** and **exclusiones** (optional). The price of one unit is always on screen and changes with each choice; going on without the size shows "Selecciona el tamaño para continuar.". Waiters (`/catalog` with a session) and customers (`/catalog` without one) use the same flow. Any other product is added with one tap, as before.
+
+- **The options come from the API** (`GET /catalog/combo-options`: sizes, drinks, extras, and the ingredients that can be left out), loaded with the catalog and covered by the same service worker data group as the menu (`/catalog/**`, freshness, one day). If they could not be loaded, the app says so and asks again on the next tap.
+- **Price:** the unit price is the price of the combo plus the size plus each extra. The drink and the exclusions do not change it. The app shows it, but the order sends only the **ids** of the options (`sizeId`, `drinkId`, `extraIds`, `exclusionIds`) and the API prices the order from the menu.
+- **Lines:** the same combo with other options is another line of the order (`OrderDraftItem.lineId`), so a table can have one combo without onion and another with extra cheese. The same combo with the same options adds to the quantity of its line.
+- **Where it shows:** under the product in the summary of the waiter and of the customer, in the detail of an order (`/orders/detail/:id`), and on the kitchen card (`+ Queso extra`, `Sin cebolla`).
+- With `useMockApi: true` the options are the ones of the backend seed.
+
 ## npm scripts
 
 | Script                 | Description                                                   |

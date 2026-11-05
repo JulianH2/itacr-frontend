@@ -19,21 +19,24 @@
         </app-empty-state>
       } @else {
         <ul class="summary__items" aria-label="Productos del pedido">
-          @for (item of store.items(); track item.productId) {
+          @for (item of store.items(); track item.lineId) {
             <li class="summary__item">
-              <span class="summary__item-name">{{ item.name }}</span>
+              <div>
+                <span class="summary__item-name">{{ item.name }}</span>
+                <app-item-choices [lines]="choices(item.customization)" />
+              </div>
               <button
                 type="button"
                 class="summary__remove"
                 [attr.aria-label]="'Quitar ' + item.name + ' del pedido'"
-                (click)="remove(item.productId)"
+                (click)="remove(item.lineId)"
               >
                 <app-icon name="trash" />
               </button>
               <app-qty-stepper
                 [value]="item.quantity"
                 [subject]="item.name"
-                (valueChange)="setQuantity(item.productId, $event)"
+                (valueChange)="setQuantity(item.lineId, $event)"
               />
               <span class="summary__item-price tabular">
                 {{ item.unitPrice * item.quantity | mxnPrice }}
