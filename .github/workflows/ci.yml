@@ -87,8 +87,14 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Run unit tests
-        run: npm test
+      # The same run measures the coverage (ITACR-62), so the tests do not run twice. There is no minimum yet.
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      # Shows the percentage of covered lines in the summary of the job, also when a test failed.
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/coverage-summary.cjs coverage/itacr-frontend/coverage-summary.json
 
       - name: Test the static server
         run: npm run test:server
