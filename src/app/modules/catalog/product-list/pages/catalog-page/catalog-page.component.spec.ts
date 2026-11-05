@@ -12,7 +12,11 @@ import { OrderDraftService } from '@shared/state/order-draft/order-draft.service
 import type { Category } from '../../models/catalog.models';
 import { CATALOG_API, type CatalogApi } from '../../services/catalog-api';
 import { CatalogStore } from '../../services/catalog-store.service';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '../../services/mock-catalog.data';
+import {
+  MOCK_CATEGORIES,
+  MOCK_COMBO_OPTIONS,
+  MOCK_PRODUCTS,
+} from '../../services/mock-catalog.data';
 import { CatalogPageComponent } from './catalog-page.component';
 
 const EMPTY_CATEGORY: Category = { id: 'cat-promos', name: 'Promociones', sortOrder: 6 };
@@ -24,6 +28,7 @@ function createFakeApi(): CatalogApi {
     getCategories: () => of([...MOCK_CATEGORIES, EMPTY_CATEGORY]),
     getProducts: (categoryId) =>
       of(MOCK_PRODUCTS.filter((product) => product.categoryId === categoryId)),
+    getComboOptions: () => of(MOCK_COMBO_OPTIONS),
   };
 }
 
@@ -90,9 +95,12 @@ describe('CatalogPageComponent', () => {
   });
 
   it('should increase the order counter and add the product to the draft when the user taps Agregar (CA2)', async () => {
-    // Arrange
+    // Arrange: a drink, because tapping a combo opens the guided flow (HU_12)
     const fixture = await renderPage(createFakeApi());
     const orderDraft = TestBed.inject(OrderDraftService);
+    await clickButton(fixture, 'Bebidas');
+    const drinks = MOCK_CATEGORIES.find((category) => category.name === 'Bebidas')!;
+    const drink = MOCK_PRODUCTS.find((product) => product.categoryId === drinks.id)!;
     expect(counterText(fixture)).toBe('0');
 
     // Act
@@ -102,10 +110,12 @@ describe('CatalogPageComponent', () => {
     expect(counterText(fixture)).toBe('1');
     expect(orderDraft.items()).toEqual([
       {
-        productId: '20000000-0000-0000-0000-000000000001',
-        name: 'Combo Clásico',
-        unitPrice: 119,
+        lineId: drink.id,
+        productId: drink.id,
+        name: drink.name,
+        unitPrice: drink.price,
         quantity: 1,
+        customization: null,
       },
     ]);
   });
@@ -126,6 +136,7 @@ describe('CatalogPageComponent', () => {
     // Arrange: the catalog is on screen, then every request fails like it would offline.
     const api = createFakeApi();
     const fixture = await renderPage(api);
+    await clickButton(fixture, 'Bebidas');
     api.getProducts = () => throwError(() => new Error('offline'));
     const orderDraft = TestBed.inject(OrderDraftService);
 
@@ -144,6 +155,7 @@ describe('CatalogPageComponent', () => {
     const api: CatalogApi = {
       getCategories: () => throwError(() => new Error('network')),
       getProducts: () => of([]),
+      getComboOptions: () => of([]),
     };
 
     // Act
@@ -153,6 +165,161 @@ describe('CatalogPageComponent', () => {
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';
     expect(text).toContain('No pudimos cargar el menú.');
     expect(text).toContain('Reintentar');
+  });
+
+  describe('customizing a combo (HU_12)', () => {
+    function customizer(fixture: ComponentFixture<CatalogPageComponent>): HTMLElement | null {
+      return (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="combo-customizer"]',
+      );
+    }
+
+    async function tap(
+      fixture: ComponentFixture<CatalogPageComponent>,
+      testId: string,
+    ): Promise<void> {
+      const element = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+        `[data-testid="${testId}"]`,
+      );
+      if (!element) {
+        throw new Error(`Element ${testId} not found`);
+      }
+      element.click();
+      await settle(fixture);
+    }
+
+    async function tapRow(
+      fixture: ComponentFixture<CatalogPageComponent>,
+      label: string,
+    ): Promise<void> {
+      const rows = Array.from(
+        (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('app-option-row'),
+      );
+      const row = rows.find((candidate) => candidate.textContent?.includes(label));
+      const input = row?.querySelector<HTMLInputElement>('input');
+      if (!input) {
+        throw new Error(`Row ${label} not found`);
+      }
+      input.click();
+      await settle(fixture);
+    }
+
+    const GRANDE = MOCK_COMBO_OPTIONS.find((option) => option.name === 'Grande')!;
+    const COLA = MOCK_COMBO_OPTIONS.find((option) => option.name === 'Refresco de cola')!;
+
+    beforeAll(() => {
+      HTMLDialogElement.prototype.showModal = function (this: HTMLDialogElement): void {
+        this.open = true;
+      };
+      HTMLDialogElement.prototype.close = function (this: HTMLDialogElement): void {
+        this.open = false;
+        this.dispatchEvent(new Event('close'));
+      };
+    });
+
+    it('should open the guided flow instead of adding the combo when the user taps Agregar', async () => {
+      // Arrange
+      const fixture = await renderPage(createFakeApi());
+      const orderDraft = TestBed.inject(OrderDraftService);
+
+      // Act
+      await clickButton(fixture, 'Agregar');
+
+      // Assert
+      expect(customizer(fixture)).not.toBeNull();
+      expect(orderDraft.itemCount()).toBe(0);
+    });
+
+    it('should ask for the size and stay on the first step when the user tries to continue without it (CA2)', async () => {
+      // Arrange
+      const fixture = await renderPage(createFakeApi());
+      await clickButton(fixture, 'Agregar');
+
+      // Act
+      await tap(fixture, 'combo-next');
+
+      // Assert
+      const error = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="customizer-error"]',
+      );
+      expect(error?.textContent?.trim()).toBe('Selecciona el tamaño para continuar.');
+      expect((fixture.nativeElement as HTMLElement).textContent).toContain('¿De qué tamaño?');
+    });
+
+    it('should add the combo with its options and the price of the size and the extra (CA1)', async () => {
+      // Arrange: the first product of Combos is the Combo Clásico, 119.00
+      const fixture = await renderPage(createFakeApi());
+      const orderDraft = TestBed.inject(OrderDraftService);
+      await clickButton(fixture, 'Agregar');
+
+      // Act: grande, refresco de cola, extra queso, sin cebolla
+      await tap(fixture, `size-${GRANDE.id}`);
+      await tap(fixture, 'combo-next');
+      await tap(fixture, `drink-${COLA.id}`);
+      await tap(fixture, 'combo-next');
+      await tapRow(fixture, 'Queso extra');
+      await tap(fixture, 'combo-next');
+      await tapRow(fixture, 'Sin cebolla');
+      const summary = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="combo-summary"]',
+      );
+      const price = (fixture.nativeElement as HTMLElement).querySelector(
+        '[data-testid="combo-price"]',
+      );
+      await tap(fixture, 'combo-add');
+
+      // Assert
+      expect(Array.from(summary?.querySelectorAll('li') ?? [], (line) => line.textContent)).toEqual(
+        ['Grande', 'Refresco de cola', '+ Queso extra', 'Sin cebolla'],
+      );
+      expect(price?.textContent).toContain('156.00');
+      const [line] = orderDraft.items();
+      expect(orderDraft.items()).toHaveLength(1);
+      expect(line.unitPrice).toBe(156);
+      expect(line.customization?.size.name).toBe('Grande');
+      expect(line.customization?.drink.name).toBe('Refresco de cola');
+      expect(line.customization?.extras.map((extra) => extra.name)).toEqual(['Queso extra']);
+      expect(line.customization?.exclusions.map((exclusion) => exclusion.name)).toEqual([
+        'Cebolla',
+      ]);
+      expect(customizer(fixture)).toBeNull();
+    });
+
+    it('should leave the order as it was when the user cancels the flow', async () => {
+      // Arrange
+      const fixture = await renderPage(createFakeApi());
+      const orderDraft = TestBed.inject(OrderDraftService);
+      await clickButton(fixture, 'Agregar');
+
+      // Act
+      await tap(fixture, 'combo-cancel');
+
+      // Assert
+      expect(customizer(fixture)).toBeNull();
+      expect(orderDraft.itemCount()).toBe(0);
+    });
+
+    it('should explain it and not open the flow when the options of the combo could not be loaded', async () => {
+      // Arrange
+      const api = {
+        ...createFakeApi(),
+        getComboOptions: () => throwError(() => new Error('down')),
+      };
+      const fixture = await renderPage(api);
+      const toast = TestBed.inject(ToastService);
+      const show = vi.spyOn(toast, 'show');
+
+      // Act
+      await clickButton(fixture, 'Agregar');
+
+      // Assert
+      expect(customizer(fixture)).toBeNull();
+      expect(show).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('opciones del combo') as string,
+        }),
+      );
+    });
   });
 
   describe('cart link', () => {
@@ -230,6 +397,7 @@ describe('CatalogPageComponent', () => {
       // Arrange
       const fixture = await renderFor(null);
       const draft = TestBed.inject(OrderDraftService);
+      await clickButton(fixture, 'Bebidas');
 
       // Act
       for (let tap = 0; tap < 11; tap++) {
@@ -249,6 +417,7 @@ describe('CatalogPageComponent', () => {
       // Arrange
       const fixture = await renderFor(EmployeeRole.Waiter);
       const draft = TestBed.inject(OrderDraftService);
+      await clickButton(fixture, 'Bebidas');
 
       // Act
       for (let tap = 0; tap < 11; tap++) {

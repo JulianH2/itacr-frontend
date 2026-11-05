@@ -1,7 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 
 import type { DraftLimits, DraftRefusal } from './order-draft.limits';
-import type { OrderDraftItem, OrderDraftProduct } from './order-draft.model';
+import { type OrderDraftItem, type OrderDraftProduct, lineIdOf } from './order-draft.model';
 
 const CENTS_PER_UNIT = 100;
 const DEFAULT_ADD_QUANTITY = 1;
@@ -35,8 +35,9 @@ export class OrderDraftService {
   );
 
   /**
-   * Adds `quantity` units of a product, increasing the existing line when there is one. With `limits`, a product that
-   * would go over them is not added and the reason is returned; otherwise it returns null.
+   * Adds `quantity` units of a product, increasing the existing line when there is one: the same product with the same
+   * options. A combo with other options is another line. With `limits`, a product that would go over them is not added
+   * and the reason is returned; otherwise it returns null.
    */
   add(
     product: OrderDraftProduct,
@@ -47,7 +48,8 @@ export class OrderDraftService {
       return null;
     }
     const current = this.itemsState();
-    const existing = current.find((item) => item.productId === product.productId);
+    const lineId = lineIdOf(product.productId, product.customization);
+    const existing = current.find((item) => item.lineId === lineId);
     if (existing === undefined && current.length >= (limits.maxProducts ?? Infinity)) {
       return 'products-limit';
     }
@@ -56,35 +58,43 @@ export class OrderDraftService {
     }
     this.itemsState.set(
       existing === undefined
-        ? [...current, { ...product, quantity }]
+        ? [
+            ...current,
+            {
+              lineId,
+              productId: product.productId,
+              name: product.name,
+              unitPrice: product.unitPrice,
+              quantity,
+              customization: product.customization ?? null,
+            },
+          ]
         : current.map((item) =>
-            item.productId === product.productId
-              ? { ...item, quantity: item.quantity + quantity }
-              : item,
+            item.lineId === lineId ? { ...item, quantity: item.quantity + quantity } : item,
           ),
     );
     return null;
   }
 
-  /** Removes the whole line of a product. Does nothing when the product is not in the draft. */
-  remove(productId: string): void {
-    this.itemsState.update((items) => items.filter((item) => item.productId !== productId));
+  /** Removes a whole line. Does nothing when the line is not in the draft. */
+  remove(lineId: string): void {
+    this.itemsState.update((items) => items.filter((item) => item.lineId !== lineId));
   }
 
   /**
    * Sets the quantity of an existing line. A quantity of zero or less removes the line;
-   * a non-integer quantity is ignored. Does nothing when the product is not in the draft.
+   * a non-integer quantity is ignored. Does nothing when the line is not in the draft.
    */
-  changeQuantity(productId: string, quantity: number): void {
+  changeQuantity(lineId: string, quantity: number): void {
     if (!Number.isInteger(quantity)) {
       return;
     }
     if (quantity <= 0) {
-      this.remove(productId);
+      this.remove(lineId);
       return;
     }
     this.itemsState.update((items) =>
-      items.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
+      items.map((item) => (item.lineId === lineId ? { ...item, quantity } : item)),
     );
   }
 

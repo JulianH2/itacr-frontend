@@ -4,7 +4,7 @@ import type { Observable } from 'rxjs';
 
 import { environment } from '@env/environment';
 
-import type { Category, Product } from '../models/catalog.models';
+import type { Category, ComboOption, Product } from '../models/catalog.models';
 import type { CatalogApi } from './catalog-api';
 
 /**
@@ -23,5 +23,9 @@ export class HttpCatalogApiService implements CatalogApi {
   getProducts(categoryId: string): Observable<readonly Product[]> {
     const params = new HttpParams().set('categoryId', categoryId);
     return this.http.get<readonly Product[]>(`${this.catalogUrl}/products`, { params });
+  }
+
+  getComboOptions(): Observable<readonly ComboOption[]> {
+    return this.http.get<readonly ComboOption[]>(`${this.catalogUrl}/combo-options`);
   }
 }
