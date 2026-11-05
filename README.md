@@ -57,19 +57,24 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
 
+### Test coverage
+
+`npm run test:coverage` runs the unit tests once with the V8 coverage of Vitest and prints the percentage of covered statements, branches, functions, and lines of `src/` (the specs and `testing/` helpers do not count). The report is written to `coverage/itacr-frontend/` (ignored by git). CI runs this instead of `npm test` and shows the table in the **summary of the `ci` job** (`.github/scripts/coverage-summary.cjs`). There is no minimum yet: the number is for information (ITACR-62).
+
 ## npm scripts
 
-| Script                 | Description                                                   |
-| ---------------------- | ------------------------------------------------------------- |
-| `npm start`            | Dev server at `http://localhost:4200`                         |
-| `npm run build`        | Production build with service worker in `dist/itacr-frontend` |
-| `npm run watch`        | Development build in watch mode                               |
-| `npm test`             | Run unit tests once (Vitest)                                  |
-| `npm run test:watch`   | Run unit tests in watch mode                                  |
-| `npm run lint`         | Lint TypeScript and templates with ESLint                     |
-| `npm run lint:fix`     | Lint and auto-fix                                             |
-| `npm run format`       | Format every file with Prettier                               |
-| `npm run format:check` | Check formatting (used by CI)                                 |
+| Script                  | Description                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| `npm start`             | Dev server at `http://localhost:4200`                         |
+| `npm run build`         | Production build with service worker in `dist/itacr-frontend` |
+| `npm run watch`         | Development build in watch mode                               |
+| `npm test`              | Run unit tests once (Vitest)                                  |
+| `npm run test:watch`    | Run unit tests in watch mode                                  |
+| `npm run test:coverage` | Run unit tests once and measure the coverage                  |
+| `npm run lint`          | Lint TypeScript and templates with ESLint                     |
+| `npm run lint:fix`      | Lint and auto-fix                                             |
+| `npm run format`        | Format every file with Prettier                               |
+| `npm run format:check`  | Check formatting (used by CI)                                 |
 
 ## Folder structure
 
