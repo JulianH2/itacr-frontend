@@ -151,7 +151,7 @@ When the kitchen marks an order as Ready, the waiter who took it, or the custome
 ## 8. Build and deployment
 
 - `environment.ts` (production) and `environment.development.ts` hold the API URL, the SignalR hub URL, and `useMockApi`. The VAPID public key of the push notices is not here: the PWA asks the API for it (`GET /public/push/public-key`), so each environment uses its own pair without a new build. They are build-time values, not secrets.
-- The deploy workflow runs on `main`: tests, production build, and publish to Azure App Service. release-please versions the app and writes the CHANGELOG.
+- The deploy workflow runs on `main` (production build, to `app-itacr-frontend-prod`) and on `release` (`build:qa`, to `app-itacr-frontend-qa`): tests, build, the static server tests, and publish to Azure App Service with OIDC. The App Service runs `server/server.cjs`, which sends the security headers. release-please versions the app and writes the CHANGELOG.
 
 ## 9. Key decisions
 
