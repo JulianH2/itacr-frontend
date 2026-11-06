@@ -139,7 +139,8 @@ When the kitchen marks an order as Ready, the waiter who took it, or the custome
 
 - Angular service worker (`ngsw-config.json`): the app shell is cached, so the app opens without a connection.
 - `AppUpdateService` checks for new versions and offers a reload in a snack bar.
-- Installable from the manifest in `public/`.
+- Installable from the manifest in `public/` (HU_11): name "ITACR", `display: standalone`, and the brand colors. The icons in `public/icons/` (and `favicon.ico`) are the official mortar logo of the project, cream on the brand wine, with the mark inside the safe zone so the same files serve as `any` and `maskable`; `logo-mark.png` is the mark alone, shown by the boot splash of `index*.html`.
+- **Installing:** `AppInstallService`, started by an app initializer, keeps the `beforeinstallprompt` event of Chromium browsers, so the home shows "Instalar" and a tap opens the browser's own dialog (CA1). Opened from the icon (`display-mode: standalone`), or after `appinstalled`, nothing is offered (CA3). Safari on iPhone and iPad has no install event: the home shows how to add the app from Compartir > Agregar a inicio, which is also what iOS needs for the order ready notices (HU_09).
 - Production builds use `index.production.html`, which adds the Content Security Policy.
 
 ## 7. Testing strategy
