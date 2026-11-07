@@ -103,6 +103,7 @@ chore(deps): bump @angular/core to 22.2.1
 | `feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore` `revert` | `auth` `catalog` `orders` `kitchen` `tracking` `manager` `pwa` `db` `core` `deps` `repo` |
 
 - The Husky `commit-msg` hook runs **commitlint** and rejects messages that do not follow the format. Only the `deps` scope may omit the Jira key.
+- A local hook can be skipped, so the **`commit-messages`** CI job runs the same commitlint on every commit of a PR into `sprint-XX` and fails the PR if one does not follow the convention. PRs into `develop`, `release`, and `main` do not run it: they carry merge commits and the release-please commit. To check your own commits before pushing: `npx commitlint --from origin/sprint-XX --to HEAD`.
 - The Husky `pre-commit` hook runs **lint-staged**: ESLint `--fix` and Prettier on the staged files only.
 - The Jira key in the commit, the branch name, and the PR title links everything to the Jira issue automatically (GitHub for Jira integration).
 - Commit types drive the version and the changelog (see [section 10](#10-releases-and-versioning)), so choose them carefully: `feat` is a new feature for users, `fix` is a bug fix.
@@ -402,7 +403,7 @@ An issue is **Done** only when all of the following are true:
 
 - [ ] The acceptance criteria in Jira are met and were tested by the other team member.
 - [ ] The code was reviewed and approved in a PR into `sprint-XX`, and the personal branch was deleted.
-- [ ] CI is green (`branch-name`, and `ci`: lint, format check, tests, build).
+- [ ] CI is green (`branch-name`, `commit-messages`, and `ci`: lint, format check, tests, build).
 - [ ] It follows [docs/CODING_STANDARDS.md](docs/CODING_STANDARDS.md), with at least one test per acceptance criterion when feasible.
 - [ ] It works on a phone and a tablet, and offline if the story involves the waiter flow.
 - [ ] Docs are updated (README, `.env.example`) if applicable.

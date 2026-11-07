@@ -5,7 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { environment } from '@env/environment';
 
 import { HttpCatalogApiService } from './http-catalog-api.service';
-import { MOCK_CATEGORIES } from './mock-catalog.data';
+import { MOCK_CATEGORIES, MOCK_COMBO_OPTIONS } from './mock-catalog.data';
 
 describe('HttpCatalogApiService', () => {
   let service: HttpCatalogApiService;
@@ -43,5 +43,17 @@ describe('HttpCatalogApiService', () => {
     );
     expect(request.request.method).toBe('GET');
     request.flush([]);
+  });
+
+  it('should request the combo options under the catalog path', () => {
+    // Act
+    let received: unknown;
+    service.getComboOptions().subscribe((options) => (received = options));
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/catalog/combo-options`);
+    expect(request.request.method).toBe('GET');
+    request.flush(MOCK_COMBO_OPTIONS);
+    expect(received).toEqual(MOCK_COMBO_OPTIONS);
   });
 });

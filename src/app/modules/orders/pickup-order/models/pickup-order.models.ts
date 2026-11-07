@@ -4,6 +4,11 @@ export type PickupOrderStatus = 'New' | 'InPreparation' | 'Ready' | 'Delivered';
 export interface PickupOrderItemRequest {
   readonly productId: string;
   readonly quantity: number;
+  /** Only for a combo (HU_12): the options chosen from `GET /catalog/combo-options`, by id. */
+  readonly sizeId?: string;
+  readonly drinkId?: string;
+  readonly extraIds?: readonly string[];
+  readonly exclusionIds?: readonly string[];
 }
 
 /** Body of `POST /public/orders`. Prices are never sent: the API takes them from the menu. */

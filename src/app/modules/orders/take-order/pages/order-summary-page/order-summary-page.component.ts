@@ -4,8 +4,10 @@ import { Router, RouterLink } from '@angular/router';
 
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { ItemChoicesComponent } from '@shared/components/item-choices/item-choices.component';
 import { QtyStepperComponent } from '@shared/components/qty-stepper/qty-stepper.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
+import { customizationLines } from '@shared/state/order-draft/order-draft.model';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { TakeOrderStore } from '../../services/take-order-store.service';
@@ -14,6 +16,7 @@ import { TakeOrderStore } from '../../services/take-order-store.service';
   selector: 'app-order-summary-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ItemChoicesComponent,
     MatButtonModule,
     RouterLink,
     EmptyStateComponent,
@@ -29,12 +32,14 @@ export class OrderSummaryPageComponent {
   private readonly draft = inject(OrderDraftService);
   private readonly router = inject(Router);
 
-  protected setQuantity(productId: string, quantity: number): void {
-    this.draft.changeQuantity(productId, quantity);
+  protected readonly choices = customizationLines;
+
+  protected setQuantity(lineId: string, quantity: number): void {
+    this.draft.changeQuantity(lineId, quantity);
   }
 
-  protected remove(productId: string): void {
-    this.draft.remove(productId);
+  protected remove(lineId: string): void {
+    this.draft.remove(lineId);
   }
 
   protected async send(): Promise<void> {

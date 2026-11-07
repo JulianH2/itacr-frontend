@@ -7,7 +7,7 @@ export interface AppEnvironment {
   readonly kitchenHubUrl: string;
   /**
    * When true, an HTTP interceptor answers the API calls that the backend does not implement yet
-   * (see `src/app/core/mocks/`). Only for local development; always false in production.
+   * (see `src/app/shared/mocks/`). Only for local development; always false in production.
    */
   readonly useMockApi: boolean;
 }

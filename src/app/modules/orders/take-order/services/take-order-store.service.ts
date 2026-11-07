@@ -3,6 +3,7 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { firstValueFrom, tap, timeout } from 'rxjs';
 
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
+import { toRequestItem } from '@shared/state/order-draft/order-draft.model';
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import type {
@@ -167,9 +168,7 @@ export class TakeOrderStore {
     const content = {
       tableId: this.tableIdState(),
       takeAway: this.takeAwayState(),
-      items: this.draft
-        .items()
-        .map((item) => ({ productId: item.productId, quantity: item.quantity })),
+      items: this.draft.items().map(toRequestItem),
     };
     const key = JSON.stringify(content);
     if (this.pending?.content !== key) {

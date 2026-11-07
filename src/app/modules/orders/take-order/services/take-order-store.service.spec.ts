@@ -159,6 +159,41 @@ describe('TakeOrderStore', () => {
     expect(store.tableId()).toBeNull();
   });
 
+  // HU_12: the request carries the ids of the options, never a price
+  it('should send the ids of the size, the drink, the extras and the exclusions of a combo', async () => {
+    // Arrange
+    draft.add({
+      productId: 'combo',
+      name: 'Combo Clásico',
+      unitPrice: 156,
+      customization: {
+        size: { id: 'size-large', name: 'Grande' },
+        drink: { id: 'drink-cola', name: 'Refresco de cola' },
+        extras: [{ id: 'extra-cheese', name: 'Queso extra', price: 12 }],
+        exclusions: [{ id: 'no-onion', name: 'Cebolla' }],
+      },
+    });
+    draft.add(BURGER);
+    store.selectTable(TABLE_FIVE.id);
+
+    // Act
+    await store.send();
+
+    // Assert
+    expect(api.requests[0].items).toEqual([
+      {
+        productId: 'combo',
+        quantity: 1,
+        sizeId: 'size-large',
+        drinkId: 'drink-cola',
+        extraIds: ['extra-cheese'],
+        exclusionIds: ['no-onion'],
+      },
+      { productId: 'burger', quantity: 1 },
+    ]);
+    expect(JSON.stringify(api.requests[0])).not.toMatch(/price/i);
+  });
+
   it('should send without a table when the order is to take away', async () => {
     // Arrange
     draft.add(BURGER);
