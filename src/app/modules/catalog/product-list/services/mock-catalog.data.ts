@@ -1,4 +1,4 @@
-import type { Category, Product } from '../models/catalog.models';
+import type { Category, ComboOption, ComboOptionType, Product } from '../models/catalog.models';
 
 /** The photo of a product: `/assets/images/products/<name without accents, in kebab case>.webp`, as in the backend seed. */
 function toPhotoUrl(name: string): string {
@@ -86,4 +86,33 @@ export const MOCK_PRODUCTS: readonly Product[] = [
   product(16, 5, 'Helado de Vainilla', 'Copa de helado de vainilla.', 35),
   product(17, 5, 'Pay de Manzana', 'Pay caliente de manzana con canela.', 38),
   product(18, 5, 'Brownie con Helado', 'Brownie de chocolate con una bola de helado.', 49),
+];
+
+function comboOption(
+  number: number,
+  type: ComboOptionType,
+  name: string,
+  priceAdjustment = 0,
+): ComboOption {
+  return { id: seedId(3, number), type, name, priceAdjustment };
+}
+
+/** The options of the backend seed (`V001` and `V007`), with the same ids and prices. */
+export const MOCK_COMBO_OPTIONS: readonly ComboOption[] = [
+  comboOption(1, 'Size', 'Chico'),
+  comboOption(2, 'Size', 'Mediano', 15),
+  comboOption(3, 'Size', 'Grande', 25),
+  comboOption(4, 'Drink', 'Refresco de cola'),
+  comboOption(5, 'Drink', 'Refresco de lima-limón'),
+  comboOption(6, 'Drink', 'Agua natural'),
+  comboOption(7, 'Extra', 'Queso extra', 12),
+  comboOption(8, 'Extra', 'Tocino', 18),
+  comboOption(9, 'Extra', 'Jalapeños', 8),
+  comboOption(10, 'Exclusion', 'Cebolla'),
+  comboOption(11, 'Exclusion', 'Jitomate'),
+  comboOption(12, 'Exclusion', 'Lechuga'),
+  comboOption(13, 'Exclusion', 'Pepinillos'),
+  comboOption(14, 'Exclusion', 'Mayonesa'),
+  comboOption(15, 'Exclusion', 'Catsup'),
+  comboOption(16, 'Exclusion', 'Mostaza'),
 ];

@@ -19,3 +19,14 @@ export interface Product {
   readonly imageUrl: string | null;
   readonly isCombo: boolean;
 }
+
+export type ComboOptionType = 'Size' | 'Drink' | 'Extra' | 'Exclusion';
+
+/** What a combo can be customized with, as returned by `GET /catalog/combo-options` (HU_12). */
+export interface ComboOption {
+  readonly id: string;
+  readonly type: ComboOptionType;
+  readonly name: string;
+  /** What the option adds to the unit price in MXN: a size or an extra costs, a drink or an exclusion does not. */
+  readonly priceAdjustment: number;
+}

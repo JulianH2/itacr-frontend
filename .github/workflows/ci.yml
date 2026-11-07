@@ -62,6 +62,36 @@ jobs:
           EOF
           exit 1
 
+  # Local hooks can be skipped, so the commit convention is also checked here, with the same commitlint rules (ITACR-64).
+  # Only for personal branches into sprint-XX: flow PRs carry merge commits and the release-please commit.
+  commit-messages:
+    if: startsWith(github.base_ref, 'sprint-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HUSKY: 0
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # commitlint ignores the merge commits that git writes by itself.
+      - name: Validate every commit message in the PR
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: npx commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
+
   ci:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -87,8 +117,14 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Run unit tests
-        run: npm test
+      # The same run measures the coverage (ITACR-62), so the tests do not run twice. There is no minimum yet.
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      # Shows the percentage of covered lines in the summary of the job, also when a test failed.
+      - name: Coverage summary
+        if: ${{ !cancelled() }}
+        run: node .github/scripts/coverage-summary.cjs coverage/itacr-frontend/coverage-summary.json
 
       - name: Test the static server
         run: npm run test:server

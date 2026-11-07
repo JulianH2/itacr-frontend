@@ -6,6 +6,11 @@ export interface DiningTable {
 export interface CreateOrderItem {
   readonly productId: string;
   readonly quantity: number;
+  /** Only for a combo (HU_12): the options chosen from `GET /catalog/combo-options`, by id. */
+  readonly sizeId?: string;
+  readonly drinkId?: string;
+  readonly extraIds?: readonly string[];
+  readonly exclusionIds?: readonly string[];
 }
 
 /** Body of `POST /orders`. Prices are never sent: the API takes them from the menu. */
@@ -50,6 +55,11 @@ export interface OrderDetailItem {
   readonly quantity: number;
   readonly unitPrice: number;
   readonly subtotal: number;
+  /** What was chosen for a combo (HU_12). Left out by an API that does not send them yet. */
+  readonly size?: string | null;
+  readonly drink?: string | null;
+  readonly extras?: readonly string[];
+  readonly exclusions?: readonly string[];
 }
 
 /** One step of the order timeline. `undone` marks a step back, when the kitchen undid its previous tap. */

@@ -139,7 +139,8 @@ When the kitchen marks an order as Ready, the waiter who took it, or the custome
 
 - Angular service worker (`ngsw-config.json`): the app shell is cached, so the app opens without a connection.
 - `AppUpdateService` checks for new versions and offers a reload in a snack bar.
-- Installable from the manifest in `public/`.
+- Installable from the manifest in `public/` (HU_11): name "ITACR", `display: standalone`, and the brand colors. The icons in `public/icons/` (and `favicon.ico`) are the official mortar logo of the project, cream on the brand wine, with the mark inside the safe zone so the same files serve as `any` and `maskable`; `logo-mark.png` is the mark alone, shown by the boot splash of `index*.html`.
+- **Installing:** `AppInstallService`, started by an app initializer, keeps the `beforeinstallprompt` event of Chromium browsers, so the home shows "Instalar" and a tap opens the browser's own dialog (CA1). Opened from the icon (`display-mode: standalone`), or after `appinstalled`, nothing is offered (CA3). Safari on iPhone and iPad has no install event: the home shows how to add the app from Compartir > Agregar a inicio, which is also what iOS needs for the order ready notices (HU_09).
 - Production builds use `index.production.html`, which adds the Content Security Policy.
 
 ## 7. Testing strategy
@@ -151,7 +152,7 @@ When the kitchen marks an order as Ready, the waiter who took it, or the custome
 ## 8. Build and deployment
 
 - `environment.ts` (production) and `environment.development.ts` hold the API URL, the SignalR hub URL, and `useMockApi`. The VAPID public key of the push notices is not here: the PWA asks the API for it (`GET /public/push/public-key`), so each environment uses its own pair without a new build. They are build-time values, not secrets.
-- The deploy workflow runs on `main`: tests, production build, and publish to Azure App Service. release-please versions the app and writes the CHANGELOG.
+- The deploy workflow runs on `main` (production build, to `app-itacr-frontend-prod`) and on `release` (`build:qa`, to `app-itacr-frontend-qa`): tests, build, the static server tests, and publish to Azure App Service with OIDC. The App Service runs `server/server.cjs`, which sends the security headers. release-please versions the app and writes the CHANGELOG.
 
 ## 9. Key decisions
 

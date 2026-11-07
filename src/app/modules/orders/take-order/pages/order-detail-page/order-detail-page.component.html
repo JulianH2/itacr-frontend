@@ -55,7 +55,10 @@
           <ul class="detail__items">
             @for (item of order.items; track $index) {
               <li class="detail__item">
-                <span>{{ item.quantity }}× {{ item.name }}</span>
+                <div>
+                  <span>{{ item.quantity }}× {{ item.name }}</span>
+                  <app-item-choices [lines]="choices(item)" />
+                </div>
                 <span class="tabular">{{ item.subtotal | mxnPrice }}</span>
               </li>
             }

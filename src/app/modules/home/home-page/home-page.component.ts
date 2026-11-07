@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 
 import { IconComponent } from '@shared/components/icon/icon.component';
 import type { IconName } from '@shared/components/icon/icon-paths';
+import { AppInstallService } from '@shared/services/app-install.service';
 import { PickupReceiptsService } from '@shared/state/pickup-receipts/pickup-receipts.service';
 
 import { HeroArtComponent } from './hero-art/hero-art.component';
@@ -28,6 +29,12 @@ export class HomePageComponent {
   /** The customer has an active pickup order on this phone, so the home offers to follow it. */
   private readonly receipts = inject(PickupReceiptsService).receipts;
   protected readonly hasPickupOrders = computed(() => this.receipts().length > 0);
+
+  protected readonly appInstall = inject(AppInstallService);
+
+  protected install(): void {
+    void this.appInstall.install();
+  }
 
   protected readonly features: readonly Feature[] = [
     { icon: 'clock', label: 'Tiempo real' },

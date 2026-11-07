@@ -93,6 +93,45 @@ describe('OrderDetailPageComponent', () => {
     deliverOrder = vi.fn(() => of(DELIVERY_DONE));
   });
 
+  // HU_12 CA3
+  it('should show the size, the drink, the extras and the exclusions of a combo', async () => {
+    // Arrange
+    getOrder.mockReturnValue(
+      of({
+        ...DETAIL,
+        items: [
+          {
+            name: 'Combo Clásico',
+            quantity: 1,
+            unitPrice: 156,
+            subtotal: 156,
+            size: 'Grande',
+            drink: 'Refresco de cola',
+            extras: ['Queso extra'],
+            exclusions: ['Cebolla'],
+          },
+        ],
+      }),
+    );
+
+    // Act
+    const page = await render();
+
+    // Assert
+    const lines = Array.from(page.querySelectorAll('app-item-choices li'), (line) =>
+      line.textContent?.trim(),
+    );
+    expect(lines).toEqual(['Grande', 'Refresco de cola', '+ Queso extra', 'Sin cebolla']);
+  });
+
+  it('should show no options for a product that is not a combo', async () => {
+    // Act
+    const page = await render();
+
+    // Assert
+    expect(page.querySelector('app-item-choices li')).toBeNull();
+  });
+
   // CA4
   it('should show the current status and every step of the timeline when the waiter opens the order', async () => {
     // Act
