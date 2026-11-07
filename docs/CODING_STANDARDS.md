@@ -85,23 +85,12 @@ function isProblemDetails(value: unknown): value is ProblemDetails {
 
 - Never swallow errors (`catch {}` with nothing inside is forbidden). Handle them, rethrow them, or log them with context.
 - Never show stack traces or technical messages to users. The API returns errors as RFC 9457 Problem Details with a Spanish `detail`: show that `detail`, or a generic Spanish message when there is none.
-- Handle HTTP errors in one place: the error interceptor turns them into a typed error and a user notification. Components only react to the result.
+- Handle HTTP errors in the store of the screen: it maps the status and the Problem Details to the Spanish message of that screen (`take-order.messages.ts`, `pickup-order.messages.ts`) and exposes it as a signal. Components only show the result. Status 0 means no connection. There is no global error interceptor: `authInterceptor` only sends the user to the login page when a signed-in request gets a 401.
 - Never log tokens, PINs, or personal data to the console.
-
-```ts
-export const errorInterceptor: HttpInterceptorFn = (req, next) =>
-  next(req).pipe(
-    catchError((error: unknown) => {
-      const message = isHttpProblem(error) ? error.error.detail : GENERIC_ERROR_MESSAGE;
-      inject(NotificationService).showError(message);
-      return throwError(() => error);
-    }),
-  );
-```
 
 ### 1.7 Security (OWASP Top 10 basics)
 
-- **Never put secrets in the frontend.** Everything in `src/environments/` and the bundle is public once built. Only public values (API URL, SignalR hub URL, VAPID public key) go there.
+- **Never put secrets in the frontend.** Everything in `src/environments/` and the bundle is public once built. Only public values (API URL, SignalR hub URL) go there. Not even the VAPID public key: the PWA asks the API for it.
 - Validate forms for user experience, but never rely on it: the backend validates every request.
 - The staff session (JWT valid for one 12-hour shift, no refresh token) is stored in `localStorage` through `SessionService`, and logout removes all session data. This is a deliberate trade-off:
   - HU_01 requires the session to stay on the device until the employee logs out, and the PWA must keep it while offline. `sessionStorage` and memory lose it when the tab or app closes.

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import type { OrderDraftProduct } from './order-draft.model';
+import type { ComboCustomization, OrderDraftProduct } from './order-draft.model';
 import { OrderDraftService } from './order-draft.service';
 
 const CLASSIC_BURGER: OrderDraftProduct = {
@@ -9,6 +9,16 @@ const CLASSIC_BURGER: OrderDraftProduct = {
   unitPrice: 79,
 };
 const FRIES: OrderDraftProduct = { productId: 'fries', name: 'Papas', unitPrice: 35 };
+
+const LARGE = { id: 'size-large', name: 'Grande' };
+const COLA = { id: 'drink-cola', name: 'Refresco de cola' };
+const CHEESE = { id: 'extra-cheese', name: 'Queso extra', price: 12 };
+const BACON = { id: 'extra-bacon', name: 'Tocino', price: 18 };
+const NO_ONION = { id: 'no-onion', name: 'Cebolla' };
+
+function combo(customization: ComboCustomization, unitPrice = 156): OrderDraftProduct {
+  return { productId: 'combo-classic', name: 'Combo Clásico', unitPrice, customization };
+}
 
 describe('OrderDraftService', () => {
   let service: OrderDraftService;
@@ -23,7 +33,9 @@ describe('OrderDraftService', () => {
     service.add(CLASSIC_BURGER);
 
     // Assert
-    expect(service.items()).toEqual([{ ...CLASSIC_BURGER, quantity: 1 }]);
+    expect(service.items()).toEqual([
+      { ...CLASSIC_BURGER, lineId: 'burger-classic', quantity: 1, customization: null },
+    ]);
     expect(service.itemCount()).toBe(1);
   });
 
@@ -117,6 +129,78 @@ describe('OrderDraftService', () => {
     // Assert
     expect(service.itemCount()).toBe(0);
     expect(service.total()).toBe(0);
+  });
+
+  describe('combo lines (HU_12)', () => {
+    it('should keep two lines when the same combo has different options', () => {
+      // Act
+      service.add(combo({ size: LARGE, drink: COLA, extras: [CHEESE], exclusions: [] }));
+      service.add(combo({ size: LARGE, drink: COLA, extras: [], exclusions: [NO_ONION] }, 144));
+
+      // Assert
+      expect(service.items()).toHaveLength(2);
+      expect(service.items().map((item) => item.productId)).toEqual([
+        'combo-classic',
+        'combo-classic',
+      ]);
+      expect(service.total()).toBe(300);
+    });
+
+    it('should add the quantity to the same line when the options are the same in another order', () => {
+      // Act
+      service.add(
+        combo({ size: LARGE, drink: COLA, extras: [CHEESE, BACON], exclusions: [] }, 174),
+      );
+      service.add(
+        combo({ size: LARGE, drink: COLA, extras: [BACON, CHEESE], exclusions: [] }, 174),
+      );
+
+      // Assert
+      expect(service.items()).toHaveLength(1);
+      expect(service.items()[0].quantity).toBe(2);
+    });
+
+    it('should remove only the line that was asked for when two lines are the same combo', () => {
+      // Arrange
+      service.add(combo({ size: LARGE, drink: COLA, extras: [CHEESE], exclusions: [] }));
+      service.add(combo({ size: LARGE, drink: COLA, extras: [], exclusions: [NO_ONION] }, 144));
+      const [first, second] = service.items();
+
+      // Act
+      service.remove(first.lineId);
+
+      // Assert
+      expect(service.items()).toEqual([second]);
+    });
+
+    it('should change the quantity of one line without touching the other', () => {
+      // Arrange
+      service.add(combo({ size: LARGE, drink: COLA, extras: [CHEESE], exclusions: [] }));
+      service.add(combo({ size: LARGE, drink: COLA, extras: [], exclusions: [NO_ONION] }, 144));
+      const [first] = service.items();
+
+      // Act
+      service.changeQuantity(first.lineId, 3);
+
+      // Assert
+      expect(service.items().map((item) => item.quantity)).toEqual([3, 1]);
+    });
+
+    it('should count each line as a product when the products limit is checked', () => {
+      // Arrange
+      const limits = { maxProducts: 1 };
+      service.add(combo({ size: LARGE, drink: COLA, extras: [CHEESE], exclusions: [] }), 1, limits);
+
+      // Act
+      const refusal = service.add(
+        combo({ size: LARGE, drink: COLA, extras: [], exclusions: [NO_ONION] }, 144),
+        1,
+        limits,
+      );
+
+      // Assert
+      expect(refusal).toBe('products-limit');
+    });
   });
 
   describe('limits', () => {

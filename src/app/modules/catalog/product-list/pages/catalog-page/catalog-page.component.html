@@ -59,3 +59,12 @@
     }
   }
 </main>
+
+@if (customizing(); as product) {
+  <app-combo-customizer
+    [product]="product"
+    [options]="store.comboOptions()"
+    (confirmed)="addCustomized(product, $event)"
+    (dismissed)="customizing.set(null)"
+  />
+}

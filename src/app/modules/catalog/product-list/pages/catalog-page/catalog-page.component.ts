@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 
@@ -11,6 +11,10 @@ import { PICKUP_ORDER_LIMITS } from '@shared/state/order-draft/order-draft.limit
 import { OrderDraftService } from '@shared/state/order-draft/order-draft.service';
 
 import { provideCatalogApi } from '../../catalog.config';
+import {
+  ComboCustomizerComponent,
+  type ConfirmedCombo,
+} from '../../components/combo-customizer/combo-customizer.component';
 import { CategoryTabsComponent } from '../../components/category-tabs/category-tabs.component';
 import { OrderCounterComponent } from '../../components/order-counter/order-counter.component';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
@@ -23,6 +27,7 @@ import { CatalogStore } from '../../services/catalog-store.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CategoryTabsComponent,
+    ComboCustomizerComponent,
     OrderCounterComponent,
     ProductCardComponent,
     IconComponent,
@@ -55,11 +60,40 @@ export class CatalogPageComponent {
     return role === EmployeeRole.Waiter ? '/orders/summary' : null;
   });
 
+  /** The combo being customized; the guided flow is open while it is set. */
+  protected readonly customizing = signal<Product | null>(null);
+
   protected addToOrder(product: Product): void {
+    if (!product.isCombo) {
+      this.addToDraft(product, product.price, null);
+      return;
+    }
+    if (this.store.comboOptions().length === 0) {
+      this.store.reloadComboOptions();
+      this.toast.show({
+        title: 'Opciones del combo',
+        message:
+          'No pudimos cargar las opciones del combo. Revisa tu conexión e inténtalo de nuevo.',
+        icon: 'cart',
+      });
+      return;
+    }
+    this.customizing.set(product);
+  }
+
+  protected addCustomized(product: Product, combo: ConfirmedCombo): void {
+    this.addToDraft(product, combo.unitPrice, combo.customization);
+  }
+
+  private addToDraft(
+    product: Product,
+    unitPrice: number,
+    customization: ConfirmedCombo['customization'] | null,
+  ): void {
     // A customer's order has the limits of the pickup endpoint; the waiter's has none in the app.
     const limits = this.session.employee() === null ? PICKUP_ORDER_LIMITS : {};
     const refusal = this.orderDraft.add(
-      { productId: product.id, name: product.name, unitPrice: product.price },
+      { productId: product.id, name: product.name, unitPrice, customization },
       1,
       limits,
     );
