@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.6.0](https://github.com/JulianH2/itacr-frontend/compare/v0.5.0...v0.6.0) (2026-11-07)
+
+
+### Added
+
+* **catalog:** add the guided flow to customize a combo (ITACR-18) ([da0c8d9](https://github.com/JulianH2/itacr-frontend/commit/da0c8d93c64d21064a8a1ac7faee8769f740f3d1))
+* **catalog:** load the options a combo can be customized with (ITACR-18) ([7387ffe](https://github.com/JulianH2/itacr-frontend/commit/7387ffe22adff126d4cb080b190352d1fd2656ce))
+* **orders:** customize a combo with size, drink, extras and exclusions (ITACR-18) ([96c9560](https://github.com/JulianH2/itacr-frontend/commit/96c95607704d73274e7c3b4b5aae82bcb1a1df2b))
+* **orders:** keep the options of a combo in the order draft (ITACR-18) ([49ca1c4](https://github.com/JulianH2/itacr-frontend/commit/49ca1c446c91d37b9a57009d801a0191ee64c178))
+* **orders:** send and show the options of a combo in the order (ITACR-18) ([544f5bd](https://github.com/JulianH2/itacr-frontend/commit/544f5bd9b6281e8d99cdff1300e8e81aae8387cc))
+* **pwa:** install the app from the home with the official icons (ITACR-17) ([c42c088](https://github.com/JulianH2/itacr-frontend/commit/c42c0880a685161a34945097620df1e9b9325e8b))
+* **pwa:** install the app from the home with the official icons (ITACR-17) ([6e4637c](https://github.com/JulianH2/itacr-frontend/commit/6e4637ca647c0d150c9f28f018ce5cbf5823c12e))
+
+
+### Documentation
+
+* **orders:** document the customization of a combo (ITACR-18) ([e6f31d3](https://github.com/JulianH2/itacr-frontend/commit/e6f31d303cee07fbd3baffe300491dc5ec4a6215))
+* **repo:** document the commit-messages check (ITACR-64) ([ee378b1](https://github.com/JulianH2/itacr-frontend/commit/ee378b1d5173ac2f4ae4d79462a7e25181f65062))
+* **repo:** document the test coverage (ITACR-62) ([7845c10](https://github.com/JulianH2/itacr-frontend/commit/7845c10e054490df329a7c2bdb3cf95b3a583d8b))
+* **repo:** update the docs that no longer match the code (ITACR-60) ([189630d](https://github.com/JulianH2/itacr-frontend/commit/189630d6190adc07fa4961f5f6dd52488be8880d))
+* **repo:** update the docs that no longer match the code (ITACR-60) ([df1a2ef](https://github.com/JulianH2/itacr-frontend/commit/df1a2ef0e6e3cbf98a2c51868a6b142b9e51c04c))
+
 ## [0.5.0](https://github.com/JulianH2/itacr-frontend/compare/v0.4.0...v0.5.0) (2026-10-29)
 
 
