@@ -71,6 +71,16 @@ Tapping **Agregar** on a combo opens a guided flow (`ComboCustomizerComponent`, 
 - **Where it shows:** under the product in the summary of the waiter and of the customer, in the detail of an order (`/orders/detail/:id`), and on the kitchen card (`+ Queso extra`, `Sin cebolla`).
 - With `useMockApi: true` the options are the ones of the backend seed.
 
+### Manager dashboard (HU_16)
+
+`/manager` (only for the role Manager) shows the shift in four parts. A **date range** at the top (Hoy, Ayer, Últimos 7 días, or two dates; at most 31 days) scopes everything on the page, and "today" is the day of the device, from its midnight to the next one.
+
+- **Indicators:** the **sales** (the total of the orders delivered in the range), the **orders** created, and the **average time to prepare** an order in each channel, **Mesero** and **Para recoger**. The channel with the longer average gets **Mayor retraso**; with nothing to compare, none does.
+- **Trend:** one bar per hour of a day, or per day for a long range, of the **sales** or of the **orders** (one measure at a time, one axis). Hovering or focusing a bar shows its value, and **Ver tabla** shows the same numbers as a table.
+- **Recent orders:** a table filtered by **channel** and by **status**, ten rows a page. A row opens the detail of the order (`/manager/orders/:id`): the products, the total, and the time of each stage.
+- **Rules:** the preparation time is the time between the creation of an order and the moment it became Ready; everything is added up by the API from the orders, nothing is typed by hand. While new numbers load, the last ones stay on screen, dimmed; if a request fails, they stay and the page says so.
+- With `useMockApi: true` the page adds up some sample orders of the day with the same rules as the API.
+
 ## npm scripts
 
 | Script                  | Description                                                   |
