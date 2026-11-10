@@ -43,6 +43,17 @@ export const routes: Routes = [
       import('@modules/tracking/tracking-page/tracking.routes').then((m) => m.TRACKING_ROUTES),
   },
   {
+    // The manager opens the detail of an order from the table of the dashboard: the same screen the waiter uses, without the
+    // option to deliver, which only a waiter has.
+    path: 'manager/orders/:id',
+    title: 'Detalle del pedido | ITACR',
+    canActivate: [roleGuard(EmployeeRole.Manager)],
+    loadComponent: () =>
+      import('@modules/orders/take-order/pages/order-detail-page/order-detail-page.component').then(
+        (m) => m.OrderDetailPageComponent,
+      ),
+  },
+  {
     path: 'manager',
     canActivate: [roleGuard(EmployeeRole.Manager)],
     loadChildren: () =>

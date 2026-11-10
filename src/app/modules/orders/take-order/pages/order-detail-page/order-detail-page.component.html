@@ -1,7 +1,7 @@
 <main class="detail">
-  <a mat-button routerLink="/orders" class="detail__back">
+  <a mat-button [routerLink]="back().link" class="detail__back">
     <app-icon name="arrow-left" [size]="20" />
-    Volver a pedidos
+    {{ back().label }}
   </a>
 
   @if (order(); as order) {
