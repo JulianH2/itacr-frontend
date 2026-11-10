@@ -36,6 +36,7 @@ const STAT_ICON_SIZE = 20;
       border: 1px solid var(--color-card-border);
       border-radius: var(--radius-card);
       box-shadow: var(--shadow-subtle);
+      box-sizing: border-box;
       display: grid;
       gap: var(--space-half);
       height: 100%;
