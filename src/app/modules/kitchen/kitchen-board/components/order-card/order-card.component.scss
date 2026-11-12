@@ -80,6 +80,21 @@
   margin: 0;
 }
 
+.order-card__modified {
+  margin: 0;
+}
+
+.order-card__notes {
+  background: var(--color-warning-tint);
+  border-radius: var(--radius-control);
+  color: var(--color-warning-text);
+  font: var(--mat-sys-title-medium);
+  font-family: var(--font-family);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+}
+
 .order-card__items,
 .order-card__details {
   list-style: none;
