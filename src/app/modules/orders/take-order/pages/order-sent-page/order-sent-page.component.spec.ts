@@ -30,6 +30,7 @@ const API: OrdersApi = {
   getOrder: () => EMPTY,
   getActiveOrders: () => of([]),
   deliverOrder: () => EMPTY,
+  updateOrder: () => EMPTY,
   getReadyPickupOrders: () => of([]),
 };
 

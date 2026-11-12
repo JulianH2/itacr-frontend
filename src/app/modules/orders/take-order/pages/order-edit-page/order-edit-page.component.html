@@ -1,0 +1,142 @@
+<main class="summary">
+  @if (store.order(); as order) {
+    <header class="summary__header">
+      <h1 class="summary__title tabular" data-testid="edit-title">
+        Modificar orden #{{ order.orderNumber }}
+      </h1>
+      <a mat-stroked-button routerLink="/catalog" data-testid="add-products">
+        <app-icon name="plus" [size]="20" />
+        Agregar productos
+      </a>
+    </header>
+
+    <div class="summary__layout">
+      <div class="summary__main">
+        <ul class="summary__items" aria-label="Productos del pedido">
+          @for (item of store.items(); track item.lineId) {
+            <li class="summary__item">
+              <div>
+                <span class="summary__item-name">{{ item.name }}</span>
+                <app-item-choices [lines]="choices(item.customization)" />
+              </div>
+              <button
+                type="button"
+                class="summary__remove"
+                [attr.aria-label]="'Quitar ' + item.name + ' del pedido'"
+                (click)="remove(item.lineId)"
+              >
+                <app-icon name="trash" />
+              </button>
+              <app-qty-stepper
+                [value]="item.quantity"
+                [subject]="item.name"
+                [max]="maxQuantity"
+                (valueChange)="setQuantity(item.lineId, $event)"
+              />
+              <span class="summary__item-price tabular">
+                {{ item.unitPrice * item.quantity | mxnPrice }}
+              </span>
+            </li>
+          }
+        </ul>
+      </div>
+
+      <aside class="summary__side">
+        <section class="summary__destination" aria-labelledby="edit-destination-title">
+          <h2 id="edit-destination-title" class="summary__subtitle">Mesa</h2>
+
+          @if (!store.hasTable()) {
+            <p class="summary__state">Para llevar: este pedido no tiene mesa.</p>
+          } @else if (store.hasTablesError()) {
+            <div class="summary__state" role="alert">
+              <p>No pudimos cargar las mesas.</p>
+              <button type="button" mat-stroked-button (click)="store.reloadTables()">
+                Reintentar
+              </button>
+            </div>
+          } @else if (store.isLoadingTables()) {
+            <p class="summary__state" role="status">Cargando mesas…</p>
+          } @else {
+            <div class="summary__tables" role="group" aria-label="Mesas">
+              @for (table of store.tables(); track table.id) {
+                <button
+                  type="button"
+                  class="summary__table"
+                  [class.summary__table--selected]="store.tableId() === table.id"
+                  [attr.aria-pressed]="store.tableId() === table.id"
+                  (click)="store.selectTable(table.id)"
+                >
+                  Mesa {{ table.number }}
+                </button>
+              }
+            </div>
+          }
+        </section>
+
+        <div class="edit-note">
+          <label class="edit-note__label" for="edit-note">Agregar una nota</label>
+          <textarea
+            id="edit-note"
+            class="edit-note__input"
+            rows="3"
+            [maxLength]="noteMaxLength"
+            [value]="store.note()"
+            placeholder="Por ejemplo: sin sal"
+            (input)="onNote($event)"
+          ></textarea>
+          @if (order.notes?.length) {
+            <p class="edit-note__previous">Notas anteriores: {{ order.notes.join(' · ') }}</p>
+          }
+        </div>
+
+        <p class="summary__total">
+          <span>Total</span>
+          <strong class="tabular" data-testid="edit-total">{{ store.total() | mxnPrice }}</strong>
+        </p>
+
+        @if (store.notice(); as notice) {
+          <p class="summary__error" role="alert" data-testid="edit-notice">{{ notice }}</p>
+        }
+
+        <button
+          type="button"
+          mat-flat-button
+          class="summary__send"
+          data-testid="save-edit"
+          [disabled]="!store.canSave()"
+          (click)="save()"
+        >
+          {{ store.isSaving() ? 'Guardando…' : 'Guardar' }}
+        </button>
+        <button
+          type="button"
+          mat-stroked-button
+          class="summary__send"
+          data-testid="cancel-edit"
+          (click)="cancel()"
+        >
+          Cancelar
+        </button>
+      </aside>
+    </div>
+  } @else if (store.problem(); as problem) {
+    <section class="edit-state" role="alert" data-testid="edit-problem">
+      <p>
+        @switch (problem) {
+          @case ('not-found') {
+            Este pedido no existe.
+          }
+          @case ('unavailable') {
+            {{ messages.editNotAvailable }}
+          }
+          @default {
+            {{ messages.editLoadFailed }}
+          }
+        }
+      </p>
+      <a mat-stroked-button [routerLink]="['/orders', 'detail', id()]">Volver al pedido</a>
+    </section>
+  } @else {
+    <p class="edit-state" role="status">Cargando pedido…</p>
+  }
+</main>

@@ -75,8 +75,14 @@ export class TakeOrderStore {
   readonly sentOrder = this.sentOrderState.asReadonly();
   readonly queuedOrder = this.queuedOrderState.asReadonly();
 
+  /** The order the draft belongs to while a waiter modifies it (HU_13): its lines are not a new order and are never sent as one. */
+  readonly editingOrderId = this.draft.editingOrderId;
+
   /** An order without products cannot be sent (HU_03 CA3). */
-  readonly canSend = computed(() => this.draft.itemCount() > 0 && !this.sendingState());
+  readonly canSend = computed(
+    () =>
+      this.draft.itemCount() > 0 && !this.sendingState() && this.draft.editingOrderId() === null,
+  );
 
   selectTable(tableId: string): void {
     this.tableIdState.set(tableId);

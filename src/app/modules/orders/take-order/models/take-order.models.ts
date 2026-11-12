@@ -27,6 +27,16 @@ export interface CreateOrderRequest {
   readonly createdAt?: string;
 }
 
+/**
+ * Body of `PUT /orders/{id}` (HU_13): the whole new content of an order that is New or InPreparation. `items` replaces every
+ * product, `tableId` is the table of a dine-in order (null for take-away), and `note` is added to the notes of the order.
+ */
+export interface UpdateOrderRequest {
+  readonly tableId: string | null;
+  readonly items: readonly CreateOrderItem[];
+  readonly note?: string;
+}
+
 /** An order of the offline queue: it always keeps the time the waiter sent it. */
 export type QueuedOrderRequest = CreateOrderRequest & { readonly createdAt: string };
 
@@ -51,6 +61,13 @@ export type OrderChannel = 'DineIn' | 'TakeAway' | 'MobileApp';
 export type OrderStatus = 'New' | 'InPreparation' | 'Ready' | 'Delivered';
 
 export interface OrderDetailItem {
+  /** The menu product and the options by id, to edit the order (HU_13). Left out by an API that does not send them yet. */
+  readonly productId?: string;
+  readonly sizeId?: string | null;
+  readonly drinkId?: string | null;
+  /** In the same order as `extras` and `exclusions`; an entry is null when its option is no longer on the menu. */
+  readonly extraIds?: readonly (string | null)[];
+  readonly exclusionIds?: readonly (string | null)[];
   readonly name: string;
   readonly quantity: number;
   readonly unitPrice: number;
@@ -80,7 +97,11 @@ export interface OrderDetail {
   readonly createdAt: string;
   readonly readyAt: string | null;
   readonly deliveredAt: string | null;
+  /** When the waiter last modified the order (HU_13), or null when it never was. */
+  readonly modifiedAt?: string | null;
   readonly items: readonly OrderDetailItem[];
+  /** The notes the waiter added when modifying the order, oldest first. */
+  readonly notes?: readonly string[];
   readonly timeline: readonly OrderTimelineEntry[];
 }
 

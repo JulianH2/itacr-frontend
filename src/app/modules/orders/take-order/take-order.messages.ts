@@ -5,5 +5,14 @@ export const TAKE_ORDER_MESSAGES = {
   queued: 'Pedido guardado. Se enviará a cocina cuando vuelva la conexión.',
   deliverNetwork: 'No pudimos entregar el pedido. Revisa tu conexión e inténtalo de nuevo.',
   deliverUnexpected: 'No pudimos entregar el pedido. Inténtalo de nuevo.',
+  editOffline: 'Para modificar el pedido necesitas conexión. Conéctate e inténtalo de nuevo.',
+  editNetwork: 'No pudimos guardar los cambios. Revisa tu conexión e inténtalo de nuevo.',
+  editUnexpected: 'No pudimos guardar los cambios. Inténtalo de nuevo.',
+  editEmpty: 'Un pedido no puede quedarse sin productos. Para anularlo, pide ayuda al gerente.',
+  editTableRequired: 'Elige una mesa para el pedido.',
+  editLoadFailed: 'No pudimos cargar el pedido. Revisa tu conexión e inténtalo de nuevo.',
+  editNotAvailable: 'Este pedido ya no se puede modificar.',
+  editOptionsGone:
+    'Este pedido tiene opciones que ya no están en el menú, así que no se puede modificar.',
   notSaved: 'No pudimos guardar el pedido en este dispositivo. Inténtalo de nuevo.',
 } as const;
