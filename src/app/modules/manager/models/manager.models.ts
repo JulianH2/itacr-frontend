@@ -1,3 +1,5 @@
+import type { EmployeeRole } from '@shared/auth/auth.models';
+
 /** The two channels the manager compares: the orders a waiter took, and the pickup orders of customers (HU_16). */
 export type ManagerChannel = 'Waiter' | 'Pickup';
 
@@ -69,4 +71,26 @@ export interface ManagerOrdersQuery {
   readonly status: ManagerOrderStatus | null;
   readonly page: number;
   readonly pageSize: number;
+}
+
+/** An account that asked for access from the login screen and waits for the manager (HU_15). */
+export interface PendingAccount {
+  readonly id: string;
+  readonly fullName: string;
+  readonly role: EmployeeRole;
+  readonly requestedAt: string;
+}
+
+/** An employee who asked to reset the PIN and waits for a temporary one (HU_15). */
+export interface PendingPinReset {
+  readonly employeeId: string;
+  readonly fullName: string;
+  readonly role: EmployeeRole;
+  readonly requestedAt: string;
+}
+
+/** What the manager has to attend, as `GET /manager/access-requests` returns it. Both lists are empty when there is nothing pending. */
+export interface AccessRequests {
+  readonly accounts: readonly PendingAccount[];
+  readonly pinResets: readonly PendingPinReset[];
 }

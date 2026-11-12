@@ -5,6 +5,7 @@ import type { Observable } from 'rxjs';
 import { environment } from '@env/environment';
 
 import type {
+  AccessRequests,
   ManagerDashboard,
   ManagerOrdersPage,
   ManagerOrdersQuery,
@@ -35,5 +36,26 @@ export class HttpManagerApiService implements ManagerApi {
       params = params.set('status', query.status);
     }
     return this.http.get<ManagerOrdersPage>(`${this.managerUrl}/orders`, { params });
+  }
+
+  getAccessRequests(): Observable<AccessRequests> {
+    return this.http.get<AccessRequests>(`${this.managerUrl}/access-requests`);
+  }
+
+  approveAccount(employeeId: string): Observable<void> {
+    return this.http.post<void>(`${this.managerUrl}/access-requests/${employeeId}/approve`, null);
+  }
+
+  rejectAccount(employeeId: string): Observable<void> {
+    return this.http.post<void>(`${this.managerUrl}/access-requests/${employeeId}/reject`, null);
+  }
+
+  assignTemporaryPin(employeeId: string, pin: string): Observable<void> {
+    return this.http.post<void>(
+      `${this.managerUrl}/pin-reset-requests/${employeeId}/temporary-pin`,
+      {
+        pin,
+      },
+    );
   }
 }

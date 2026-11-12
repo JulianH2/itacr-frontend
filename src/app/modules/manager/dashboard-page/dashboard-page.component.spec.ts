@@ -84,7 +84,14 @@ describe('DashboardPageComponent', () => {
   let page: HTMLElement;
 
   async function render(): Promise<void> {
-    const api: ManagerApi = { getDashboard, getOrders };
+    const api: ManagerApi = {
+      getDashboard,
+      getOrders,
+      getAccessRequests: () => of({ accounts: [], pinResets: [] }),
+      approveAccount: () => of(undefined),
+      rejectAccount: () => of(undefined),
+      assignTemporaryPin: () => of(undefined),
+    };
     await TestBed.configureTestingModule({
       imports: [DashboardPageComponent],
       providers: [

@@ -82,13 +82,22 @@ On the login screen, **Crear cuenta** (`/login/register`, only for people withou
 
 ### Manager dashboard (HU_16)
 
-`/manager` (only for the role Manager) shows the shift in four parts. A **date range** at the top (Hoy, Ayer, Últimos 7 días, or two dates; at most 31 days) scopes everything on the page, and "today" is the day of the device, from its midnight to the next one.
+`/manager` (only for the role Manager) shows the shift in four parts, below the section of requests (HU_15). A **date range** at the top (Hoy, Ayer, Últimos 7 días, or two dates; at most 31 days) scopes everything on the page, and "today" is the day of the device, from its midnight to the next one.
 
 - **Indicators:** the **sales** (the total of the orders delivered in the range), the **orders** created, and the **average time to prepare** an order in each channel, **Mesero** and **Para recoger**. The channel with the longer average gets **Mayor retraso**; with nothing to compare, none does.
 - **Trend:** one bar per hour of a day, or per day for a long range, of the **sales** or of the **orders** (one measure at a time, one axis). Hovering or focusing a bar shows its value, and **Ver tabla** shows the same numbers as a table.
 - **Recent orders:** a table filtered by **channel** and by **status**, ten rows a page. A row opens the detail of the order (`/manager/orders/:id`): the products, the total, and the time of each stage.
 - **Rules:** the preparation time is the time between the creation of an order and the moment it became Ready; everything is added up by the API from the orders, nothing is typed by hand. While new numbers load, the last ones stay on screen, dimmed; if a request fails, they stay and the page says so.
 - With `useMockApi: true` the page adds up some sample orders of the day with the same rules as the API.
+
+### Staff access requests (HU_15)
+
+The **Solicitudes** section at the top of `/manager` is for what waits for the manager, whatever the date range. It reads `GET /manager/access-requests`:
+
+- **Cuentas nuevas:** each account that asked for access (HU_14) with its name and role. **Aprobar** (`POST /manager/access-requests/{id}/approve`) makes it active so the employee can sign in with the PIN they chose; **Rechazar** (`.../reject`) leaves it rejected, so the employee cannot sign in and cannot ask again with the same email.
+- **Restablecer PIN:** each employee who asked to reset the PIN (HU_01). **Asignar PIN temporal** opens a field for 4 digits ("El PIN debe tener 4 dígitos." otherwise); **Guardar PIN** sends `POST /manager/pin-reset-requests/{id}/temporary-pin`. The manager tells the employee the PIN in person; it is never shown again.
+- **Empty and errors:** with nothing pending the section says "No hay solicitudes pendientes.". After every action the list is read again and the result is shown ("Se aprobó la cuenta de Ana López."); if another manager answered first, the message of the API is shown and the list refreshes. One action at a time: the buttons are disabled while one is being sent.
+- With `useMockApi: true` the section has a few sample requests that disappear as they are answered.
 
 ## npm scripts
 
