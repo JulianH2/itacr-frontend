@@ -108,7 +108,8 @@ const ARROW_STEPS: Readonly<Record<string, number>> = {
       flex: none;
     }
 
-    .segmented__option[aria-checked='true'] {
+    /* Under .segmented so it outranks the chips background, which Angular scopes with one more attribute. */
+    .segmented .segmented__option[aria-checked='true'] {
       background: var(--color-primary);
       color: var(--color-on-primary);
     }
