@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       font: var(--mat-sys-body-medium);
       font-family: var(--font-family);
       list-style: none;
-      margin: var(--space-0-5) 0 0;
+      margin: var(--space-half) 0 0;
       padding: 0;
     }
   `,

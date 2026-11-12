@@ -93,6 +93,30 @@ describe('OrderDetailPageComponent', () => {
     deliverOrder = vi.fn(() => of(DELIVERY_DONE));
   });
 
+  // HU_16 CA4
+  it('should take a manager back to the dashboard, and show the products, the total and the times (HU_16)', async () => {
+    // Act
+    const page = await render(EmployeeRole.Manager);
+
+    // Assert
+    const back = page.querySelector<HTMLAnchorElement>('.detail__back');
+    expect(back?.getAttribute('href')).toBe('/manager');
+    expect(back?.textContent).toContain('Volver al panel');
+    expect(page.textContent).toContain('Hamburguesa Clásica');
+    expect(page.textContent).toContain('$158.00');
+    expect(page.querySelector('[data-testid="deliver-order"]')).toBeNull();
+  });
+
+  it('should take a waiter back to the orders', async () => {
+    // Act
+    const page = await render(EmployeeRole.Waiter);
+
+    // Assert
+    const back = page.querySelector<HTMLAnchorElement>('.detail__back');
+    expect(back?.getAttribute('href')).toBe('/orders');
+    expect(back?.textContent).toContain('Volver a pedidos');
+  });
+
   // HU_12 CA3
   it('should show the size, the drink, the extras and the exclusions of a combo', async () => {
     // Arrange

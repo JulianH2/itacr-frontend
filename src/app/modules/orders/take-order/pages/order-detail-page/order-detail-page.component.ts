@@ -57,6 +57,13 @@ type StepState = 'done' | 'current' | 'undone';
 export class OrderDetailPageComponent {
   protected readonly choices = choiceLines;
 
+  /** Where the back link goes: a manager came from the table of the dashboard, anyone else from the orders. */
+  protected readonly back = computed(() =>
+    this.session.employee()?.role === EmployeeRole.Manager
+      ? { link: '/manager', label: 'Volver al panel' }
+      : { link: '/orders', label: 'Volver a pedidos' },
+  );
+
   private readonly api = inject(ORDERS_API);
   private readonly session = inject(SessionService);
   private readonly toast = inject(ToastService);
