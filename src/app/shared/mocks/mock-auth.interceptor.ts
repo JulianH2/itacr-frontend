@@ -16,6 +16,7 @@ import {
   PasswordLoginRequest,
   PinLoginRequest,
   PinResetRequest,
+  RegisterEmployeeRequest,
 } from '@shared/auth/auth.models';
 
 const MOCK_PASSWORD = 'Itacr2026!';
@@ -68,6 +69,9 @@ const MOCK_EMPLOYEES: readonly MockEmployee[] = [
   },
 ];
 
+/** Emails and users asked for in this session: the API does not accept the same one twice. */
+const requestedAccounts = new Set<string>();
+
 const failedAttempts = new Map<string, number>();
 const lockedUntil = new Map<string, number>();
 
@@ -83,11 +87,18 @@ function fail(
   status: HttpStatusCode,
   type: string,
   title: string,
+  detail?: string,
 ): Observable<never> {
   const error = new HttpErrorResponse({
     status,
     url: request.url,
-    error: { type, title, status, instance: request.url },
+    error: {
+      type,
+      title,
+      status,
+      instance: request.url,
+      ...(detail === undefined ? {} : { detail }),
+    },
   });
   return timer(MOCK_LATENCY_MS).pipe(mergeMap(() => throwError(() => error)));
 }
@@ -154,6 +165,22 @@ function loginWithPassword(request: HttpRequest<unknown>): Observable<HttpRespon
   return employee.status === 'Active' ? respond(loginResponse(employee)) : notActive(request);
 }
 
+function registerEmployee(request: HttpRequest<unknown>): Observable<HttpResponse<null>> {
+  const body = request.body as RegisterEmployeeRequest;
+  const email = body.email.trim().toLowerCase();
+  if (requestedAccounts.has(email) || MOCK_EMPLOYEES.some((employee) => employee.email === email)) {
+    return fail(
+      request,
+      HttpStatusCode.Conflict,
+      AUTH_PROBLEM_TYPES.accountAlreadyExists,
+      'Account already exists',
+      'Ya existe una cuenta o una solicitud con ese correo o usuario.',
+    );
+  }
+  requestedAccounts.add(email);
+  return respond(null, HttpStatusCode.Accepted);
+}
+
 export const mockAuthInterceptor: HttpInterceptorFn = (request, next) => {
   if (!request.url.startsWith(AUTH_API_URL)) {
     return next(request);
@@ -172,6 +199,9 @@ export const mockAuthInterceptor: HttpInterceptorFn = (request, next) => {
   }
   if (request.method === 'POST' && path === '/login/password') {
     return loginWithPassword(request);
+  }
+  if (request.method === 'POST' && path === '/registration-requests') {
+    return registerEmployee(request);
   }
   if (request.method === 'POST' && path === '/pin-reset-requests') {
     const body = request.body as PinResetRequest;
