@@ -1,0 +1,124 @@
+<main class="manager">
+  <header class="manager__header">
+    <h1 class="manager__title">Panel de gerencia</h1>
+    <p class="manager__subtitle">Ventas y tiempos de preparación del turno, por canal.</p>
+  </header>
+
+  <app-access-requests />
+
+  <section class="manager__range" aria-label="Rango de fechas">
+    <div class="manager__presets" role="group" aria-label="Rangos rápidos">
+      @for (preset of presets; track preset.label) {
+        <button
+          type="button"
+          class="manager__preset"
+          [attr.aria-pressed]="isActive(preset)"
+          [attr.data-testid]="'preset-' + preset.label"
+          (click)="store.setRange(preset.range())"
+        >
+          {{ preset.label }}
+        </button>
+      }
+    </div>
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Desde</mat-label>
+      <input
+        matInput
+        type="date"
+        data-testid="range-start"
+        [value]="store.range().start"
+        (change)="setStart($any($event.target).value)"
+      />
+    </mat-form-field>
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Hasta</mat-label>
+      <input
+        matInput
+        type="date"
+        data-testid="range-end"
+        [value]="store.range().end"
+        (change)="setEnd($any($event.target).value)"
+      />
+    </mat-form-field>
+  </section>
+
+  @if (store.rangeError(); as message) {
+    <p class="manager__error" role="alert" data-testid="range-error">{{ message }}</p>
+  }
+
+  @if (store.dashboardFailed()) {
+    <p class="manager__error" role="alert" data-testid="dashboard-error">
+      No pudimos cargar los números.
+      @if (store.dashboard()) {
+        Mostramos los últimos que cargaron.
+      }
+      <button type="button" mat-button (click)="store.reload()">Reintentar</button>
+    </p>
+  }
+
+  @if (store.dashboard(); as dashboard) {
+    <div class="manager__content" [class.manager__content--refreshing]="store.isRefreshing()">
+      <section class="manager__kpis" aria-label="Indicadores">
+        <app-stat-card
+          label="Ventas"
+          icon="trending-up"
+          tone="success"
+          [value]="dashboard.sales | mxnPrice"
+          [caption]="
+            dashboard.deliveredOrders === 1
+              ? '1 pedido entregado'
+              : dashboard.deliveredOrders + ' pedidos entregados'
+          "
+        />
+        <app-stat-card
+          label="Pedidos"
+          icon="list"
+          [value]="dashboard.totalOrders"
+          caption="Creados en el rango"
+        />
+        @for (metrics of dashboard.channels; track metrics.channel) {
+          <div class="manager__channel" [attr.data-testid]="'channel-' + metrics.channel">
+            <app-stat-card
+              [label]="'Preparación · ' + channelLabels[metrics.channel]"
+              icon="clock"
+              [value]="formatDuration(metrics.averagePreparationSeconds)"
+              [caption]="preparedCaption(metrics)"
+            />
+            @if (isSlowest(metrics)) {
+              <app-status-badge
+                class="manager__slowest"
+                tone="warning"
+                icon="clock"
+                data-testid="slowest-channel"
+              >
+                Mayor retraso
+              </app-status-badge>
+            }
+          </div>
+        }
+      </section>
+
+      <app-sales-trend-chart
+        [points]="dashboard.trend"
+        [from]="shownRange().from"
+        [to]="shownRange().to"
+        [refreshing]="store.isRefreshing()"
+      />
+    </div>
+  } @else if (store.isLoadingFirstTime()) {
+    <p class="manager__state" role="status" data-testid="dashboard-loading">Cargando el panel…</p>
+  }
+
+  <app-recent-orders-table
+    [page]="store.orders()"
+    [channel]="store.channel()"
+    [status]="store.status()"
+    [totalPages]="store.totalPages()"
+    [refreshing]="store.isRefreshingOrders()"
+    [failed]="store.ordersFailed()"
+    (channelChange)="store.setChannel($event)"
+    (statusChange)="store.setStatus($event)"
+    (pageChange)="store.goToPage($event)"
+    (retry)="store.reload()"
+  />
+</main>

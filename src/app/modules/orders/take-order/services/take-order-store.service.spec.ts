@@ -64,6 +64,10 @@ class FakeOrdersApi implements OrdersApi {
     return EMPTY;
   }
 
+  updateOrder(): Observable<OrderDetail> {
+    return EMPTY;
+  }
+
   getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
     return of([]);
   }
@@ -117,6 +121,27 @@ describe('TakeOrderStore', () => {
     expect(store.canSend()).toBe(false);
     expect(sent).toBe(false);
     expect(api.requests).toHaveLength(0);
+  });
+
+  it('should not send the lines of an order that is being modified as a new order (HU_13)', () => {
+    // Arrange
+    store.selectTable(TABLE_FIVE.id);
+    draft.beginEdit('order-1', [
+      {
+        lineId: 'burger',
+        productId: 'burger',
+        name: 'Hamburguesa Clásica',
+        unitPrice: 79,
+        quantity: 1,
+        customization: null,
+      },
+    ]);
+
+    // Assert
+    expect(store.canSend()).toBe(false);
+    draft.endEdit();
+    draft.add(BURGER);
+    expect(store.canSend()).toBe(true);
   });
 
   // CA2

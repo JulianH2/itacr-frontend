@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpStatusCode } from '@angular/common/http';
 
-import { AUTH_MESSAGES, AUTH_PROBLEM_TYPES } from './auth-messages';
+import { AUTH_MESSAGES, AUTH_PROBLEM_TYPES, REGISTRATION_MESSAGES } from './auth-messages';
 
 export type LoginMethod = 'pin' | 'password';
 
@@ -47,4 +47,60 @@ export function toAuthErrorMessage(error: unknown, method: LoginMethod): string 
     default:
       return AUTH_MESSAGES.unexpected;
   }
+}
+
+/** The fields of the form to ask for an account, with the names the API uses. */
+export type RegistrationField =
+  'fullName' | 'email' | 'phone' | 'role' | 'pin' | 'pinConfirmation' | 'acceptedPrivacyNotice';
+
+const REGISTRATION_FIELDS: readonly RegistrationField[] = [
+  'fullName',
+  'email',
+  'phone',
+  'role',
+  'pin',
+  'pinConfirmation',
+  'acceptedPrivacyNotice',
+];
+
+/** What went wrong when asking for an account: a message for each field the API rejected, or one for the whole form. */
+export interface RegistrationFailure {
+  readonly fields: Partial<Record<RegistrationField, string>>;
+  readonly general: string | null;
+}
+
+export function toRegistrationFailure(error: unknown): RegistrationFailure {
+  if (!(error instanceof HttpErrorResponse)) {
+    return { fields: {}, general: AUTH_MESSAGES.unexpected };
+  }
+  if (error.status === 0) {
+    return { fields: {}, general: AUTH_MESSAGES.network };
+  }
+  if (error.status === HttpStatusCode.TooManyRequests) {
+    return { fields: {}, general: REGISTRATION_MESSAGES.tooManyRequests };
+  }
+  const problem = isProblemDetails(error.error) ? error.error : undefined;
+  if (
+    error.status === HttpStatusCode.Conflict ||
+    problem?.type === AUTH_PROBLEM_TYPES.accountAlreadyExists
+  ) {
+    return {
+      fields: { email: problem?.detail ?? REGISTRATION_MESSAGES.accountExists },
+      general: null,
+    };
+  }
+  if (error.status === HttpStatusCode.BadRequest) {
+    const rejected = (error.error as { errors?: Record<string, readonly string[]> } | null)?.errors;
+    const fields: Partial<Record<RegistrationField, string>> = {};
+    for (const field of REGISTRATION_FIELDS) {
+      const message = rejected?.[field]?.[0];
+      if (message !== undefined) {
+        fields[field] = message;
+      }
+    }
+    return Object.keys(fields).length > 0
+      ? { fields, general: null }
+      : { fields: {}, general: AUTH_MESSAGES.unexpected };
+  }
+  return { fields: {}, general: AUTH_MESSAGES.unexpected };
 }

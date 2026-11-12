@@ -57,6 +57,16 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
 
+### Modifying an order (HU_13)
+
+In the detail of an order (`/orders/detail/:id`) the waiter who took it sees **Modificar orden** only while it is **Nuevo** or **En preparación**; for **Listo** and **Entregado** orders, for a customer's pickup order, and for a manager, the option is not there. It opens `/orders/detail/:id/edit` (`OrderEditPageComponent`, with `OrderEditStore`): change the quantity of a product or remove it, pick another table (a dine-in order), add a note (up to 500 characters), and see the new total as it changes. **Agregar productos** goes to the catalog and its cart comes back to the same order. **Guardar** sends `PUT /orders/{id}` and returns to the detail, which shows the new total, the "Modificado" mark, and the notes; **Cancelar** throws every change away, so the order keeps its original data. Nothing is sent until "Guardar".
+
+- Editing needs a connection: without it "Para modificar el pedido necesitas conexión..." is shown, "Guardar" is disabled, and nothing is queued.
+- An order cannot be left without products: "Un pedido no puede quedarse sin productos. Para anularlo, pide ayuda al gerente.".
+- If the order changed while it was open (the kitchen marked it Listo), the API answers 409: the app shows its message, drops the changes, and shows the detail again.
+- The kitchen card (`OrderCardComponent`) shows the **Modificado** badge and the notes when `modifiedAt` is set, on the next 5-second poll.
+- With `useMockApi: true` the mock replaces the products and keeps the notes, with placeholder prices.
+
 ### Test coverage
 
 `npm run test:coverage` runs the unit tests once with the V8 coverage of Vitest and prints the percentage of covered statements, branches, functions, and lines of `src/` (the specs and `testing/` helpers do not count). The report is written to `coverage/itacr-frontend/` (ignored by git). CI runs this instead of `npm test` and shows the table in the **summary of the `ci` job** (`.github/scripts/coverage-summary.cjs`). There is no minimum yet: the number is for information (ITACR-62).
@@ -70,6 +80,34 @@ Tapping **Agregar** on a combo opens a guided flow (`ComboCustomizerComponent`, 
 - **Lines:** the same combo with other options is another line of the order (`OrderDraftItem.lineId`), so a table can have one combo without onion and another with extra cheese. The same combo with the same options adds to the quantity of its line.
 - **Where it shows:** under the product in the summary of the waiter and of the customer, in the detail of an order (`/orders/detail/:id`), and on the kitchen card (`+ Queso extra`, `Sin cebolla`).
 - With `useMockApi: true` the options are the ones of the backend seed.
+
+### Asking for an account (HU_14)
+
+On the login screen, **Crear cuenta** (`/login/register`, only for people without a session) opens the form where a new employee asks for access: full name, **email or user**, phone (10 digits), the role (**Mesero** or **Cocina**; the manager role is never requested from here), a PIN of 4 digits with its confirmation, and the acceptance of the privacy notice. **Solicitar acceso** sends `POST /auth/registration-requests`; then the screen shows "Solicitud enviada. Tu acceso quedará pendiente hasta que el gerente lo apruebe." and the account waits for the manager.
+
+- **Validation:** each field says what is wrong next to it ("Este campo es obligatorio.", "Los PIN no coinciden.", ...), with the same texts as the API. A name made of spaces counts as empty, and the confirmation is checked again when the PIN changes.
+- **What the API answers:** the messages it rejects go next to their field; a taken email or user (`409`) goes next to the email field; too many requests (`429`) and a lost connection go above the button. What the user typed is kept.
+- **The privacy notice** is a short text in the form. It is a draft written for the project: the real notice of the restaurant must replace it before production.
+- With `useMockApi: true` the mock accepts the request and answers `409` for an email that is already taken in that session or that is one of the test employees.
+
+### Manager dashboard (HU_16)
+
+`/manager` (only for the role Manager) shows the shift in four parts, below the section of requests (HU_15). A **date range** at the top (Hoy, Ayer, Últimos 7 días, or two dates; at most 31 days) scopes everything on the page, and "today" is the day of the device, from its midnight to the next one.
+
+- **Indicators:** the **sales** (the total of the orders delivered in the range), the **orders** created, and the **average time to prepare** an order in each channel, **Mesero** and **Para recoger**. The channel with the longer average gets **Mayor retraso**; with nothing to compare, none does.
+- **Trend:** one bar per hour of a day, or per day for a long range, of the **sales** or of the **orders** (one measure at a time, one axis). Hovering or focusing a bar shows its value, and **Ver tabla** shows the same numbers as a table.
+- **Recent orders:** a table filtered by **channel** and by **status**, ten rows a page. A row opens the detail of the order (`/manager/orders/:id`): the products, the total, and the time of each stage.
+- **Rules:** the preparation time is the time between the creation of an order and the moment it became Ready; everything is added up by the API from the orders, nothing is typed by hand. While new numbers load, the last ones stay on screen, dimmed; if a request fails, they stay and the page says so.
+- With `useMockApi: true` the page adds up some sample orders of the day with the same rules as the API.
+
+### Staff access requests (HU_15)
+
+The **Solicitudes** section at the top of `/manager` is for what waits for the manager, whatever the date range. It reads `GET /manager/access-requests`:
+
+- **Cuentas nuevas:** each account that asked for access (HU_14) with its name and role. **Aprobar** (`POST /manager/access-requests/{id}/approve`) makes it active so the employee can sign in with the PIN they chose; **Rechazar** (`.../reject`) leaves it rejected, so the employee cannot sign in and cannot ask again with the same email.
+- **Restablecer PIN:** each employee who asked to reset the PIN (HU_01). **Asignar PIN temporal** opens a field for 4 digits ("El PIN debe tener 4 dígitos." otherwise); **Guardar PIN** sends `POST /manager/pin-reset-requests/{id}/temporary-pin`. The manager tells the employee the PIN in person; it is never shown again.
+- **Empty and errors:** with nothing pending the section says "No hay solicitudes pendientes.". After every action the list is read again and the result is shown ("Se aprobó la cuenta de Ana López."); if another manager answered first, the message of the API is shown and the list refreshes. One action at a time: the buttons are disabled while one is being sent.
+- With `useMockApi: true` the section has a few sample requests that disappear as they are answered.
 
 ## npm scripts
 

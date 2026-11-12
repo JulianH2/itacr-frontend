@@ -6,6 +6,7 @@ export const AUTH_PROBLEM_TYPES = {
   accountPendingApproval: 'https://itacr.app/problems/account-pending-approval',
   accountInactive: 'https://itacr.app/problems/account-inactive',
   accountLocked: 'https://itacr.app/problems/account-locked',
+  accountAlreadyExists: 'https://itacr.app/problems/account-already-exists',
 } as const;
 
 export const AUTH_MESSAGES = {
@@ -40,3 +41,17 @@ export const ROLE_HOME_LABELS: Readonly<Record<EmployeeRole, string>> = {
   [EmployeeRole.Kitchen]: 'Vista de Cocina',
   [EmployeeRole.Manager]: 'Dashboard de métricas',
 };
+
+/** The form to ask for an account (HU_14). The texts of the API are the same, so the screen and the API say the same. */
+export const REGISTRATION_MESSAGES = {
+  sent: 'Solicitud enviada. Tu acceso quedará pendiente hasta que el gerente lo apruebe.',
+  required: 'Este campo es obligatorio.',
+  fullNameLength: 'El nombre debe tener entre 2 y 120 caracteres.',
+  emailOrUser: 'Escribe un correo o un usuario sin espacios, de 3 a 254 caracteres.',
+  phoneLength: 'El teléfono debe tener 10 dígitos.',
+  pinFourDigits: 'El PIN debe tener 4 dígitos.',
+  pinsDoNotMatch: 'Los PIN no coinciden.',
+  privacyRequired: 'Debes aceptar el aviso de privacidad para continuar.',
+  accountExists: 'Ya existe una cuenta o una solicitud con ese correo o usuario.',
+  tooManyRequests: 'Demasiadas solicitudes desde esta conexión. Inténtalo de nuevo más tarde.',
+} as const;

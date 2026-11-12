@@ -20,6 +20,13 @@ export const LOGIN_ROUTES: Routes = [
       ),
   },
   {
+    path: 'register',
+    title: 'Crear cuenta | ITACR',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./pages/register-page/register-page.component').then((m) => m.RegisterPageComponent),
+  },
+  {
     path: 'redirect',
     title: 'Redirigiendo… | ITACR',
     loadComponent: () =>

@@ -100,6 +100,10 @@
         <app-icon name="user" [size]="18" />
         Usuario y contraseña
       </a>
+      <a mat-button routerLink="/login/register" data-testid="create-account">
+        <app-icon name="user" [size]="18" />
+        Crear cuenta
+      </a>
       @if (step() === 'pin') {
         <button mat-button type="button" data-testid="pin-reset" (click)="requestPinReset()">
           ¿Olvidaste tu PIN?
