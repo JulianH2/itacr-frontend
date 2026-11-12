@@ -119,6 +119,7 @@ describe('AccessRequestsComponent', () => {
 
     // Act
     await click('reject');
+    await click('confirm-reject');
 
     // Assert
     expect(rejectAccount).toHaveBeenCalledWith('account-1');
@@ -126,6 +127,70 @@ describe('AccessRequestsComponent', () => {
       'Se rechazó la cuenta de Ana López.',
     );
     expect(byTestId('account-account-1')).toBeNull();
+  });
+
+  it('should ask for confirmation naming the person and send nothing until it is confirmed', async () => {
+    // Arrange
+    await render();
+
+    // Act
+    await click('reject');
+
+    // Assert
+    expect(byTestId('reject-confirmation')?.textContent).toContain(
+      '¿Rechazar la solicitud de Ana López? No se puede deshacer.',
+    );
+    expect(rejectAccount).not.toHaveBeenCalled();
+  });
+
+  it('should send nothing and close the question when the manager cancels the rejection', async () => {
+    // Arrange
+    await render();
+    await click('reject');
+
+    // Act
+    await click('cancel-reject');
+
+    // Assert
+    expect(byTestId('reject-confirmation')).toBeNull();
+    expect(rejectAccount).not.toHaveBeenCalled();
+    expect(byTestId('account-account-1')).not.toBeNull();
+  });
+
+  it('should close the question when the manager opens the PIN form', async () => {
+    // Arrange
+    await render();
+    await click('reject');
+
+    // Act
+    await click('open-pin');
+
+    // Assert
+    expect(byTestId('reject-confirmation')).toBeNull();
+    expect(byTestId('temporary-pin')).not.toBeNull();
+  });
+
+  it('should close the question when the manager approves another account', async () => {
+    // Arrange
+    pending = {
+      ...pending,
+      accounts: [ACCOUNT, { ...ACCOUNT, id: 'account-2', fullName: 'Luis Pérez' }],
+    };
+    await render();
+    await click('reject');
+
+    // Act
+    (
+      section.querySelector(
+        '[data-testid="account-account-2"] [data-testid="approve"]',
+      ) as HTMLButtonElement
+    ).click();
+    await settle();
+
+    // Assert
+    expect(byTestId('reject-confirmation')).toBeNull();
+    expect(approveAccount).toHaveBeenCalledWith('account-2');
+    expect(rejectAccount).not.toHaveBeenCalled();
   });
 
   it('should assign a temporary PIN of 4 digits and take the request off the list (CA3)', async () => {

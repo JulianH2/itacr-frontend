@@ -4,6 +4,8 @@ export const ACCESS_REQUEST_MESSAGES = {
   loadFailed: 'No pudimos cargar las solicitudes.',
   approved: (name: string): string => `Se aprobó la cuenta de ${name}.`,
   rejected: (name: string): string => `Se rechazó la cuenta de ${name}.`,
+  confirmReject: (name: string): string =>
+    `¿Rechazar la solicitud de ${name}? No se puede deshacer.`,
   pinAssigned: (name: string): string => `Se asignó el PIN temporal a ${name}.`,
   pinFourDigits: 'El PIN debe tener 4 dígitos.',
   network: 'No se guardó el cambio: no hay conexión. Inténtalo de nuevo.',

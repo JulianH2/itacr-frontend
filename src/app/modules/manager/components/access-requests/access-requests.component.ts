@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -86,11 +86,33 @@ const REQUESTED_AT = new Intl.DateTimeFormat('es-MX', {
                       mat-stroked-button
                       data-testid="reject"
                       [disabled]="store.busyEmployeeId() !== null"
-                      (click)="reject(account)"
+                      (click)="askToReject(account)"
                     >
                       Rechazar
                     </button>
                   </div>
+                  @if (rejectingId() === account.id) {
+                    <div class="requests__confirm" role="alert" data-testid="reject-confirmation">
+                      <span>{{ messages.confirmReject(account.fullName) }}</span>
+                      <button
+                        type="button"
+                        mat-flat-button
+                        data-testid="confirm-reject"
+                        [disabled]="store.busyEmployeeId() !== null"
+                        (click)="reject(account)"
+                      >
+                        Sí, rechazar
+                      </button>
+                      <button
+                        type="button"
+                        mat-button
+                        data-testid="cancel-reject"
+                        (click)="rejectingId.set(null)"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  }
                 </li>
               }
             </ul>
@@ -246,6 +268,14 @@ const REQUESTED_AT = new Intl.DateTimeFormat('es-MX', {
       font-family: var(--font-family);
     }
 
+    .requests__confirm {
+      align-items: center;
+      display: flex;
+      flex-basis: 100%;
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+
     .requests__actions,
     .requests__pin {
       align-items: center;
@@ -260,7 +290,10 @@ export class AccessRequestsComponent {
 
   protected readonly messages = ACCESS_REQUEST_MESSAGES;
   protected readonly pinLength = PIN_LENGTH;
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
   protected readonly editingId = signal<string | null>(null);
+  protected readonly rejectingId = signal<string | null>(null);
   protected readonly pin = new FormControl('', {
     nonNullable: true,
     validators: [Validators.required, Validators.pattern(FOUR_DIGITS)],
@@ -275,15 +308,26 @@ export class AccessRequestsComponent {
   }
 
   protected approve(account: PendingAccount): void {
+    this.rejectingId.set(null);
     void this.store.approve(account.id, account.fullName);
   }
 
+  protected askToReject(account: PendingAccount): void {
+    this.editingId.set(null);
+    this.rejectingId.set(account.id);
+    setTimeout(() =>
+      this.host.nativeElement.querySelector<HTMLElement>('[data-testid="confirm-reject"]')?.focus(),
+    );
+  }
+
   protected reject(account: PendingAccount): void {
+    this.rejectingId.set(null);
     void this.store.reject(account.id, account.fullName);
   }
 
   protected openPinForm(reset: PendingPinReset): void {
     this.pin.reset('');
+    this.rejectingId.set(null);
     this.editingId.set(reset.employeeId);
   }
 
