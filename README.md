@@ -57,6 +57,16 @@ Open `http://localhost:8080`, then use DevTools > Application > Service workers,
 
 In the detail of an order (`/orders/detail/:id`) a waiter sees **Marcar como entregado** only while the order is **Listo** (`POST /orders/{id}/deliver`); in any other status, and for a manager, the option is not there. After delivering, the order leaves the active lists and the detail shows the time of each stage and the total time of the service. If the API refuses it (for example, another waiter already delivered it), the message of the API is shown and the detail refreshes. The pickup orders of customers that are ready (`GET /orders/pickups/ready`) appear on the dashboard as **Para recoger (listos)**, because no waiter took them. With `useMockApi: true` no order reaches Listo, so the button never shows in the mock.
 
+### Modifying an order (HU_13)
+
+In the detail of an order (`/orders/detail/:id`) the waiter who took it sees **Modificar orden** only while it is **Nuevo** or **En preparación**; for **Listo** and **Entregado** orders, for a customer's pickup order, and for a manager, the option is not there. It opens `/orders/detail/:id/edit` (`OrderEditPageComponent`, with `OrderEditStore`): change the quantity of a product or remove it, pick another table (a dine-in order), add a note (up to 500 characters), and see the new total as it changes. **Agregar productos** goes to the catalog and its cart comes back to the same order. **Guardar** sends `PUT /orders/{id}` and returns to the detail, which shows the new total, the "Modificado" mark, and the notes; **Cancelar** throws every change away, so the order keeps its original data. Nothing is sent until "Guardar".
+
+- Editing needs a connection: without it "Para modificar el pedido necesitas conexión..." is shown, "Guardar" is disabled, and nothing is queued.
+- An order cannot be left without products: "Un pedido no puede quedarse sin productos. Para anularlo, pide ayuda al gerente.".
+- If the order changed while it was open (the kitchen marked it Listo), the API answers 409: the app shows its message, drops the changes, and shows the detail again.
+- The kitchen card (`OrderCardComponent`) shows the **Modificado** badge and the notes when `modifiedAt` is set, on the next 5-second poll.
+- With `useMockApi: true` the mock replaces the products and keeps the notes, with placeholder prices.
+
 ### Test coverage
 
 `npm run test:coverage` runs the unit tests once with the V8 coverage of Vitest and prints the percentage of covered statements, branches, functions, and lines of `src/` (the specs and `testing/` helpers do not count). The report is written to `coverage/itacr-frontend/` (ignored by git). CI runs this instead of `npm test` and shows the table in the **summary of the `ci` job** (`.github/scripts/coverage-summary.cjs`). There is no minimum yet: the number is for information (ITACR-62).
