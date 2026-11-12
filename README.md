@@ -71,6 +71,15 @@ Tapping **Agregar** on a combo opens a guided flow (`ComboCustomizerComponent`, 
 - **Where it shows:** under the product in the summary of the waiter and of the customer, in the detail of an order (`/orders/detail/:id`), and on the kitchen card (`+ Queso extra`, `Sin cebolla`).
 - With `useMockApi: true` the options are the ones of the backend seed.
 
+### Asking for an account (HU_14)
+
+On the login screen, **Crear cuenta** (`/login/register`, only for people without a session) opens the form where a new employee asks for access: full name, **email or user**, phone (10 digits), the role (**Mesero** or **Cocina**; the manager role is never requested from here), a PIN of 4 digits with its confirmation, and the acceptance of the privacy notice. **Solicitar acceso** sends `POST /auth/registration-requests`; then the screen shows "Solicitud enviada. Tu acceso quedará pendiente hasta que el gerente lo apruebe." and the account waits for the manager.
+
+- **Validation:** each field says what is wrong next to it ("Este campo es obligatorio.", "Los PIN no coinciden.", ...), with the same texts as the API. A name made of spaces counts as empty, and the confirmation is checked again when the PIN changes.
+- **What the API answers:** the messages it rejects go next to their field; a taken email or user (`409`) goes next to the email field; too many requests (`429`) and a lost connection go above the button. What the user typed is kept.
+- **The privacy notice** is a short text in the form. It is a draft written for the project: the real notice of the restaurant must replace it before production.
+- With `useMockApi: true` the mock accepts the request and answers `409` for an email that is already taken in that session or that is one of the test employees.
+
 ## npm scripts
 
 | Script                  | Description                                                   |
