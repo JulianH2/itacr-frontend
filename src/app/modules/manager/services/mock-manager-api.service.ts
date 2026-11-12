@@ -1,13 +1,19 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { type Observable, delay, of } from 'rxjs';
+import { type Observable, delay, of, throwError } from 'rxjs';
+
+import { EmployeeRole } from '@shared/auth/auth.models';
 
 import type {
+  AccessRequests,
   ChannelMetrics,
   ManagerChannel,
   ManagerDashboard,
   ManagerOrderRow,
   ManagerOrdersPage,
   ManagerOrdersQuery,
+  PendingAccount,
+  PendingPinReset,
   TrendPoint,
 } from '../models/manager.models';
 import type { ManagerApi } from './manager-api';
@@ -15,6 +21,11 @@ import type { ManagerApi } from './manager-api';
 const MOCK_LATENCY_MS = 300;
 const HOUR_MS = 60 * 60 * 1000;
 const MINUTE_MS = 60 * 1000;
+const HTTP_NOT_FOUND = 404;
+
+function minutesAgo(minutes: number): string {
+  return new Date(Date.now() - minutes * MINUTE_MS).toISOString();
+}
 
 /** A few orders for each hour of the day, with the preparation times of a restaurant where pickup is slower. */
 function sampleOrders(from: Date, to: Date): ManagerOrderRow[] {
@@ -100,9 +111,36 @@ function trendOf(orders: readonly ManagerOrderRow[]): TrendPoint[] {
     .map(([hour, value]) => ({ hourStart: new Date(hour).toISOString(), ...value }));
 }
 
-/** In-memory dashboard for `useMockApi: true`: it adds up some sample orders with the same rules as the API. */
+/**
+ * In-memory dashboard for `useMockApi: true`: it adds up some sample orders with the same rules as the API, and keeps a few access
+ * requests that disappear as the manager answers them.
+ */
 @Injectable()
 export class MockManagerApiService implements ManagerApi {
+  private accounts: readonly PendingAccount[] = [
+    {
+      id: 'mock-account-1',
+      fullName: 'Ana López',
+      role: EmployeeRole.Waiter,
+      requestedAt: minutesAgo(35),
+    },
+    {
+      id: 'mock-account-2',
+      fullName: 'Luis Pérez',
+      role: EmployeeRole.Kitchen,
+      requestedAt: minutesAgo(12),
+    },
+  ];
+
+  private pinResets: readonly PendingPinReset[] = [
+    {
+      employeeId: 'mock-reset-1',
+      fullName: 'Marta Ruiz',
+      role: EmployeeRole.Waiter,
+      requestedAt: minutesAgo(5),
+    },
+  ];
+
   getDashboard(from: string, to: string): Observable<ManagerDashboard> {
     const orders = sampleOrders(new Date(from), new Date(to));
     const channels = [channelMetrics('Waiter', orders), channelMetrics('Pickup', orders)];
@@ -139,4 +177,36 @@ export class MockManagerApiService implements ManagerApi {
       items: matching.slice(skip, skip + query.pageSize),
     }).pipe(delay(MOCK_LATENCY_MS));
   }
+
+  getAccessRequests(): Observable<AccessRequests> {
+    return of({ accounts: this.accounts, pinResets: this.pinResets }).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  approveAccount(employeeId: string): Observable<void> {
+    return this.removeAccount(employeeId);
+  }
+
+  rejectAccount(employeeId: string): Observable<void> {
+    return this.removeAccount(employeeId);
+  }
+
+  assignTemporaryPin(employeeId: string): Observable<void> {
+    if (!this.pinResets.some((reset) => reset.employeeId === employeeId)) {
+      return notFound();
+    }
+    this.pinResets = this.pinResets.filter((reset) => reset.employeeId !== employeeId);
+    return of(undefined).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  private removeAccount(employeeId: string): Observable<void> {
+    if (!this.accounts.some((account) => account.id === employeeId)) {
+      return notFound();
+    }
+    this.accounts = this.accounts.filter((account) => account.id !== employeeId);
+    return of(undefined).pipe(delay(MOCK_LATENCY_MS));
+  }
+}
+
+function notFound(): Observable<never> {
+  return throwError(() => new HttpErrorResponse({ status: HTTP_NOT_FOUND }));
 }

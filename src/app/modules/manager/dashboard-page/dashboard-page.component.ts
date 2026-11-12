@@ -7,6 +7,7 @@ import { StatCardComponent } from '@shared/components/stat-card/stat-card.compon
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { MxnPricePipe } from '@shared/pipes/mxn-price.pipe';
 
+import { AccessRequestsComponent } from '../components/access-requests/access-requests.component';
 import { RecentOrdersTableComponent } from '../components/recent-orders-table/recent-orders-table.component';
 import { SalesTrendChartComponent } from '../components/sales-trend-chart/sales-trend-chart.component';
 import {
@@ -35,12 +36,14 @@ const PRESETS: readonly Preset[] = [
 /**
  * The manager's dashboard (HU_16): the sales of the day, the orders, and the average time to prepare an order in each channel, with
  * the channel that takes longer pointed out; the trend; and the table of recent orders, with a filter by channel and by status and
- * the detail of every order. The date range scopes everything on the page.
+ * the detail of every order. The date range scopes everything on the page except the requests: the accounts and PIN resets that
+ * wait for the manager (HU_15) are always the pending ones.
  */
 @Component({
   selector: 'app-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AccessRequestsComponent,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
