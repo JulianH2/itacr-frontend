@@ -1,7 +1,7 @@
 <main class="detail">
-  <a mat-button routerLink="/orders" class="detail__back">
+  <a mat-button [routerLink]="back().link" class="detail__back">
     <app-icon name="arrow-left" [size]="20" />
-    Volver a pedidos
+    {{ back().label }}
   </a>
 
   @if (order(); as order) {
@@ -24,6 +24,24 @@
       </p>
     </header>
 
+    @if (modifiedTime(); as time) {
+      <p class="detail__modified" data-testid="order-modified">
+        <app-status-badge tone="warning" icon="pencil">Modificado</app-status-badge>
+        <span class="tabular">a las {{ time }}</span>
+      </p>
+    }
+    @if (canModify()) {
+      <section class="detail__deliver" aria-label="Modificación">
+        <a
+          mat-stroked-button
+          data-testid="modify-order"
+          [routerLink]="['/orders', 'detail', order.id, 'edit']"
+        >
+          <app-icon name="pencil" [size]="20" />
+          Modificar orden
+        </a>
+      </section>
+    }
     @if (canDeliver()) {
       <section class="detail__deliver" aria-label="Entrega">
         <button
@@ -68,6 +86,17 @@
             <strong class="tabular">{{ order.total | mxnPrice }}</strong>
           </p>
         </section>
+
+        @if (order.notes?.length) {
+          <section class="detail__section" aria-labelledby="notes-title">
+            <h2 id="notes-title" class="detail__section-title">Notas</h2>
+            <ul class="detail__notes" data-testid="order-notes">
+              @for (note of order.notes; track $index) {
+                <li>{{ note }}</li>
+              }
+            </ul>
+          </section>
+        }
       </div>
 
       <section class="detail__section" aria-labelledby="timeline-title">

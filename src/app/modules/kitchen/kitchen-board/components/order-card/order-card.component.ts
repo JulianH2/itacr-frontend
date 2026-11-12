@@ -60,6 +60,8 @@ export class OrderCardComponent {
   private readonly elapsedMs = computed(() => this.now() - Date.parse(this.order().createdAt));
   protected readonly elapsedText = computed(() => formatElapsed(this.elapsedMs()));
   protected readonly level = computed(() => timerLevel(this.elapsedMs(), this.thresholds()));
+  protected readonly isModified = computed(() => Boolean(this.order().modifiedAt));
+  protected readonly notes = computed(() => this.order().notes ?? []);
   protected readonly items = computed(() =>
     this.order().items.map((item) => ({ ...item, details: itemDetails(item) })),
   );
