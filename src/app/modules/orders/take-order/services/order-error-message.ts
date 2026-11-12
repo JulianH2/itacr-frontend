@@ -38,6 +38,17 @@ function problemMessage(body: unknown): string | null {
   return typeof problem['detail'] === 'string' ? problem['detail'] : null;
 }
 
+/** The message the waiter sees when saving the changes of an order fails: the API explains a rejection, the rest is a generic text. */
+export function updateErrorMessage(error: unknown): string {
+  if (!(error instanceof HttpErrorResponse)) {
+    return TAKE_ORDER_MESSAGES.editUnexpected;
+  }
+  if (error.status === 0) {
+    return TAKE_ORDER_MESSAGES.editNetwork;
+  }
+  return problemMessage(error.error) ?? TAKE_ORDER_MESSAGES.editUnexpected;
+}
+
 /** The message the waiter sees when delivering an order fails: the API explains a conflict, the rest is a generic text. */
 export function deliverErrorMessage(error: unknown): string {
   if (!(error instanceof HttpErrorResponse)) {

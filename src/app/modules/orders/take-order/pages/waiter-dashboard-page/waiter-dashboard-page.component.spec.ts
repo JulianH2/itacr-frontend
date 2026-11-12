@@ -76,6 +76,7 @@ async function render(
     createOrder: () => EMPTY,
     getOrder: () => EMPTY,
     deliverOrder: () => EMPTY,
+    updateOrder: () => EMPTY,
     getReadyPickupOrders: () => of(pickups),
     getActiveOrders:
       getActiveOrders ??

@@ -1,0 +1,45 @@
+.edit-note {
+  display: grid;
+  gap: var(--space-half);
+}
+
+.edit-note__label {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+}
+
+.edit-note__input {
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  padding: var(--space-1) var(--space-2);
+  resize: vertical;
+
+  &:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+.edit-note__previous {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.edit-state {
+  color: var(--color-text-secondary);
+  display: grid;
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  gap: var(--space-2);
+  justify-items: start;
+  margin: 0 auto;
+  max-width: var(--content-width);
+}
