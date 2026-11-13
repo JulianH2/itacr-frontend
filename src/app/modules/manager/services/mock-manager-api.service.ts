@@ -148,8 +148,10 @@ export class MockManagerApiService implements ManagerApi {
     const slowest =
       timed.length === 2 &&
       timed[0].averagePreparationSeconds !== timed[1].averagePreparationSeconds
-        ? timed.reduce((a, b) =>
-            (a.averagePreparationSeconds ?? 0) >= (b.averagePreparationSeconds ?? 0) ? a : b,
+        ? timed.reduce(
+            (a, b) =>
+              (a.averagePreparationSeconds ?? 0) >= (b.averagePreparationSeconds ?? 0) ? a : b,
+            timed[0],
           ).channel
         : null;
     return of({
