@@ -1,0 +1,48 @@
+name: SonarQube
+
+# Code quality and coverage in SonarQube Cloud (organization julianh2, project JulianH2_itacr-frontend): only when develop
+# changes. The current plan does not analyze pull requests or non-main branches. It is separate from the
+# required `ci` check, so an outage of SonarQube Cloud never blocks a merge. Settings: sonar-project.properties.
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonarqube-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HUSKY: 0
+    steps:
+      # The whole history, so SonarQube Cloud can tell the new code from the old one.
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # No lifecycle scripts of the dependencies run here: the tests and the analysis need none of them.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Analyze and send to SonarQube Cloud
+        if: ${{ !cancelled() }}
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

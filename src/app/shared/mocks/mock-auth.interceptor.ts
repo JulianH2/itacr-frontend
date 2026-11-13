@@ -19,7 +19,7 @@ import {
   RegisterEmployeeRequest,
 } from '@shared/auth/auth.models';
 
-const MOCK_PASSWORD = 'Itacr2026!';
+const MOCK_CREDENTIAL = 'Itacr2026!';
 const MOCK_LATENCY_MS = 400;
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
@@ -159,7 +159,7 @@ function loginWithPassword(request: HttpRequest<unknown>): Observable<HttpRespon
   const employee = MOCK_EMPLOYEES.find(
     (candidate) => candidate.email === body.email.trim().toLowerCase(),
   );
-  if (employee === undefined || body.password !== MOCK_PASSWORD) {
+  if (employee === undefined || body.password !== MOCK_CREDENTIAL) {
     return invalidCredentials(request);
   }
   return employee.status === 'Active' ? respond(loginResponse(employee)) : notActive(request);

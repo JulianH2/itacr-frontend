@@ -227,6 +227,7 @@ node /home/site/wwwroot/server.cjs
 - Azure generates the domains with a unique suffix; they are shown in each App Service > Overview > **Default domain**. `src/environments/environment.ts` uses the backend one for `apiBaseUrl` and `kitchenHubUrl`.
 - The backend only accepts this frontend if its domain is in the backend `Cors__Origins__0` setting (itacr-backend README, "Production settings").
 - **Content Security Policy:** `frame-ancestors` is ignored in a `<meta>` tag, so it goes in the header of `server.cjs`. The other directives stay in the page: the production build uses `src/index.production.html` (set in `angular.json`), which is `src/index.html` plus a CSP `<meta>` tag that only allows scripts from the site itself and connections to the backend. **Keep the three index files in sync** (`index.html`, `index.production.html`, `index.qa.html`), and add any new external origin (API, fonts, images) to both CSPs.
+- **`'unsafe-inline'` in `style-src`:** it is needed by Angular, which injects the styles of the components at runtime as `<style>` elements; the browser only accepts them with `'unsafe-inline'` or with a nonce. `script-src` has no `'unsafe-inline'`, so a style injection cannot run code. Removing the `'unsafe-inline'` of `style-src` needs a nonce that a server generates for every answer and injects in the page (Angular's `CSP_NONCE`), with the whole CSP moved to the header of `server.cjs`; that is a change of the deployment, so it is not done here (ITACR-66).
 
 ### QA
 
@@ -274,6 +275,16 @@ The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code qu
 - **Exclusions:** none beyond build output and dependencies (`bin/`, `obj/`, `node_modules/`); findings are fixed, never hidden.
 - GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.
 - **Check dependencies on your machine:** `npm audit` must report 0 vulnerabilities (the findings of Xygeni SCA were fixed this way in ITACR-51); Xygeni results of each run are in its dashboard and in the `Xygeni Scan` check of the PR.
+
+## Code quality and coverage (SonarQube Cloud)
+
+[SonarQube Cloud](https://sonarcloud.io/project/overview?id=JulianH2_itacr-frontend) (free plan for public repositories) measures the code quality: bugs, vulnerabilities, code smells, duplication, and test coverage, with a quality gate. It complements Xygeni, which stays for the security of the dependencies, the secrets, and the workflows.
+
+- **Project:** organization `julianh2`, project key `JulianH2_itacr-frontend`, analysis method **GitHub Actions** (Automatic Analysis is off: it reads no coverage). The settings are in `sonar-project.properties`.
+- **Automatic run:** `.github/workflows/sonarqube.yml` runs the unit tests with coverage and sends the analysis only on pushes to `develop`. The current SonarQube Cloud plan does not analyze pull requests or non-main branches. It is not a required check, so an outage never blocks a merge.
+- **Coverage:** `npm run test:coverage` writes `coverage/itacr-frontend/lcov.info` for SonarQube (and the JSON summary of the `ci` job). The static server is tested with `node --test`, which writes no lcov, so it is left out of the coverage.
+- **Secret:** `SONAR_TOKEN` (Settings > Secrets and variables > Actions), created in SonarQube Cloud > the project > **Administration** > **Analysis Method**. Never commit it.
+- **Quality gate:** "Sonar way": on the new code, coverage of at least 80 %, duplication of at most 3 %, and an A in reliability, security, and maintainability. The new code is everything since the previous version.
 
 ## Database versioning (DbUp)
 

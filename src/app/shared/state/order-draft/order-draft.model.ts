@@ -50,7 +50,7 @@ export function lineIdOf(productId: string, customization?: ComboCustomization |
   const ids = (options: readonly ChosenOption[]): string =>
     options
       .map((option) => option.id)
-      .sort()
+      .sort((a, b) => a.localeCompare(b))
       .join(',');
   return [
     productId,
