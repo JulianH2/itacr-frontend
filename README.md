@@ -275,6 +275,16 @@ The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code qu
 - GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.
 - **Check dependencies on your machine:** `npm audit` must report 0 vulnerabilities (the findings of Xygeni SCA were fixed this way in ITACR-51); Xygeni results of each run are in its dashboard and in the `Xygeni Scan` check of the PR.
 
+## Code quality and coverage (SonarQube Cloud)
+
+[SonarQube Cloud](https://sonarcloud.io/project/overview?id=JulianH2_itacr-frontend) (free plan for public repositories) measures the code quality: bugs, vulnerabilities, code smells, duplication, and test coverage, with a quality gate. It complements Xygeni, which stays for the security of the dependencies, the secrets, and the workflows.
+
+- **Project:** organization `julianh2`, project key `JulianH2_itacr-frontend`, analysis method **GitHub Actions** (Automatic Analysis is off: it reads no coverage). The settings are in `sonar-project.properties`.
+- **Automatic run:** `.github/workflows/sonarqube.yml` runs the unit tests with coverage and sends the analysis on every PR into `sprint-*`, `develop`, `release`, and `main`, on every push to them, and by hand. It is not a required check, so an outage never blocks a merge. Dependabot PRs skip it, like Xygeni, because they cannot read secrets.
+- **Coverage:** `npm run test:coverage` writes `coverage/itacr-frontend/lcov.info` for SonarQube (and the JSON summary of the `ci` job). The static server is tested with `node --test`, which writes no lcov, so it is left out of the coverage.
+- **Secret:** `SONAR_TOKEN` (Settings > Secrets and variables > Actions), created in SonarQube Cloud > the project > **Administration** > **Analysis Method**. Never commit it.
+- **Quality gate:** "Sonar way": on the new code, coverage of at least 80 %, duplication of at most 3 %, and an A in reliability, security, and maintainability. The new code is everything since the previous version.
+
 ## Database versioning (DbUp)
 
 This repository has no database: the schema is versioned in [itacr-backend](https://github.com/JulianH2/itacr-backend) with [DbUp](https://dbup.readthedocs.io/), through numbered T-SQL scripts in `database/migrations/`, a history in `dbo.SchemaVersions`, and reversal scripts in `database/rollbacks/` (ITACR-52). The PWA only needs the API to run on top of it.

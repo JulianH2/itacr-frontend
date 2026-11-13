@@ -124,7 +124,7 @@
           "options": {
             "coverageInclude": ["src/**/*.ts"],
             "coverageExclude": ["src/**/*.spec.ts", "src/**/testing/**"],
-            "coverageReporters": ["text-summary", "json-summary"]
+            "coverageReporters": ["text-summary", "json-summary", "lcov"]
           }
         },
         "lint": {
