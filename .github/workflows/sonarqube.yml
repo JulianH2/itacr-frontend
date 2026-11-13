@@ -1,0 +1,53 @@
+name: SonarQube
+
+# Code quality and coverage in SonarQube Cloud (organization julianh2, project JulianH2_itacr-frontend): on every PR into the
+# long-lived branches, on every push to them, and by hand. It is its own workflow, apart from the required `ci` check, so an
+# outage of SonarQube Cloud never blocks a merge. Settings: sonar-project.properties.
+on:
+  pull_request:
+    branches: ['sprint-*', develop, release, main]
+  push:
+    branches: ['sprint-*', develop, release, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonarqube-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sonarqube:
+    name: SonarQube
+    # Dependabot PRs cannot read repository secrets, so the analysis would fail without SONAR_TOKEN. The push to develop
+    # analyzes those updates once they are merged.
+    if: github.event_name != 'pull_request' || github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      HUSKY: 0
+    steps:
+      # The whole history, so SonarQube Cloud can tell the new code from the old one.
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js from .nvmrc
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Analyze and send to SonarQube Cloud
+        if: ${{ !cancelled() }}
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
