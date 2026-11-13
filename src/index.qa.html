@@ -2,12 +2,6 @@
 <html lang="es-MX">
   <head>
     <meta charset="utf-8" />
-    <!--
-      Content Security Policy (ITACR-66). The 'unsafe-inline' of style-src is required by Angular: it injects the styles
-      of the components at runtime as <style> elements, and the browser only accepts them with 'unsafe-inline' or with a
-      nonce that a server generates for every answer (Angular's CSP_NONCE). The app is served as static files, so that
-      nonce does not exist yet; script-src has no 'unsafe-inline', so an injected style cannot run code.
-    -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://app-itacr-backend-qa.azurewebsites.net; connect-src 'self' https://app-itacr-backend-qa.azurewebsites.net wss://app-itacr-backend-qa.azurewebsites.net https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
