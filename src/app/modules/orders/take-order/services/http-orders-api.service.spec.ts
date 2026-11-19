@@ -90,4 +90,25 @@ describe('HttpOrdersApiService', () => {
     expect(request.request.method).toBe('GET');
     request.flush([]);
   });
+
+  it('should put the new content of the order without prices to its route (HU_13)', () => {
+    // Act
+    service
+      .updateOrder('order-1', {
+        tableId: 'table-2',
+        items: [{ productId: 'burger', quantity: 2 }],
+        note: 'Sin sal',
+      })
+      .subscribe();
+
+    // Assert
+    const request = http.expectOne(`${environment.apiBaseUrl}/orders/order-1`);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({
+      tableId: 'table-2',
+      items: [{ productId: 'burger', quantity: 2 }],
+      note: 'Sin sal',
+    });
+    request.flush({});
+  });
 });

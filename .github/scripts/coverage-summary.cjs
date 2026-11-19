@@ -8,6 +8,7 @@
  */
 
 const fs = require('node:fs');
+const path = require('node:path');
 
 function render(total) {
   const row = (label, metric) =>
@@ -25,8 +26,20 @@ function render(total) {
   ].join('\n');
 }
 
+function insideWorkingDirectory(file) {
+  const root = process.cwd();
+  const resolved = path.resolve(root, file);
+  const relative = path.relative(root, resolved);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`The coverage report must be inside ${root}: ${file}`);
+  }
+  return resolved;
+}
+
 function main() {
-  const file = process.argv[2] ?? 'coverage/itacr-frontend/coverage-summary.json';
+  const file = insideWorkingDirectory(
+    process.argv[2] ?? 'coverage/itacr-frontend/coverage-summary.json',
+  );
   if (!fs.existsSync(file)) {
     console.log(`::warning title=No coverage report::There is no ${file}.`);
     return;
@@ -43,4 +56,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { render };
+module.exports = { render, insideWorkingDirectory };

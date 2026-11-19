@@ -16,9 +16,17 @@ const DEFAULT_ADD_QUANTITY = 1;
 @Injectable({ providedIn: 'root' })
 export class OrderDraftService {
   private readonly itemsState = signal<readonly OrderDraftItem[]>([]);
+  private readonly editingState = signal<string | null>(null);
+  private stashedItems: readonly OrderDraftItem[] = [];
 
   /** Lines of the draft, in the order they were first added. */
   readonly items = this.itemsState.asReadonly();
+
+  /**
+   * The order whose lines the draft holds while a waiter modifies it (HU_13), or null when the draft is a new order. The
+   * catalog adds products to the draft the same way in both cases; what happens to them is up to the screen that owns it.
+   */
+  readonly editingOrderId = this.editingState.asReadonly();
 
   /** Total number of units across all lines (the order counter). */
   readonly itemCount = computed(() =>
@@ -96,6 +104,31 @@ export class OrderDraftService {
     this.itemsState.update((items) =>
       items.map((item) => (item.lineId === lineId ? { ...item, quantity } : item)),
     );
+  }
+
+  /**
+   * Starts modifying an order: the draft holds its lines until {@link endEdit}, and the new order the waiter was building, if any,
+   * waits aside so it is not lost. Starting again on the order already being modified keeps the changes made so far.
+   */
+  beginEdit(orderId: string, items: readonly OrderDraftItem[]): void {
+    if (this.editingState() === orderId) {
+      return;
+    }
+    if (this.editingState() === null) {
+      this.stashedItems = this.itemsState();
+    }
+    this.editingState.set(orderId);
+    this.itemsState.set(items);
+  }
+
+  /** Discards the lines of the order being modified and brings back the new order that was waiting. */
+  endEdit(): void {
+    if (this.editingState() === null) {
+      return;
+    }
+    this.itemsState.set(this.stashedItems);
+    this.stashedItems = [];
+    this.editingState.set(null);
   }
 
   /** Empties the draft. */

@@ -69,6 +69,7 @@ describe('OrderDetailPageComponent', () => {
       getOrder,
       getActiveOrders: () => of([]),
       deliverOrder,
+      updateOrder: () => EMPTY,
       getReadyPickupOrders: () => of([]),
     };
     await TestBed.configureTestingModule({
@@ -91,6 +92,30 @@ describe('OrderDetailPageComponent', () => {
   beforeEach(() => {
     getOrder = vi.fn(() => of(DETAIL));
     deliverOrder = vi.fn(() => of(DELIVERY_DONE));
+  });
+
+  // HU_16 CA4
+  it('should take a manager back to the dashboard, and show the products, the total and the times (HU_16)', async () => {
+    // Act
+    const page = await render(EmployeeRole.Manager);
+
+    // Assert
+    const back = page.querySelector<HTMLAnchorElement>('.detail__back');
+    expect(back?.getAttribute('href')).toBe('/manager');
+    expect(back?.textContent).toContain('Volver al panel');
+    expect(page.textContent).toContain('Hamburguesa Clásica');
+    expect(page.textContent).toContain('$158.00');
+    expect(page.querySelector('[data-testid="deliver-order"]')).toBeNull();
+  });
+
+  it('should take a waiter back to the orders', async () => {
+    // Act
+    const page = await render(EmployeeRole.Waiter);
+
+    // Assert
+    const back = page.querySelector<HTMLAnchorElement>('.detail__back');
+    expect(back?.getAttribute('href')).toBe('/orders');
+    expect(back?.textContent).toContain('Volver a pedidos');
   });
 
   // HU_12 CA3
@@ -296,5 +321,82 @@ describe('OrderDetailPageComponent', () => {
     // Assert
     expect(deliverOrder).toHaveBeenCalledTimes(1);
     await vi.waitFor(() => expect(button?.disabled).toBe(true));
+  });
+
+  // HU_13 CA1 and CA2
+  it.each(['New', 'InPreparation'] as const)(
+    'should offer "Modificar orden" to the waiter when the order is %s (HU_13)',
+    async (status) => {
+      // Arrange
+      getOrder.mockReturnValue(of({ ...DETAIL, status }));
+
+      // Act
+      const page = await render(EmployeeRole.Waiter);
+
+      // Assert
+      const link = page.querySelector<HTMLAnchorElement>('[data-testid="modify-order"]');
+      expect(link?.textContent).toContain('Modificar orden');
+      expect(link?.getAttribute('href')).toBe('/orders/detail/order-1/edit');
+    },
+  );
+
+  it.each([
+    ['Ready', READY],
+    ['Delivered', DELIVERED],
+  ] as const)(
+    'should not offer "Modificar orden" when the order is %s (HU_13 CA2)',
+    async (_status, order) => {
+      // Arrange
+      getOrder.mockReturnValue(of(order));
+
+      // Act
+      const page = await render(EmployeeRole.Waiter);
+
+      // Assert
+      expect(page.querySelector('[data-testid="modify-order"]')).toBeNull();
+    },
+  );
+
+  it('should not offer "Modificar orden" for a pickup order of a customer (HU_13)', async () => {
+    // Arrange
+    getOrder.mockReturnValue(of({ ...DETAIL, status: 'New', channel: 'MobileApp' }));
+
+    // Act
+    const page = await render(EmployeeRole.Waiter);
+
+    // Assert
+    expect(page.querySelector('[data-testid="modify-order"]')).toBeNull();
+  });
+
+  it('should not offer "Modificar orden" to a manager (HU_13)', async () => {
+    // Arrange
+    getOrder.mockReturnValue(of({ ...DETAIL, status: 'New' }));
+
+    // Act
+    const page = await render(EmployeeRole.Manager);
+
+    // Assert
+    expect(page.querySelector('[data-testid="modify-order"]')).toBeNull();
+  });
+
+  it('should show the "Modificado" mark and the notes of a modified order (HU_13)', async () => {
+    // Arrange
+    getOrder.mockReturnValue(
+      of({ ...DETAIL, modifiedAt: '2026-10-14T18:05:00Z', notes: ['Sin sal', 'Para compartir'] }),
+    );
+
+    // Act
+    const page = await render(EmployeeRole.Waiter);
+
+    // Assert
+    expect(page.querySelector('[data-testid="order-modified"]')?.textContent).toContain(
+      'Modificado',
+    );
+    expect(
+      Array.from(
+        page.querySelectorAll('[data-testid="order-notes"] li'),
+        (note) => note.textContent,
+      ),
+    ).toEqual(['Sin sal', 'Para compartir']);
   });
 });

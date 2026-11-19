@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 
+import { OrderEditStore } from './services/order-edit-store.service';
 import { TakeOrderStore } from './services/take-order-store.service';
 
 export const ORDERS_ROUTES: Routes = [
   {
     path: '',
-    providers: [TakeOrderStore],
+    providers: [TakeOrderStore, OrderEditStore],
     children: [
       {
         path: '',
@@ -29,6 +30,14 @@ export const ORDERS_ROUTES: Routes = [
         loadComponent: () =>
           import('./pages/order-sent-page/order-sent-page.component').then(
             (m) => m.OrderSentPageComponent,
+          ),
+      },
+      {
+        path: 'detail/:id/edit',
+        title: 'Modificar pedido | ITACR',
+        loadComponent: () =>
+          import('./pages/order-edit-page/order-edit-page.component').then(
+            (m) => m.OrderEditPageComponent,
           ),
       },
       {

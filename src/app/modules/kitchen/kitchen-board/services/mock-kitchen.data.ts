@@ -61,6 +61,8 @@ function fixedOrders(now: number): readonly KitchenOrder[] {
       status: 'InPreparation',
       tableNumber: null,
       createdAt: at(3),
+      modifiedAt: at(1),
+      notes: ['Sin sal en todo'],
       items: [
         {
           productName: 'Papas a la Francesa',

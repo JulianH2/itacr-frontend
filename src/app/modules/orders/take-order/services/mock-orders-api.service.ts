@@ -10,6 +10,7 @@ import type {
   PlacedOrder,
   PlacedOrderItem,
   ActiveOrder,
+  UpdateOrderRequest,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
@@ -31,6 +32,7 @@ const MOCK_TABLES: readonly DiningTable[] = Array.from({ length: TABLE_COUNT }, 
 @Injectable()
 export class MockOrdersApiService implements OrdersApi {
   private readonly orders = new Map<string, PlacedOrder>();
+  private readonly modifications = new Map<string, { modifiedAt: string; notes: string[] }>();
   private nextOrderNumber = FIRST_ORDER_NUMBER;
 
   getDiningTables(): Observable<readonly DiningTable[]> {
@@ -67,12 +69,63 @@ export class MockOrdersApiService implements OrdersApi {
 
   /** The mock kitchen is another service, so mock orders stay in New. */
   getOrder(orderId: string): Observable<OrderDetail> {
-    const order = [...this.orders.values()].find((candidate) => candidate.id === orderId);
+    const order = this.find(orderId);
     if (!order) {
       return throwError(() => new HttpErrorResponse({ status: 404 }));
     }
+    return of(this.toDetail(order)).pipe(delay(MOCK_LATENCY_MS));
+  }
 
-    const detail: OrderDetail = {
+  /** Like the API: the products are replaced and the note is added, but every price is still the placeholder one. */
+  updateOrder(orderId: string, request: UpdateOrderRequest): Observable<OrderDetail> {
+    const order = this.find(orderId);
+    if (!order) {
+      return throwError(() => new HttpErrorResponse({ status: 404 }));
+    }
+    if (request.items.length === 0) {
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              errors: {
+                items: [
+                  'Un pedido no puede quedarse sin productos. Para anularlo, pide ayuda al gerente.',
+                ],
+              },
+            },
+          }),
+      );
+    }
+
+    const items: PlacedOrderItem[] = request.items.map((item) => ({
+      productId: item.productId,
+      name: item.productId,
+      quantity: item.quantity,
+      unitPrice: MOCK_UNIT_PRICE,
+      subtotal: MOCK_UNIT_PRICE,
+    }));
+    const updated: PlacedOrder = {
+      ...order,
+      tableNumber: MOCK_TABLES.find((table) => table.id === request.tableId)?.number ?? null,
+      items,
+    };
+    this.orders.set(order.clientOrderId, updated);
+    const previous = this.modifications.get(orderId);
+    this.modifications.set(orderId, {
+      modifiedAt: new Date().toISOString(),
+      notes: [...(previous?.notes ?? []), ...(request.note ? [request.note] : [])],
+    });
+    return of(this.toDetail(updated)).pipe(delay(MOCK_LATENCY_MS));
+  }
+
+  private find(orderId: string): PlacedOrder | undefined {
+    return [...this.orders.values()].find((candidate) => candidate.id === orderId);
+  }
+
+  private toDetail(order: PlacedOrder): OrderDetail {
+    const modification = this.modifications.get(order.id);
+    return {
       id: order.id,
       orderNumber: order.orderNumber,
       channel: order.channel,
@@ -82,10 +135,11 @@ export class MockOrdersApiService implements OrdersApi {
       createdAt: order.createdAt,
       readyAt: null,
       deliveredAt: null,
+      modifiedAt: modification?.modifiedAt ?? null,
       items: order.items,
+      notes: modification?.notes ?? [],
       timeline: [{ status: 'New', changedAt: order.createdAt, undone: false }],
     };
-    return of(detail).pipe(delay(MOCK_LATENCY_MS));
   }
 
   /** The mock kitchen never marks an order Ready, so the mock never has one to deliver. */

@@ -38,7 +38,8 @@ type StepState = 'done' | 'current' | 'undone';
 
 /**
  * Detail of one order with the timeline of its statuses (HU_05 CA4). A waiter can close an order that is Ready with "Marcar como
- * entregado" (HU_10); in any other status the option is not there.
+ * entregado" (HU_10); in any other status the option is not there. Until the kitchen has it Ready, the waiter who took it can
+ * modify it with "Modificar orden" (HU_13).
  */
 @Component({
   selector: 'app-order-detail-page',
@@ -56,6 +57,13 @@ type StepState = 'done' | 'current' | 'undone';
 })
 export class OrderDetailPageComponent {
   protected readonly choices = choiceLines;
+
+  /** Where the back link goes: a manager came from the table of the dashboard, anyone else from the orders. */
+  protected readonly back = computed(() =>
+    this.session.employee()?.role === EmployeeRole.Manager
+      ? { link: '/manager', label: 'Volver al panel' }
+      : { link: '/orders', label: 'Volver a pedidos' },
+  );
 
   private readonly api = inject(ORDERS_API);
   private readonly session = inject(SessionService);
@@ -117,6 +125,20 @@ export class OrderDetailPageComponent {
   protected readonly canDeliver = computed(
     () => this.order()?.status === 'Ready' && this.session.employee()?.role === EmployeeRole.Waiter,
   );
+  /** Only the waiter who took the order sees it (the API shows a waiter no other), and only until the kitchen has it Ready (HU_13). */
+  protected readonly canModify = computed(() => {
+    const order = this.order();
+    return (
+      order !== null &&
+      this.session.employee()?.role === EmployeeRole.Waiter &&
+      order.channel !== 'MobileApp' &&
+      (order.status === 'New' || order.status === 'InPreparation')
+    );
+  });
+  protected readonly modifiedTime = computed(() => {
+    const modifiedAt = this.order()?.modifiedAt;
+    return modifiedAt ? formatTime(modifiedAt) : null;
+  });
   protected readonly delivering = signal(false);
   protected readonly deliverError = signal<string | null>(null);
 

@@ -1,0 +1,100 @@
+.manager {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: var(--space-3) var(--space-2);
+}
+
+.manager__title {
+  font: var(--mat-sys-headline-medium);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.manager__subtitle {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: var(--space-half) 0 0;
+}
+
+.manager__range {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.manager__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.manager__preset {
+  background: var(--color-bg-alt);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  font-weight: 600;
+  min-height: var(--touch-target);
+  padding: 0 var(--space-2);
+}
+
+.manager__preset[aria-pressed='true'] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+.manager__content {
+  display: grid;
+  gap: var(--space-3);
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.manager__content--refreshing .manager__kpis {
+  opacity: 0.6;
+}
+
+.manager__kpis {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+/* The host of a card is an inline element: without this it takes no room and the cards run into the chart. */
+app-stat-card {
+  display: block;
+}
+
+.manager__channel {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+
+.manager__slowest {
+  justify-self: start;
+}
+
+.manager__error {
+  background: var(--color-error-tint);
+  border-radius: var(--radius-control);
+  color: var(--color-error);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+}
+
+.manager__state {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0;
+  text-align: center;
+}

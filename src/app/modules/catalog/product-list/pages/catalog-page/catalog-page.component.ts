@@ -50,14 +50,19 @@ export class CatalogPageComponent {
 
   /**
    * Where the cart leads. A waiter takes the order to the kitchen from `/orders/summary`; a customer without a session
-   * orders for pickup from `/pickup/summary`. Kitchen staff and managers only browse the menu, so they get no cart.
+   * orders for pickup from `/pickup/summary`. Kitchen staff and managers only browse the menu, so they get no cart. A waiter who is
+   * modifying an order (HU_13) goes back to that order, where the products added here are.
    */
   protected readonly cartLink = computed(() => {
     const role = this.session.employee()?.role;
     if (role === undefined) {
       return '/pickup/summary';
     }
-    return role === EmployeeRole.Waiter ? '/orders/summary' : null;
+    if (role !== EmployeeRole.Waiter) {
+      return null;
+    }
+    const editing = this.orderDraft.editingOrderId();
+    return editing === null ? '/orders/summary' : `/orders/detail/${editing}/edit`;
   });
 
   /** The combo being customized; the guided flow is open while it is set. */

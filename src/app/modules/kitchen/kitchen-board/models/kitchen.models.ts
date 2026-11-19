@@ -23,7 +23,11 @@ export interface KitchenOrder {
   readonly tableNumber: number | null;
   /** UTC instant (ISO 8601) when the order was created; the queue is ordered by it. */
   readonly createdAt: string;
+  /** UTC instant (ISO 8601) when the waiter last modified the order (HU_13), or null; the card shows "Modificado" when it is set. */
+  readonly modifiedAt?: string | null;
   readonly items: readonly KitchenOrderItem[];
+  /** The notes the waiter added when modifying the order, oldest first. */
+  readonly notes?: readonly string[];
 }
 
 /** A status the kitchen can move an order to with a tap. Delivered belongs to the waiter. */

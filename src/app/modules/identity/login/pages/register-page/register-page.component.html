@@ -1,0 +1,147 @@
+<section class="register">
+  @if (sent()) {
+    <div class="register__done" role="status" data-testid="register-sent">
+      <h1 class="register__title">Solicitud enviada</h1>
+      <p class="register__text">{{ sentMessage }}</p>
+      <a mat-flat-button routerLink="/login" data-testid="register-back">Volver a iniciar sesión</a>
+    </div>
+  } @else {
+    <h1 class="register__title">Crear cuenta</h1>
+    <p class="register__text">
+      Pide tu acceso al sistema. El gerente revisará tu solicitud antes de tu primer turno.
+    </p>
+
+    <form method="post" class="register__form" novalidate [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field>
+        <mat-label>Nombre completo</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="fullName"
+          autocomplete="name"
+          maxlength="120"
+          data-testid="register-fullName"
+        />
+        @if (errorOf('fullName'); as message) {
+          <mat-error data-testid="error-fullName">{{ message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Correo o usuario</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="email"
+          autocomplete="username"
+          autocapitalize="none"
+          maxlength="254"
+          data-testid="register-email"
+        />
+        @if (errorOf('email'); as message) {
+          <mat-error data-testid="error-email">{{ message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Teléfono</mat-label>
+        <input
+          matInput
+          type="tel"
+          inputmode="numeric"
+          formControlName="phone"
+          autocomplete="tel"
+          maxlength="10"
+          data-testid="register-phone"
+        />
+        <mat-hint>10 dígitos</mat-hint>
+        @if (errorOf('phone'); as message) {
+          <mat-error data-testid="error-phone">{{ message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="register__role">
+        <p class="register__label" id="register-role-label">Rol que solicitas</p>
+        <app-segmented-control
+          label="Rol que solicitas"
+          testIdPrefix="register-role-"
+          [options]="roleOptions"
+          [value]="form.controls.role.value"
+          (valueChange)="chooseRole($event)"
+        />
+        @if (errorOf('role'); as message) {
+          <p class="register__field-error" role="alert" data-testid="error-role">{{ message }}</p>
+        }
+      </div>
+
+      <mat-form-field>
+        <mat-label>PIN de 4 dígitos</mat-label>
+        <input
+          matInput
+          type="password"
+          inputmode="numeric"
+          formControlName="pin"
+          autocomplete="off"
+          maxlength="4"
+          data-testid="register-pin"
+        />
+        @if (errorOf('pin'); as message) {
+          <mat-error data-testid="error-pin">{{ message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Confirma tu PIN</mat-label>
+        <input
+          matInput
+          type="password"
+          inputmode="numeric"
+          formControlName="pinConfirmation"
+          autocomplete="off"
+          maxlength="4"
+          data-testid="register-pinConfirmation"
+        />
+        @if (errorOf('pinConfirmation'); as message) {
+          <mat-error data-testid="error-pinConfirmation">{{ message }}</mat-error>
+        }
+      </mat-form-field>
+
+      <details class="register__privacy">
+        <summary>Aviso de privacidad</summary>
+        <p>
+          ITACR usa tu nombre, tu correo o usuario, tu teléfono y el rol que pides solo para crear y
+          administrar tu cuenta de acceso al sistema del restaurante. El gerente los ve para aprobar
+          tu solicitud. Tu PIN se guarda cifrado y nadie puede verlo. Puedes pedir al gerente que
+          corrija o elimine tus datos.
+        </p>
+      </details>
+
+      <div class="register__privacy-accept">
+        <mat-checkbox formControlName="acceptedPrivacyNotice" data-testid="register-privacy">
+          Leí y acepto el aviso de privacidad
+        </mat-checkbox>
+        @if (errorOf('acceptedPrivacyNotice'); as message) {
+          <p class="register__field-error" role="alert" data-testid="error-acceptedPrivacyNotice">
+            {{ message }}
+          </p>
+        }
+      </div>
+
+      @if (generalError(); as message) {
+        <p class="register__error" role="alert" data-testid="register-error">{{ message }}</p>
+      }
+
+      <button
+        mat-flat-button
+        type="submit"
+        class="register__submit"
+        data-testid="register-submit"
+        [disabled]="isSubmitting()"
+      >
+        Solicitar acceso
+      </button>
+    </form>
+
+    <a mat-button routerLink="/login">Ya tengo cuenta</a>
+  }
+</section>

@@ -74,6 +74,10 @@ class FakeOrdersApi implements OrdersApi {
     return EMPTY;
   }
 
+  updateOrder(): Observable<OrderDetail> {
+    return EMPTY;
+  }
+
   getReadyPickupOrders(): Observable<readonly ActiveOrder[]> {
     return of([]);
   }

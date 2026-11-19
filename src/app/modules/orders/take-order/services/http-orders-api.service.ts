@@ -11,6 +11,7 @@ import type {
   OrderDetail,
   PlacedOrder,
   ActiveOrder,
+  UpdateOrderRequest,
 } from '../models/take-order.models';
 import type { OrdersApi } from './orders-api';
 
@@ -32,6 +33,10 @@ export class HttpOrdersApiService implements OrdersApi {
 
   getOrder(orderId: string): Observable<OrderDetail> {
     return this.http.get<OrderDetail>(`${environment.apiBaseUrl}/orders/${orderId}`);
+  }
+
+  updateOrder(orderId: string, request: UpdateOrderRequest): Observable<OrderDetail> {
+    return this.http.put<OrderDetail>(`${environment.apiBaseUrl}/orders/${orderId}`, request);
   }
 
   getActiveOrders(): Observable<readonly ActiveOrder[]> {

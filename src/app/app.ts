@@ -14,6 +14,7 @@ import { BreadcrumbComponent } from '@shared/components/breadcrumb/breadcrumb.co
 import { ConnectionPillComponent } from '@shared/components/connection-pill/connection-pill.component';
 import { MainNavComponent } from '@shared/components/main-nav/main-nav.component';
 import { OfflineDialogComponent } from '@shared/components/offline-dialog/offline-dialog.component';
+import { ServerWakeBannerComponent } from '@shared/components/server-wake-banner/server-wake-banner.component';
 import { ThemeToggleComponent } from '@shared/components/theme-toggle/theme-toggle.component';
 import { ToastHostComponent } from '@shared/components/toast-host/toast-host.component';
 import { breadcrumbsFor } from '@shared/navigation/breadcrumbs';
@@ -47,6 +48,7 @@ export const NAVIGATION_BY_ROLE: Readonly<Record<EmployeeRole, readonly Navigati
     ConnectionPillComponent,
     MainNavComponent,
     OfflineDialogComponent,
+    ServerWakeBannerComponent,
     ThemeToggleComponent,
     ToastHostComponent,
   ],

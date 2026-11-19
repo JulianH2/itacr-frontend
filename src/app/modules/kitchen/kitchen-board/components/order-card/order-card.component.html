@@ -25,6 +25,12 @@
     </p>
   }
 
+  @if (isModified()) {
+    <p class="order-card__modified" data-testid="modified-mark">
+      <app-status-badge tone="warning" icon="pencil">Modificado</app-status-badge>
+    </p>
+  }
+
   <ul class="order-card__items">
     @for (item of items(); track $index) {
       <li class="order-card__item">
@@ -40,6 +46,14 @@
       </li>
     }
   </ul>
+
+  @if (notes().length > 0) {
+    <ul class="order-card__notes" aria-label="Notas del pedido">
+      @for (note of notes(); track $index) {
+        <li>{{ note }}</li>
+      }
+    </ul>
+  }
 
   <p class="order-card__hint" [class.order-card__hint--action]="canAdvance()">
     {{ busy() ? 'Guardando…' : hint() }}

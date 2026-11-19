@@ -96,4 +96,31 @@ describe('OrderCardComponent', () => {
     // Assert
     expect(element.querySelector('.order-card')?.getAttribute('data-level')).toBe('late');
   });
+
+  // HU_13 CA1
+  it('should mark the card as "Modificado" and show the notes when the waiter modified the order', () => {
+    // Act
+    const { element } = render(
+      { ...ORDER, modifiedAt: '2026-10-09T18:03:00Z', notes: ['Sin sal'] },
+      4 * MINUTE,
+    );
+
+    // Assert
+    expect(text(element, '[data-testid="modified-mark"]')).toBe('Modificado');
+    expect(
+      Array.from(element.querySelectorAll('.order-card__notes li'), (note) => note.textContent),
+    ).toEqual(['Sin sal']);
+  });
+
+  it.each([{}, { modifiedAt: null, notes: [] }])(
+    'should show no mark and no notes when the order was never modified (%o)',
+    (extra) => {
+      // Act
+      const { element } = render({ ...ORDER, ...extra }, 4 * MINUTE);
+
+      // Assert
+      expect(element.querySelector('[data-testid="modified-mark"]')).toBeNull();
+      expect(element.querySelector('.order-card__notes')).toBeNull();
+    },
+  );
 });

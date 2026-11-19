@@ -7,6 +7,14 @@
     </a>
   </header>
 
+  @if (store.editingOrderId(); as editing) {
+    <p class="summary__error" role="alert" data-testid="editing-notice">
+      Estás modificando una orden. Termina o cancela la modificación antes de enviar un pedido
+      nuevo.
+      <a [routerLink]="['/orders', 'detail', editing, 'edit']">Volver a la modificación</a>
+    </p>
+  }
+
   <div class="summary__layout">
     <div class="summary__main">
       @if (store.items().length === 0) {

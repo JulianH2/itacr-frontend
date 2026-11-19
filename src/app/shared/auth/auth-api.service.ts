@@ -11,6 +11,7 @@ import {
   PasswordLoginRequest,
   PinLoginRequest,
   PinResetRequest,
+  RegisterEmployeeRequest,
 } from './auth.models';
 
 export const AUTH_API_URL = `${environment.apiBaseUrl}/auth`;
@@ -35,5 +36,10 @@ export class AuthApiService {
 
   requestPinReset(request: PinResetRequest): Observable<void> {
     return this.http.post<void>(`${AUTH_API_URL}/pin-reset-requests`, request);
+  }
+
+  /** A new employee asks for an account: it waits for the manager (HU_14). */
+  registerEmployee(request: RegisterEmployeeRequest): Observable<void> {
+    return this.http.post<void>(`${AUTH_API_URL}/registration-requests`, request);
   }
 }

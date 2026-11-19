@@ -266,4 +266,58 @@ describe('OrderDraftService', () => {
       expect(service.itemCount()).toBe(99);
     });
   });
+
+  describe('modifying an order (HU_13)', () => {
+    it('should hold the lines of the order and bring back the new order that was waiting when the edit ends', () => {
+      // Arrange
+      service.add(FRIES);
+      const lines = [
+        {
+          lineId: 'burger-classic',
+          productId: 'burger-classic',
+          name: 'Hamburguesa Clásica',
+          unitPrice: 79,
+          quantity: 2,
+          customization: null,
+        },
+      ];
+
+      // Act
+      service.beginEdit('order-1', lines);
+
+      // Assert
+      expect(service.editingOrderId()).toBe('order-1');
+      expect(service.items()).toEqual(lines);
+      expect(service.total()).toBe(158);
+      service.endEdit();
+      expect(service.editingOrderId()).toBeNull();
+      expect(service.items().map((item) => item.productId)).toEqual(['fries']);
+    });
+
+    it('should keep the changes when the same order starts again, and the first waiting order when another starts', () => {
+      // Arrange
+      service.add(FRIES);
+      service.beginEdit('order-1', []);
+      service.add(CLASSIC_BURGER);
+
+      // Act
+      service.beginEdit('order-1', []);
+      service.beginEdit('order-2', []);
+      service.endEdit();
+
+      // Assert
+      expect(service.items().map((item) => item.productId)).toEqual(['fries']);
+    });
+
+    it('should do nothing when there is no edit to end', () => {
+      // Arrange
+      service.add(FRIES);
+
+      // Act
+      service.endEdit();
+
+      // Assert
+      expect(service.items()).toHaveLength(1);
+    });
+  });
 });

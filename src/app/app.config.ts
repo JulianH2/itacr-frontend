@@ -11,6 +11,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 
 import { environment } from '@env/environment';
 import { authInterceptor } from '@shared/interceptors/auth.interceptor';
+import { serverWakeInterceptor } from '@shared/interceptors/server-wake.interceptor';
 import { mockAuthInterceptor } from '@shared/mocks/mock-auth.interceptor';
 import { AppInstallService } from '@shared/services/app-install.service';
 import { AppUpdateService } from '@shared/services/app-update.service';
@@ -30,7 +31,11 @@ export const appConfig: ApplicationConfig = {
     ),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, ...(environment.useMockApi ? [mockAuthInterceptor] : [])]),
+      withInterceptors([
+        serverWakeInterceptor,
+        authInterceptor,
+        ...(environment.useMockApi ? [mockAuthInterceptor] : []),
+      ]),
     ),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

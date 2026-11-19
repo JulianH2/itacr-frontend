@@ -125,6 +125,16 @@ The waiter keeps sending orders when the restaurant WiFi drops; they reach the k
 - **What the waiter sees:** the dashboard always shows the connection and how many orders are waiting, plus the list of unsent orders (pending or rejected). Pending orders are not in the kitchen. When the connection drops, a native modal `<dialog>` ("Sin conexión", "Continuar sin conexión") opens over the current screen, so the waiter stays where they were (CA4); it closes by itself when the connection comes back. It is not `MatDialog`, which would pull the CDK overlay into the initial bundle.
 - **Tables offline:** `GET /dining-tables` is cached by the service worker (`dining-tables` data group, freshness), so a table can be picked without a connection. The catalog was already cached.
 
+### Modifying an order (HU_13)
+
+A waiter changes an order that is New or InPreparation from its detail. The backend rules (owner only, status guard, replace of the products, `ModifiedAt`) are in its `docs/database.md`.
+
+- **Route and stores:** `/orders/detail/:id/edit` is part of `ORDERS_ROUTES`, and `OrderEditStore` is provided by the route next to `TakeOrderStore`, whose tables it reuses. The store reads the order, validates that it can still be edited (not Ready, Delivered, or a customer's pickup order), and keeps the table and the note; it never writes to the API until `save()`.
+- **The lines live in the shared `OrderDraftService`.** That is how the catalog adds a product without knowing about edits (a module never imports another module): `beginEdit(orderId, lines)` swaps the lines of the order into the draft and puts the new order the waiter was building aside, and `endEdit()` brings it back. While `editingOrderId()` is set, the cart of the catalog leads back to the edit screen and `TakeOrderStore.canSend` is false, so those lines are never sent as a new order. The draft is in memory only: a reload of the page starts the edit again from the order of the API.
+- **What the detail gives to edit.** Each line of `GET /orders/{id}` carries `productId` and the ids of its size, drink, extras, and exclusions, so a combo is rebuilt exactly and sent back as ids (prices are never sent). A line whose option left the menu has a `null` id and the order cannot be modified from the app.
+- **Cancel is local.** Cancelling calls `cancel()`, which only discards the draft lines, so the order keeps its original data (CA3). There is no draft of an edit on the device and no offline queue for edits: they need a connection.
+- **Conflicts:** `409` or `404` on save drops the changes and returns to the detail with the server message in a toast; any other failure keeps the changes so the waiter can try again.
+
 ### Order ready notices (HU_09)
 
 When the kitchen marks an order as Ready, the waiter who took it, or the customer of a pickup order, gets a push notification on the phone. The backend decides who and builds the text (its `docs/database.md`, "Order ready notices"); the PWA only asks for the permission and saves the subscription.

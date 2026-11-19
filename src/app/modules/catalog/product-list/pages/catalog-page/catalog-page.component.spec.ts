@@ -357,6 +357,27 @@ describe('CatalogPageComponent', () => {
       expect(cartHref(fixture)).toBe('/orders/summary');
     });
 
+    it('should take a waiter who is modifying an order back to that order (HU_13)', async () => {
+      // Arrange
+      const fixture = await renderWithSession(EmployeeRole.Waiter);
+
+      // Act
+      TestBed.inject(OrderDraftService).beginEdit('order-9', [
+        {
+          lineId: 'p1',
+          productId: 'p1',
+          name: 'Limonada',
+          unitPrice: 32,
+          quantity: 1,
+          customization: null,
+        },
+      ]);
+      fixture.detectChanges();
+
+      // Assert
+      expect(cartHref(fixture)).toBe('/orders/detail/order-9/edit');
+    });
+
     it.each([EmployeeRole.Kitchen, EmployeeRole.Manager])(
       'should show no cart to %s staff, who only browse the menu',
       async (role) => {

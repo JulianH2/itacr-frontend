@@ -1,0 +1,82 @@
+.register {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  margin: 0 auto;
+  max-width: 460px;
+  padding: var(--space-3) 0;
+}
+
+.register__title {
+  font: var(--mat-sys-headline-medium);
+  font-family: var(--font-family);
+  margin: 0;
+}
+
+.register__text {
+  color: var(--color-text-secondary);
+  font: var(--mat-sys-body-large);
+  font-family: var(--font-family);
+  margin: 0;
+  text-align: center;
+}
+
+.register__form {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+}
+
+.register__label {
+  font: var(--mat-sys-label-large);
+  font-family: var(--font-family);
+  margin: 0 0 var(--space-0-5);
+}
+
+.register__field-error {
+  color: var(--color-error);
+  font: var(--mat-sys-body-small);
+  font-family: var(--font-family);
+  margin: var(--space-0-5) 0 0;
+}
+
+.register__privacy {
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-card);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  padding: var(--space-1) var(--space-2);
+}
+
+.register__privacy summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: var(--touch-target);
+  align-items: center;
+  display: flex;
+}
+
+.register__privacy p {
+  margin: 0 0 var(--space-1);
+}
+
+.register__submit {
+  width: 100%;
+}
+
+.register__error {
+  background: var(--color-error-tint);
+  border-radius: var(--radius-control);
+  color: var(--color-error);
+  font: var(--mat-sys-body-medium);
+  font-family: var(--font-family);
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+}
+
+.register__done {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  padding: var(--space-4) 0;
+}

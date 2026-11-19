@@ -78,6 +78,16 @@ describe('LoginPageComponent', () => {
     http.verify();
   });
 
+  it('should offer to create an account from the login screen (HU_14)', () => {
+    // Act
+    fixture.detectChanges();
+
+    // Assert
+    const link = element().querySelector<HTMLAnchorElement>('[data-testid="create-account"]');
+    expect(link?.getAttribute('href')).toBe('/login/register');
+    expect(link?.textContent).toContain('Crear cuenta');
+  });
+
   it('should start the session and go to the redirect screen when an active waiter enters the right PIN (CA1)', async () => {
     // Arrange
     await goToPinStep();
