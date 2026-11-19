@@ -1,5 +1,43 @@
 # Changelog
 
+## [0.7.0](https://github.com/JulianH2/itacr-frontend/compare/v0.6.0...v0.7.0) (2026-11-19)
+
+
+### Added
+
+* **auth:** add the request of an account to the auth API (ITACR-20) ([7c51dde](https://github.com/JulianH2/itacr-frontend/commit/7c51dde75b1d53c5c88275e5727e97412172e9d1))
+* **auth:** add the screen to create an account from the login (ITACR-20) ([5d05fe8](https://github.com/JulianH2/itacr-frontend/commit/5d05fe8ed396336a7c8fe3f8fa3d33890ac491e2))
+* **auth:** add the screen to create an account from the login (ITACR-20) ([fe45d7d](https://github.com/JulianH2/itacr-frontend/commit/fe45d7d2ece85724a0c51e8a855c40fcab2d02fa))
+* **kitchen:** mark modified orders on the kitchen card (ITACR-19) ([81f6f42](https://github.com/JulianH2/itacr-frontend/commit/81f6f42cedbfe30fc0edd24553bebe5886098891))
+* **manager:** add the API, the date range and the state of the manager dashboard (ITACR-22) ([979fe96](https://github.com/JulianH2/itacr-frontend/commit/979fe96915f21a241a3983e05dac2095f45dab9e))
+* **manager:** add the manager dashboard with the indicators, the trend and the table (ITACR-22) ([0302c59](https://github.com/JulianH2/itacr-frontend/commit/0302c59ef509061d8b2a133c30bd17fe588388bd))
+* **manager:** add the manager dashboard with the indicators, the trend and the table (ITACR-22) ([217b1f6](https://github.com/JulianH2/itacr-frontend/commit/217b1f6a967872ed53420465fc1652f937b46e03))
+* **manager:** add the staff access requests section to the dashboard (ITACR-21) ([f57f799](https://github.com/JulianH2/itacr-frontend/commit/f57f799785dc019381b1948587d539a39836b688))
+* **manager:** add the staff access requests section to the dashboard (ITACR-21) ([036fbec](https://github.com/JulianH2/itacr-frontend/commit/036fbec6940daba5a04b45004ecdf1e639cbed93))
+* **manager:** ask for confirmation before rejecting an account (ITACR-21) ([00bab7e](https://github.com/JulianH2/itacr-frontend/commit/00bab7ee78d474a6ed6d78bb5e1820e10f20d758))
+* **manager:** let the manager open the detail of an order from the table (ITACR-22) ([848a6f9](https://github.com/JulianH2/itacr-frontend/commit/848a6f958274501aa711eeaedbbf5d97d2a25173))
+* **orders:** let the waiter modify an order before it is ready (ITACR-19) ([e595020](https://github.com/JulianH2/itacr-frontend/commit/e5950205b988c3c33a424e8f40adbc75790b84aa))
+* **orders:** let the waiter modify an order before it is ready (ITACR-19) ([99896df](https://github.com/JulianH2/itacr-frontend/commit/99896dfa394cdb37f568ac9fce3a3e351b187fbe))
+* **pwa:** show a waiting state while the server wakes up (ITACR-67) ([c7c23e1](https://github.com/JulianH2/itacr-frontend/commit/c7c23e1cafca85eeb7d71c2d1325f1fbbfc3f2cc))
+* **pwa:** show a waiting state while the server wakes up (ITACR-67) ([df15f63](https://github.com/JulianH2/itacr-frontend/commit/df15f63793caf04e3dabeb949bf725c60d0f9391))
+
+
+### Fixed
+
+* **core:** finish the final quality and security round (ITACR-66) ([6e3a510](https://github.com/JulianH2/itacr-frontend/commit/6e3a5101b6dbfb7bf1d444b1195ff7be7b078b69))
+* **core:** finish the final quality and security round (ITACR-66) ([0b27332](https://github.com/JulianH2/itacr-frontend/commit/0b2733261f16cd85f94f6d82654ea96e8d902e67))
+* **core:** fix the sonarqube findings of the frontend (ITACR-66) ([3aa2a96](https://github.com/JulianH2/itacr-frontend/commit/3aa2a96d16daf0f59201321554fcad4bba6e88be))
+* **core:** fix the sonarqube findings of the frontend code (ITACR-66) ([33e09d8](https://github.com/JulianH2/itacr-frontend/commit/33e09d872e4ee3211b516cadf4b8fe3c67c12616))
+* **core:** keep the selected chip readable (ITACR-22) ([9ad27bc](https://github.com/JulianH2/itacr-frontend/commit/9ad27bcbe473c3915f656a0ad1e006ef06b2c7aa))
+* **core:** keep the selected chip readable (ITACR-22) ([b477a9e](https://github.com/JulianH2/itacr-frontend/commit/b477a9e9767a927a7c358e9870bc9b5dc2a71cde))
+
+
+### Documentation
+
+* **auth:** document the request of an account (ITACR-20) ([d4cdbe7](https://github.com/JulianH2/itacr-frontend/commit/d4cdbe7cde738df462a6c7db77add90927a2242a))
+* **manager:** document the manager dashboard (ITACR-22) ([0f5e0f7](https://github.com/JulianH2/itacr-frontend/commit/0f5e0f7b48fca5e8ee3341bd4732d596105b7e03))
+* **orders:** document modifying an order (ITACR-19) ([07f1ad8](https://github.com/JulianH2/itacr-frontend/commit/07f1ad8613ee460314e38b451ce9aa31ab2ecbf8))
+
 ## [0.6.0](https://github.com/JulianH2/itacr-frontend/compare/v0.5.0...v0.6.0) (2026-11-07)
 
 
