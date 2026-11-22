@@ -173,6 +173,26 @@ describe('KitchenStore', () => {
     expect(store.newOrders()).toHaveLength(1);
   });
 
+  it('should show the queue again, and ring for the orders that came meanwhile, when the API comes back after a restart', () => {
+    // Arrange: the API goes down with one order on the board
+    answer = () => of(queueOf(order('1', 'Ready', 0)));
+    const store = createStore();
+    answer = () => throwError(() => new Error('restarting'));
+    vi.advanceTimersByTime(POLL_INTERVAL_MS);
+    expect(store.isOutdated()).toBe(true);
+    const alertsBefore = store.newOrderAlerts();
+
+    // Act: it answers again, with the order of before and a new one
+    answer = () => of(queueOf(order('1', 'Ready', 0), order('2', 'New', 4)));
+    vi.advanceTimersByTime(POLL_INTERVAL_MS);
+
+    // Assert
+    expect(store.isOutdated()).toBe(false);
+    expect(store.readyOrders().map((item) => item.id)).toEqual(['1']);
+    expect(store.newOrders().map((item) => item.id)).toEqual(['2']);
+    expect(store.newOrderAlerts()).toBe(alertsBefore + 1);
+  });
+
   it('should measure time with the server clock when the device clock is off', () => {
     // Arrange
     const serverAhead = 90_000;
