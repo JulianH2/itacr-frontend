@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/JulianH2/itacr-frontend/compare/v0.7.0...v0.7.1) (2026-11-23)
+
+
+### Fixed
+
+* **pwa:** keep the screen title in the top bar on narrow phones (ITACR-72) ([0ae1834](https://github.com/JulianH2/itacr-frontend/commit/0ae1834bcd84b4849d5ad2abf2bf8a22635513ed))
+* **pwa:** keep the screen title in the top bar on narrow phones (ITACR-72) ([85ecfb7](https://github.com/JulianH2/itacr-frontend/commit/85ecfb7213dfa11723e4c9c6cd3691e6a2c25b91))
+
 ## [0.7.0](https://github.com/JulianH2/itacr-frontend/compare/v0.6.0...v0.7.0) (2026-11-19)
 
 
