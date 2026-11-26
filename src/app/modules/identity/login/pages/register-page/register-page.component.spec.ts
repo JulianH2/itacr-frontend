@@ -121,6 +121,20 @@ describe('RegisterPageComponent', () => {
     expect(registerEmployee).not.toHaveBeenCalled();
   });
 
+  it('should show the privacy notice with the data it keeps, the rights and no company contact (ITACR-74)', async () => {
+    // Arrange
+    await render();
+
+    // Act
+    const notice = byTestId('privacy-notice')?.textContent ?? '';
+
+    // Assert
+    for (const part of ['Datos que recaba', 'Tus derechos', 'PIN de 4 dígitos', 'cifrado']) {
+      expect(notice).toContain(part);
+    }
+    expect(notice).not.toMatch(/\[|\]/);
+  });
+
   it('should count a name made of spaces as empty (CA2)', async () => {
     // Arrange
     await render();
