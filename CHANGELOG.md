@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/JulianH2/itacr-frontend/compare/v0.7.1...v0.8.0) (2026-11-26)
+
+
+### Added
+
+* **auth:** show the definitive privacy notice in the register form (ITACR-74) ([294f641](https://github.com/JulianH2/itacr-frontend/commit/294f641a5dc45e25d0b283841c29484b37bcf8cb))
+* **auth:** show the definitive privacy notice in the register form (ITACR-74) ([1745b7b](https://github.com/JulianH2/itacr-frontend/commit/1745b7b27c39bc8f63e8abbc3ba63ab19c50af0b))
+
 ## [0.7.1](https://github.com/JulianH2/itacr-frontend/compare/v0.7.0...v0.7.1) (2026-11-23)
 
 
