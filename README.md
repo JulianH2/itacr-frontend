@@ -274,6 +274,7 @@ The code is analyzed with [Xygeni](https://in.xygeni.io) (free plan) for code qu
 - **Results:** in.xygeni.io > **Code Quality** and **Risks**, project `JulianH2/itacr-frontend`; the history of runs is in **Scan History**.
 - **Exclusions:** none beyond build output and dependencies (`bin/`, `obj/`, `node_modules/`); findings are fixed, never hidden.
 - GitHub **CodeQL** (Security > Code scanning, default setup with the `security-and-quality` suite) also analyzes every PR.
+- **Dependency audit:** `.github/workflows/dependency-audit.yml` runs `npm audit --omit=dev` on every PR, every Monday, and by hand. It only warns (a yellow notice in the job) when it finds a high or critical vulnerability; it never fails the PR, because a transitive package often has no fix yet (ITACR-75).
 - **Check dependencies on your machine:** `npm audit` must report 0 vulnerabilities (the findings of Xygeni SCA were fixed this way in ITACR-51); Xygeni results of each run are in its dashboard and in the `Xygeni Scan` check of the PR.
 
 ## Code quality and coverage (SonarQube Cloud)
