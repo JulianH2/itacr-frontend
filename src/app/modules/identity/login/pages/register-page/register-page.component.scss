@@ -56,8 +56,23 @@
   display: flex;
 }
 
+.register__privacy[open] {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.register__privacy h3 {
+  font: var(--mat-sys-title-small);
+  margin: var(--space-2) 0 var(--space-1);
+}
+
 .register__privacy p {
   margin: 0 0 var(--space-1);
+}
+
+.register__privacy ul {
+  margin: 0 0 var(--space-1);
+  padding-left: var(--space-3);
 }
 
 .register__submit {
