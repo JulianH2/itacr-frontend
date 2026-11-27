@@ -89,4 +89,34 @@ describe('SegmentedControlComponent', () => {
     // Assert
     expect(rootElement(fixture).querySelector('[data-testid="role-kitchen"]')).not.toBeNull();
   });
+
+  it('should keep the selection when a key that is not an arrow is pressed', async () => {
+    // Arrange
+    const fixture = await renderComponent(SegmentedControlComponent, {
+      options,
+      label: 'Rol',
+      value: 'waiter',
+    });
+
+    // Act
+    press(rootElement(fixture), 'Enter');
+    await fixture.whenStable();
+
+    // Assert
+    expect(fixture.componentInstance.value()).toBe('waiter');
+  });
+
+  it('should do nothing on an arrow when there are no options', async () => {
+    // Arrange
+    const fixture = await renderComponent(SegmentedControlComponent, { options: [], label: 'Rol' });
+    const control = fixture.componentInstance as unknown as {
+      onKeydown(event: KeyboardEvent): void;
+    };
+
+    // Act
+    control.onKeydown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+
+    // Assert
+    expect(fixture.componentInstance.value()).toBe('');
+  });
 });

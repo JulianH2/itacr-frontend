@@ -91,7 +91,7 @@ export class OrderEditPageComponent {
     } else {
       this.toast.show({
         title: 'No se guardaron los cambios',
-        message: this.store.error() ?? TAKE_ORDER_MESSAGES.editUnexpected,
+        message: result.error,
         icon: 'bell',
       });
     }

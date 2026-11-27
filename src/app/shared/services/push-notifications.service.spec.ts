@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { SwPush } from '@angular/service-worker';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { environment } from '@env/environment';
 
@@ -174,5 +174,103 @@ describe('PushNotificationsService', () => {
 
     // Assert
     expect(request.request.method).toBe('POST');
+  });
+
+  it('should not turn the notices on when they are unsupported', async () => {
+    // Arrange
+    swPush.isEnabled = false;
+    const service = setUp();
+
+    // Act
+    const enabled = await service.enable({ kind: 'waiter' });
+
+    // Assert
+    expect(enabled).toBe(false);
+    expect(swPush.requestSubscription).not.toHaveBeenCalled();
+  });
+
+  it('should do nothing when the app has no service worker', async () => {
+    // Arrange
+    swPush = null as unknown as FakeSwPush;
+    const service = setUp('granted');
+
+    // Act
+    const enabled = await service.enable({ kind: 'waiter' });
+    await service.refresh({ kind: 'waiter' });
+
+    // Assert
+    expect(enabled).toBe(false);
+    expect(service.permission()).toBe('unsupported');
+  });
+
+  it('should not save anything on refresh when the browser has no subscription', async () => {
+    // Arrange
+    swPush = Object.assign(new FakeSwPush(), { subscription: of<PushSubscription | null>(null) });
+    const service = setUp('granted');
+
+    // Act
+    await service.refresh({ kind: 'waiter' });
+
+    // Assert
+    http.expectNone(`${environment.apiBaseUrl}/push/subscriptions`);
+  });
+
+  it('should log and go on when the subscription cannot be read on refresh', async () => {
+    // Arrange
+    swPush = Object.assign(new FakeSwPush(), {
+      subscription: throwError(() => new Error('no service worker')),
+    });
+    const service = setUp('granted');
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    // Act
+    await service.refresh({ kind: 'waiter' });
+
+    // Assert
+    expect(consoleError).toHaveBeenCalledOnce();
+    consoleError.mockRestore();
+  });
+
+  it('should send empty keys when the subscription has none', async () => {
+    // Arrange
+    const withoutKeys = {
+      toJSON: () => ({ endpoint: 'https://push.example.com/send/xyz' }),
+    } as unknown as PushSubscription;
+    swPush = Object.assign(new FakeSwPush(), {
+      subscription: of<PushSubscription | null>(withoutKeys),
+    });
+    const service = setUp('granted');
+
+    // Act
+    const refreshing = service.refresh({ kind: 'waiter' });
+    await Promise.resolve();
+    await Promise.resolve();
+    const request = http.expectOne(`${environment.apiBaseUrl}/push/subscriptions`);
+    request.flush(null);
+    await refreshing;
+
+    // Assert
+    expect(request.request.body).toEqual({
+      endpoint: 'https://push.example.com/send/xyz',
+      p256dh: '',
+      auth: '',
+    });
+  });
+
+  it('should log and go on when a notice cannot be recorded as read', async () => {
+    // Arrange
+    const service = setUp();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    // Act
+    const marking = service.markRead('notice-1');
+    http
+      .expectOne(`${environment.apiBaseUrl}/public/notifications/notice-1/read`)
+      .flush(null, { status: 500, statusText: 'Server Error' });
+    await marking;
+
+    // Assert
+    expect(consoleError).toHaveBeenCalledOnce();
+    consoleError.mockRestore();
   });
 });

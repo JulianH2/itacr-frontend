@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwUpdate, UnrecoverableStateEvent, VersionEvent } from '@angular/service-worker';
@@ -81,5 +82,21 @@ describe('AppUpdateService', () => {
 
     // Assert
     expect(reload).not.toHaveBeenCalled();
+  });
+});
+
+describe('PAGE_RELOAD', () => {
+  it('should reload the page of the document', () => {
+    // Arrange
+    const reload = vi.fn();
+    TestBed.configureTestingModule({
+      providers: [{ provide: DOCUMENT, useValue: { location: { reload } } }],
+    });
+
+    // Act
+    TestBed.inject(PAGE_RELOAD)();
+
+    // Assert
+    expect(reload).toHaveBeenCalledOnce();
   });
 });

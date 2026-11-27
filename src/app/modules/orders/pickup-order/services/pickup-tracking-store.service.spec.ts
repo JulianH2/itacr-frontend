@@ -175,4 +175,35 @@ describe('PickupTrackingStore', () => {
     expect(store.isEmpty()).toBe(true);
     expect(store.isLoading()).toBe(false);
   });
+
+  it('should not count as loading when the first poll fails', async () => {
+    // Arrange
+    answers = {
+      a: () => throwError(() => new HttpErrorResponse({ status: 0 })),
+      b: () => throwError(() => new HttpErrorResponse({ status: 0 })),
+    };
+    const store = createStore();
+
+    // Act
+    await tick(0);
+
+    // Assert
+    expect(store.orders()).toEqual([]);
+    expect(store.isOutdated()).toBe(true);
+    expect(store.isLoading()).toBe(false);
+  });
+
+  it('should ask right away when the page comes back to the front', async () => {
+    // Arrange
+    createStore();
+    await tick(0);
+    asked = [];
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    await tick(0);
+
+    // Assert
+    expect(asked).toEqual(['a', 'b']);
+  });
 });

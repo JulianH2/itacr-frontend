@@ -25,7 +25,8 @@ export type EditLoadProblem = 'not-found' | 'unavailable' | 'failed';
 export const NOTE_MAX_LENGTH = 500;
 
 /** `saved` is the order as it is now; `reload` means the order changed meanwhile and must be read again; null, nothing was saved. */
-export type SaveResult = { readonly saved: OrderDetail } | { readonly reload: true } | null;
+export type SaveResult =
+  { readonly saved: OrderDetail } | { readonly reload: true; readonly error: string } | null;
 
 const NO_EXTRA_PRICE = 0;
 
@@ -177,10 +178,11 @@ export class OrderEditStore {
       this.discard();
       return { saved };
     } catch (error: unknown) {
-      this.errorState.set(updateErrorMessage(error));
+      const message = updateErrorMessage(error);
+      this.errorState.set(message);
       if (error instanceof HttpErrorResponse && (error.status === 409 || error.status === 404)) {
         this.discard();
-        return { reload: true };
+        return { reload: true, error: message };
       }
       return null;
     } finally {

@@ -1,4 +1,4 @@
-import { byArrival, itemDetails, originLabel, originOf } from './kitchen-order';
+import { byArrival, itemDetails, originLabel, originOf, statusLabel } from './kitchen-order';
 import type { KitchenOrder } from './kitchen.models';
 
 function order(overrides: Partial<KitchenOrder>): KitchenOrder {
@@ -74,5 +74,23 @@ describe('itemDetails', () => {
 
     // Act / Assert
     expect(itemDetails(item)).toEqual([]);
+  });
+});
+
+describe('statusLabel', () => {
+  it.each([
+    ['New', 'Nuevo'],
+    ['InPreparation', 'En preparación'],
+    ['Ready', 'Listo'],
+  ] as const)('should name the status %s', (status, label) => {
+    // Act / Assert
+    expect(statusLabel(status)).toBe(label);
+  });
+});
+
+describe('originLabel without a table', () => {
+  it('should mark a dine-in order whose table is unknown', () => {
+    // Act / Assert
+    expect(originLabel(order({ channel: 'DineIn', tableNumber: null }))).toBe('Mesero · Mesa ?');
   });
 });

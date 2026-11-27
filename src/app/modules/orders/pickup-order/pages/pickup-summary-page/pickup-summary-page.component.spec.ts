@@ -187,4 +187,22 @@ describe('PickupSummaryPageComponent', () => {
       true,
     );
   });
+
+  it('should change the quantity and remove a line of the order', async () => {
+    // Arrange
+    const { fixture, page } = await renderPage(requests);
+    const draft = TestBed.inject(OrderDraftService);
+    draft.add(BURGER);
+    draft.add({ productId: 'soda', name: 'Refresco', unitPrice: 29 });
+    await fixture.whenStable();
+
+    // Act
+    page.querySelectorAll<HTMLButtonElement>('app-qty-stepper button')[1]?.click();
+    await fixture.whenStable();
+    page.querySelector<HTMLButtonElement>('[aria-label="Quitar Refresco del pedido"]')?.click();
+    await fixture.whenStable();
+
+    // Assert
+    expect(draft.items().map((item) => [item.productId, item.quantity])).toEqual([['burger', 2]]);
+  });
 });

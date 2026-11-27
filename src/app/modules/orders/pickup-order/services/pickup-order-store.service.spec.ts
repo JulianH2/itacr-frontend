@@ -247,6 +247,51 @@ describe('PickupOrderStore', () => {
     expect(store.phoneError()).toBeNull();
   });
 
+  it('should say something unexpected happened when the error is not an answer of the server', async () => {
+    // Arrange
+    fillForm();
+    answer = () => throwError(() => new Error('boom'));
+
+    // Act
+    await store.send();
+
+    // Assert
+    expect(store.error()).toBe(PICKUP_MESSAGES.unexpected);
+  });
+
+  it('should show the first validation message of a field that is not in the form', async () => {
+    // Arrange
+    fillForm();
+    answer = () =>
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: { errors: { name: 'not a list', items: ['Uno de los productos no existe.'] } },
+          }),
+      );
+
+    // Act
+    await store.send();
+
+    // Assert
+    expect(store.error()).toBe('Uno de los productos no existe.');
+    expect(store.nameError()).toBeNull();
+  });
+
+  it('should say something unexpected happened when the problem has no usable message', async () => {
+    // Arrange
+    fillForm();
+    answer = () =>
+      throwError(() => new HttpErrorResponse({ status: 400, error: { errors: { items: [3] } } }));
+
+    // Act
+    await store.send();
+
+    // Assert
+    expect(store.error()).toBe(PICKUP_MESSAGES.unexpected);
+  });
+
   describe('limits of the order', () => {
     it('should not send an order with more than 20 products and say why', async () => {
       // Arrange

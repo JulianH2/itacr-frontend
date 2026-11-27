@@ -213,4 +213,25 @@ describe('AccessRequestsStore', () => {
     expect(rejectAccount).not.toHaveBeenCalled();
     expect(store.busyEmployeeId()).toBe('account-1');
   });
+
+  it.each([
+    ['an error of the app', new Error('boom')],
+    ['an answer without detail', new HttpErrorResponse({ status: 500, error: null })],
+  ])(
+    'should give the unexpected message for %s and let the manager dismiss it',
+    async (_case, error) => {
+      // Arrange
+      const store = createStore();
+      approveAccount.mockReturnValue(throwError(() => error));
+
+      // Act
+      await store.approve('account-1', 'Ana López');
+      const feedback = store.feedback();
+      store.dismissFeedback();
+
+      // Assert
+      expect(feedback).toEqual({ kind: 'error', message: ACCESS_REQUEST_MESSAGES.unexpected });
+      expect(store.feedback()).toBeNull();
+    },
+  );
 });

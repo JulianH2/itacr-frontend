@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { type Observable, of, throwError } from 'rxjs';
+import { type Observable, of, Subject, throwError } from 'rxjs';
 
 import { todayRange, toInstants } from '../models/date-range';
 import type {
@@ -83,7 +83,7 @@ describe('DashboardPageComponent', () => {
   let fixture: ComponentFixture<DashboardPageComponent>;
   let page: HTMLElement;
 
-  async function render(): Promise<void> {
+  async function render(waitUntilStable = true): Promise<void> {
     const api: ManagerApi = {
       getDashboard,
       getOrders,
@@ -101,8 +101,12 @@ describe('DashboardPageComponent', () => {
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(DashboardPageComponent);
-    await settle();
     page = fixture.nativeElement as HTMLElement;
+    if (waitUntilStable) {
+      await settle();
+    } else {
+      fixture.detectChanges();
+    }
   }
 
   async function settle(): Promise<void> {
@@ -325,5 +329,134 @@ describe('DashboardPageComponent', () => {
     // Assert
     expect(getOrders).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 }));
     expect(byTestId('orders-page')?.textContent).toContain('Página 2 de 3');
+  });
+
+  it('should say the panel is loading until the first numbers arrive', async () => {
+    // Arrange
+    const answer = new Subject<ManagerDashboard>();
+    getDashboard.mockReturnValue(answer);
+
+    // Act
+    await render(false);
+
+    // Assert
+    expect(byTestId('dashboard-loading')?.textContent).toContain('Cargando el panel');
+    const shown = (
+      fixture.componentInstance as unknown as { shownRange(): { from: string } }
+    ).shownRange();
+    expect(shown.from).toBe(toInstants(todayRange()).from);
+    answer.next(dashboard());
+    answer.complete();
+  });
+
+  it('should say the numbers failed to load and load them again on retry', async () => {
+    // Arrange
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    getDashboard.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
+    await render();
+    expect(byTestId('dashboard-error')?.textContent).not.toContain('Mostramos los últimos');
+    expect(byTestId('dashboard-loading')).toBeNull();
+    getDashboard.mockReturnValue(of(dashboard()));
+
+    // Act
+    byTestId('dashboard-error')?.querySelector('button')?.click();
+    await settle();
+
+    // Assert
+    expect(byTestId('dashboard-error')).toBeNull();
+    expect(page.textContent).toContain('$260.00');
+  });
+
+  it('should say the orders failed to load and ask again on retry', async () => {
+    // Arrange
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const working = getOrders.getMockImplementation();
+    getOrders.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 503 })));
+    await render();
+    expect(byTestId('orders-error')).not.toBeNull();
+    expect(byTestId('orders-table')).toBeNull();
+    expect(consoleError).toHaveBeenCalledWith('Failed to load the orders', expect.anything());
+    if (working) {
+      getOrders.mockImplementation(working);
+    }
+
+    // Act
+    byTestId('orders-error')?.querySelector('button')?.click();
+    await settle();
+
+    // Assert
+    expect(byTestId('orders-error')).toBeNull();
+    expect(rowNumbers()).toEqual(['14', '13', '12', '11']);
+  });
+
+  it('should go back to the previous page of orders', async () => {
+    // Arrange
+    getOrders.mockImplementation((query: ManagerOrdersQuery) =>
+      of({ page: query.page, pageSize: 10, totalCount: 25, items: ORDERS.slice(0, 2) }),
+    );
+    await render();
+    (byTestId('orders-next') as HTMLButtonElement).click();
+    await settle();
+
+    // Act
+    (byTestId('orders-previous') as HTMLButtonElement).click();
+    await settle();
+
+    // Assert
+    expect(getOrders).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1 }));
+  });
+
+  it('should show every channel and status again when the filters go back to all', async () => {
+    // Arrange
+    await render();
+    await choose('filter-channel', 'Pickup');
+    await choose('filter-status', 'New');
+
+    // Act
+    await choose('filter-channel', '');
+    await choose('filter-status', '');
+
+    // Assert
+    expect(getOrders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ channel: null, status: null }),
+    );
+    expect(rowNumbers()).toEqual(['14', '13', '12', '11']);
+  });
+
+  it('should ask for the new range when the start date changes', async () => {
+    // Arrange
+    await render();
+    const start = byTestId('range-start') as HTMLInputElement;
+    const end = (byTestId('range-end') as HTMLInputElement).value;
+
+    // Act
+    start.value = end;
+    start.dispatchEvent(new Event('change'));
+    await settle();
+
+    // Assert
+    expect(byTestId('range-error')).toBeNull();
+    expect(getDashboard).toHaveBeenCalled();
+  });
+
+  it('should say when a channel has no ready orders yet and when it has just one', async () => {
+    // Arrange
+    const numbers = dashboard();
+    getDashboard.mockReturnValue(
+      of({
+        ...numbers,
+        channels: [
+          { ...numbers.channels[0], preparedOrders: 0, averagePreparationSeconds: null },
+          { ...numbers.channels[1], preparedOrders: 1 },
+        ],
+      }),
+    );
+
+    // Act
+    await render();
+
+    // Assert
+    expect(page.textContent).toContain('Aún sin pedidos listos');
+    expect(page.textContent).toContain('Promedio de 1 pedido listo');
   });
 });

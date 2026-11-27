@@ -1,7 +1,7 @@
 import { ApplicationRef, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { EMPTY, type Observable, of, throwError } from 'rxjs';
+import { EMPTY, type Observable, of, Subject, throwError } from 'rxjs';
 
 import { ConnectionStatusService } from '@shared/services/connection-status.service';
 
@@ -65,7 +65,7 @@ async function render(
   unsent: readonly PendingOrder[] = [],
   online = true,
   getActiveOrders: OrdersApi['getActiveOrders'] | null = null,
-  pickups: readonly ActiveOrder[] = [],
+  pickups: readonly ActiveOrder[] | Observable<readonly ActiveOrder[]> = [],
 ): Promise<HTMLElement> {
   offlineOrders.orders.set(unsent);
   offlineOrders.pendingCount = computed(
@@ -77,7 +77,8 @@ async function render(
     getOrder: () => EMPTY,
     deliverOrder: () => EMPTY,
     updateOrder: () => EMPTY,
-    getReadyPickupOrders: () => of(pickups),
+    getReadyPickupOrders: () =>
+      Array.isArray(pickups) ? of(pickups) : (pickups as Observable<never>),
     getActiveOrders:
       getActiveOrders ??
       (() => (Array.isArray(active) ? of(active) : (active as Observable<never>))),
@@ -320,5 +321,50 @@ describe('WaiterDashboardPageComponent', () => {
       'Revisa los pedidos que no se pudieron enviar',
     );
     expect(offlineOrders.discard).toHaveBeenCalledWith('a');
+  });
+
+  it('should say one product and one pending order in the singular', async () => {
+    // Act
+    const page = await render([], [{ ...pendingOrder('a'), itemCount: 1 }], false);
+
+    // Assert
+    expect(page.querySelector('[data-testid="sync-status"]')?.textContent).toContain(
+      '1 pedido pendiente de sincronizar',
+    );
+    expect(page.querySelector('[data-testid="unsent-order"]')?.textContent).toContain(
+      'Mesa 5 · 1 producto',
+    );
+  });
+
+  it('should keep the list instead of the loading notice while a refresh is on its way', async () => {
+    // Arrange
+    let calls = 0;
+    const slow = new Subject<readonly ActiveOrder[]>();
+    const page = await render(ACTIVE, [], true, () => (++calls === 1 ? of(ACTIVE) : slow));
+
+    // Act
+    document.dispatchEvent(new Event('visibilitychange'));
+    TestBed.inject(ApplicationRef).tick();
+
+    // Assert
+    expect(calls).toBe(2);
+    expect(ids(page)).toEqual(['Orden #13 · Para llevar', 'Orden #12 · Mesa 5']);
+    slow.next(ACTIVE);
+    slow.complete();
+  });
+
+  it('should not show the pickup section when the pickup orders cannot be loaded', async () => {
+    // Act
+    const page = await render(
+      ACTIVE,
+      [],
+      true,
+      null,
+      throwError(() => new Error('offline')),
+    );
+
+    // Assert
+    expect(page.querySelector('[data-testid="ready-pickup"]')).toBeNull();
+    expect(ids(page)).toHaveLength(2);
   });
 });

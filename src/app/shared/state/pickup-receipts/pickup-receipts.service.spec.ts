@@ -125,4 +125,35 @@ describe('PickupReceiptsService', () => {
       '[{"clientOrderId":"a","orderNumber":1}]',
     );
   });
+
+  it('should start empty when the stored receipts are not valid JSON', () => {
+    // Arrange
+    storage.setItem('itacr.pickup-receipts', '{not json');
+
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service.receipts()).toEqual([]);
+  });
+
+  it('should skip stored entries that are not objects', () => {
+    // Arrange
+    const valid = { clientOrderId: '3f2b8c1e-5a4d-4e6f-9b7a-1c2d3e4f5a6b', orderNumber: 7 };
+    storage.setItem('itacr.pickup-receipts', JSON.stringify([null, 'receipt', valid]));
+
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service.receipts()).toEqual([valid]);
+  });
+
+  it('should keep the receipts in the local storage of the browser by default', () => {
+    // Arrange
+    TestBed.configureTestingModule({});
+
+    // Act / Assert
+    expect(TestBed.inject(PICKUP_RECEIPTS_STORAGE)).toBe(localStorage);
+  });
 });

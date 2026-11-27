@@ -92,4 +92,100 @@ describe('ThemeService', () => {
     expect(service.theme()).toBe('dark');
     expect(TestBed.inject(DOCUMENT).documentElement.getAttribute('data-theme')).toBe('dark');
   });
+
+  describe('with the media queries of the browser', () => {
+    let listeners: ((event: MediaQueryListEvent) => void)[];
+    let prefersDark: boolean;
+    let reducedMotion: boolean;
+
+    beforeEach(() => {
+      listeners = [];
+      prefersDark = true;
+      reducedMotion = false;
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: query.includes('reduced-motion') ? reducedMotion : prefersDark,
+        addEventListener: (_type: string, listener: (event: MediaQueryListEvent) => void) =>
+          listeners.push(listener),
+      }));
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      delete (document as { startViewTransition?: unknown }).startViewTransition;
+    });
+
+    it('should follow the system when nothing was saved and the system is dark', () => {
+      // Act
+      const service = createService();
+
+      // Assert
+      expect(service.theme()).toBe('dark');
+    });
+
+    it('should follow the system when its preference changes', () => {
+      // Arrange
+      const service = createService();
+
+      // Act
+      listeners.forEach((listener) => listener({ matches: false } as MediaQueryListEvent));
+
+      // Assert
+      expect(service.theme()).toBe('light');
+    });
+
+    it('should switch to light when the current theme is dark', () => {
+      // Arrange
+      const service = createService();
+
+      // Act
+      service.toggle();
+
+      // Assert
+      expect(service.theme()).toBe('light');
+    });
+
+    it('should cross-fade with a view transition when the browser has them', () => {
+      // Arrange
+      const startViewTransition = vi.fn((update: () => void) => update());
+      Object.assign(document, { startViewTransition });
+      const service = createService();
+
+      // Act
+      service.set('light');
+
+      // Assert
+      expect(startViewTransition).toHaveBeenCalledOnce();
+      expect(service.theme()).toBe('light');
+    });
+
+    it('should switch instantly when the user asked for reduced motion', () => {
+      // Arrange
+      reducedMotion = true;
+      const startViewTransition = vi.fn();
+      Object.assign(document, { startViewTransition });
+      const service = createService();
+
+      // Act
+      service.set('light');
+
+      // Assert
+      expect(startViewTransition).not.toHaveBeenCalled();
+      expect(service.theme()).toBe('light');
+    });
+  });
+
+  it('should follow the system when the storage cannot be read', () => {
+    // Arrange
+    const blocked = new MemoryStorage();
+    blocked.getItem = () => {
+      throw new DOMException('blocked', 'SecurityError');
+    };
+    storage = blocked;
+
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service.theme()).toBe('light');
+  });
 });

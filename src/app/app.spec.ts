@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
@@ -185,5 +185,59 @@ describe('App', () => {
     // Assert
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('1 pedido sin enviar'));
     expect(session.session()).not.toBeNull();
+  });
+
+  it('should ask with the number of orders and log out when the waiter accepts', async () => {
+    // Arrange
+    const session = TestBed.inject(SessionService);
+    session.start(loginResponse(EmployeeRole.Waiter));
+    unsentOrders.set([
+      { clientOrderId: 'order-1' },
+      { clientOrderId: 'order-2' },
+    ] as PendingOrder[]);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+
+    // Act
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('[data-testid="logout"]')
+      ?.click();
+
+    // Assert
+    expect(confirm).toHaveBeenCalledWith(expect.stringContaining('2 pedidos sin enviar'));
+    expect(session.session()).toBeNull();
+  });
+
+  it('should have no links and no role when nobody is logged in', () => {
+    // Arrange
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance as unknown as {
+      navigationLinks(): readonly unknown[];
+      roleLabel(): string;
+    };
+
+    // Act / Assert
+    expect(app.navigationLinks()).toEqual([]);
+    expect(app.roleLabel()).toBe('');
+  });
+
+  it('should title the screen after the page the router lands on', async () => {
+    // Arrange
+    @Component({ template: '' })
+    class BlankPage {}
+    const router = TestBed.inject(Router);
+    router.resetConfig([{ path: 'orders', component: BlankPage }]);
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+
+    // Act
+    await router.navigateByUrl('/orders');
+    await fixture.whenStable();
+
+    // Assert
+    const app = fixture.componentInstance as unknown as { screenTitle(): string };
+    expect(app.screenTitle()).toBe('Pedidos');
   });
 });

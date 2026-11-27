@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { type Observable, of, throwError } from 'rxjs';
+import { type Observable, of, Subject, throwError } from 'rxjs';
 
 import { AuthApiService } from '@shared/auth/auth-api.service';
 import { AUTH_PROBLEM_TYPES } from '@shared/auth/auth-messages';
@@ -296,5 +296,35 @@ describe('RegisterPageComponent', () => {
     // Assert
     expect((byTestId('register-email') as HTMLInputElement).value).toBe('ana.lopez');
     expect(byTestId('register-submit')).not.toBeNull();
+  });
+
+  it('should send the request once when it is submitted again while it is on its way', async () => {
+    // Arrange
+    registerEmployee.mockReturnValue(new Subject<void>());
+    await render();
+    await fillCorrectly();
+    await submit();
+
+    // Act
+    (fixture.componentInstance as unknown as { submit(): void }).submit();
+
+    // Assert
+    expect(registerEmployee).toHaveBeenCalledOnce();
+  });
+
+  it('should show no message for an error it has no text for', async () => {
+    // Arrange
+    await render();
+    const component = fixture.componentInstance as unknown as {
+      form: {
+        controls: Record<string, { setErrors(errors: object): void; markAsTouched(): void }>;
+      };
+      errorOf(field: string): string | null;
+    };
+    component.form.controls['email'].setErrors({ somethingElse: true });
+    component.form.controls['email'].markAsTouched();
+
+    // Act / Assert
+    expect(component.errorOf('email')).toBeNull();
   });
 });

@@ -144,4 +144,23 @@ describe('OrderSummaryPageComponent', () => {
     );
     expect(total?.textContent?.trim()).toBe('$158.00');
   });
+
+  it('should change the quantity and remove a line from the summary', async () => {
+    // Arrange
+    const fixture = await render();
+    const draft = TestBed.inject(OrderDraftService);
+    draft.add({ productId: 'burger', name: 'Hamburguesa', unitPrice: 79 });
+    draft.add({ productId: 'fries', name: 'Papas', unitPrice: 35 });
+    await fixture.whenStable();
+    const page = fixture.nativeElement as HTMLElement;
+
+    // Act
+    page.querySelectorAll<HTMLButtonElement>('app-qty-stepper button')[1]?.click();
+    await fixture.whenStable();
+    page.querySelector<HTMLButtonElement>('[aria-label="Quitar Papas del pedido"]')?.click();
+    await fixture.whenStable();
+
+    // Assert
+    expect(draft.items().map((item) => [item.productId, item.quantity])).toEqual([['burger', 2]]);
+  });
 });

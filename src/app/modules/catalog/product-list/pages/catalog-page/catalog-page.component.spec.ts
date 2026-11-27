@@ -78,6 +78,26 @@ function counterText(fixture: ComponentFixture<CatalogPageComponent>): string {
   return count?.textContent?.trim() ?? '';
 }
 
+// Runs before the tests below replace the providers of the page, so the page is built as the app builds it.
+describe('CatalogPageComponent with its own providers', () => {
+  it('should load the menu from the API of the environment', async () => {
+    // Arrange
+    await TestBed.configureTestingModule({
+      imports: [CatalogPageComponent],
+      providers: [provideRouter([])],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(CatalogPageComponent);
+
+    // Act
+    await settle(fixture);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Assert
+    expect(productNames(fixture).length).toBeGreaterThan(0);
+  });
+});
+
 describe('CatalogPageComponent', () => {
   it('should show only the products of the Combos category when the user taps Combos (CA1)', async () => {
     // Arrange
@@ -448,5 +468,85 @@ describe('CatalogPageComponent', () => {
       // Assert
       expect(draft.itemCount()).toBe(11);
     });
+
+    it('should stop at 20 different products for a customer and explain it with a notice', async () => {
+      // Arrange
+      const fixture = await renderFor(null);
+      const draft = TestBed.inject(OrderDraftService);
+      for (let index = 0; index < 20; index++) {
+        draft.add({ productId: `product-${index}`, name: `Producto ${index}`, unitPrice: 10 });
+      }
+      await clickButton(fixture, 'Bebidas');
+
+      // Act
+      await clickButton(fixture, 'Agregar');
+
+      // Assert
+      expect(draft.items()).toHaveLength(20);
+      expect(
+        TestBed.inject(ToastService)
+          .toasts()
+          .map((toast) => toast.message),
+      ).toEqual(['Un pedido admite hasta 20 productos distintos.']);
+    });
+  });
+});
+
+describe('CatalogPageComponent when the catalog fails', () => {
+  it('should load the menu again when the user retries after the categories failed', async () => {
+    // Arrange
+    let failing = true;
+    const api: CatalogApi = {
+      ...createFakeApi(),
+      getCategories: () => (failing ? throwError(() => new Error('network')) : of(MOCK_CATEGORIES)),
+    };
+    const fixture = await renderPage(api);
+    failing = false;
+
+    // Act
+    await clickButton(fixture, 'Reintentar');
+
+    // Assert
+    expect(productNames(fixture).length).toBeGreaterThan(0);
+  });
+
+  it('should log the failure and load the products again when the user retries', async () => {
+    // Arrange
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    let failing = true;
+    const api: CatalogApi = {
+      ...createFakeApi(),
+      getProducts: (categoryId) =>
+        failing
+          ? throwError(() => new Error('network'))
+          : of(MOCK_PRODUCTS.filter((product) => product.categoryId === categoryId)),
+    };
+    const fixture = await renderPage(api);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      'No pudimos cargar los productos.',
+    );
+    expect(productNames(fixture)).toEqual([]);
+    expect(consoleError).toHaveBeenCalled();
+    failing = false;
+
+    // Act
+    await clickButton(fixture, 'Reintentar');
+
+    // Assert
+    expect(productNames(fixture).length).toBeGreaterThan(0);
+    consoleError.mockRestore();
+  });
+});
+
+describe('CatalogPageComponent without categories', () => {
+  it('should show no products when the menu has no categories', async () => {
+    // Arrange
+    const api: CatalogApi = { ...createFakeApi(), getCategories: () => of([]) };
+
+    // Act
+    const fixture = await renderPage(api);
+
+    // Assert
+    expect(productNames(fixture)).toEqual([]);
   });
 });

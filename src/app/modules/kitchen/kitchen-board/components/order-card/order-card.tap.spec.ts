@@ -17,6 +17,8 @@ function order(status: KitchenOrder['status']): KitchenOrder {
   };
 }
 
+let card: { onTap(): void; actionLabel(): string };
+
 function render(
   status: KitchenOrder['status'],
   busy = false,
@@ -25,6 +27,7 @@ function render(
   fixture.componentRef.setInput('order', order(status));
   fixture.componentRef.setInput('now', CREATED_AT);
   fixture.componentRef.setInput('busy', busy);
+  card = fixture.componentInstance as unknown as { onTap(): void; actionLabel(): string };
   const tapped: KitchenOrder[] = [];
   fixture.componentInstance.advance.subscribe((value) => tapped.push(value));
   fixture.detectChanges();
@@ -73,5 +76,24 @@ describe('OrderCardComponent tap (HU_05)', () => {
     expect(button?.disabled).toBe(true);
     expect(tapped).toEqual([]);
     expect(element.textContent).toContain('Guardando…');
+  });
+
+  it('should not ask to move the order while it is saved, even when the tap comes from code', () => {
+    // Arrange
+    const { tapped } = render('New', true);
+
+    // Act
+    card.onTap();
+
+    // Assert
+    expect(tapped).toEqual([]);
+  });
+
+  it('should have no action to describe when the order is ready', () => {
+    // Act
+    render('Ready');
+
+    // Assert
+    expect(card.actionLabel()).toBe('');
   });
 });

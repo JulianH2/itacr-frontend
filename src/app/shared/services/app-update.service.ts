@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, InjectionToken } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SwUpdate, VersionEvent, VersionReadyEvent } from '@angular/service-worker';
@@ -5,7 +6,10 @@ import { filter } from 'rxjs';
 
 export const PAGE_RELOAD = new InjectionToken<() => void>('PAGE_RELOAD', {
   providedIn: 'root',
-  factory: () => () => location.reload(),
+  factory: () => {
+    const { location } = inject(DOCUMENT);
+    return () => location.reload();
+  },
 });
 
 export const UPDATE_MESSAGE = 'Hay una nueva versión disponible.';

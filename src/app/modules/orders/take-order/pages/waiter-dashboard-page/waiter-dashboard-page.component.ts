@@ -116,7 +116,7 @@ export class WaiterDashboardPageComponent {
   );
 
   protected readonly displayName = computed(() => this.session.employee()?.displayName ?? '');
-  protected readonly firstName = computed(() => this.displayName().split(' ')[0] ?? '');
+  protected readonly firstName = computed(() => this.displayName().replace(/ .*$/s, ''));
   protected readonly today = DATE_FORMAT.format(new Date());
 
   /** Tables with their status. Empty until the tables story supplies them; the grid is ready for it. */

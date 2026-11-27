@@ -107,4 +107,31 @@ describe('combo customization', () => {
     ]);
     expect(optionsOfType(MOCK_COMBO_OPTIONS, 'Exclusion')).toHaveLength(7);
   });
+
+  describe('options that are no longer on the menu', () => {
+    it('should add nothing for an extra it does not know', () => {
+      // Arrange
+      const choice = { ...NO_CHOICE, extraIds: ['gone'] };
+
+      // Act / Assert
+      expect(comboUnitPrice(CLASSIC_COMBO, MOCK_COMBO_OPTIONS, choice)).toBe(119);
+    });
+
+    it('should leave out the extras and the exclusions it does not know', () => {
+      // Arrange
+      const choice = {
+        sizeId: id('Grande'),
+        drinkId: id('Refresco de cola'),
+        extraIds: ['gone', id('Queso extra')],
+        exclusionIds: ['gone', id('Cebolla')],
+      };
+
+      // Act
+      const customization = toCustomization(MOCK_COMBO_OPTIONS, choice);
+
+      // Assert
+      expect(customization?.extras.map((extra) => extra.name)).toEqual(['Queso extra']);
+      expect(customization?.exclusions.map((exclusion) => exclusion.name)).toEqual(['Cebolla']);
+    });
+  });
 });

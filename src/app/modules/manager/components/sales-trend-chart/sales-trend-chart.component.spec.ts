@@ -166,4 +166,97 @@ describe('SalesTrendChartComponent', () => {
     // Assert
     expect(chart.querySelector('.trend--refreshing')).not.toBeNull();
   });
+
+  it('should title the table by day when the range is long', async () => {
+    // Arrange
+    await render(POINTS, toInstants({ start: '2026-11-04', end: '2026-11-10' }));
+
+    // Act
+    (byTestId('trend-table-toggle') as HTMLButtonElement).click();
+    await settle();
+
+    // Assert
+    expect(chart.querySelector('[data-testid="trend-table"] thead')?.textContent).toContain('Día');
+  });
+
+  it('should go back to the sales when that measure is chosen again', async () => {
+    // Arrange
+    await render();
+    (byTestId('trend-metric-orders') as HTMLButtonElement).click();
+    await settle();
+
+    // Act
+    (byTestId('trend-metric-sales') as HTMLButtonElement).click();
+    await settle();
+
+    // Assert
+    expect(bars()[13].querySelector<HTMLElement>('.bar')?.style.height).toBe('65%');
+  });
+
+  describe('scale and state', () => {
+    interface ChartState {
+      metric: { set(value: 'sales' | 'orders'): void };
+      hovered: { set(value: number | null): void };
+      ticks(): readonly number[];
+      peakIndex(): number;
+      isDaily(): boolean;
+      hoveredBucket(): unknown;
+      tooltipLeft(): number;
+      tooltipBottom(): number;
+    }
+
+    function state(): ChartState {
+      return fixture.componentInstance as unknown as ChartState;
+    }
+
+    function point(hour: number, orders: number, sales: number): TrendPoint {
+      return { hourStart: new Date(2026, 10, 10, hour).toISOString(), orders, sales };
+    }
+
+    it.each([
+      [100, 100],
+      [300, 500],
+      [700, 1000],
+    ])('should round a highest value of %s up to a scale of %s', async (sales, top) => {
+      // Act
+      await render([point(12, 2, sales)]);
+
+      // Assert
+      expect(state().ticks()).toEqual([0, top / 2, top]);
+    });
+
+    it('should keep a scale of 1 and no peak when the range has no numbers', async () => {
+      // Act
+      await render([]);
+
+      // Assert
+      expect(state().ticks()).toEqual([0, 0.5, 1]);
+      expect(state().peakIndex()).toBe(-1);
+    });
+
+    it('should not count a range of a single hour as daily', async () => {
+      // Arrange
+      const from = new Date(2026, 10, 10, 12);
+      const to = new Date(2026, 10, 10, 13);
+
+      // Act
+      await render([point(12, 1, 50)], { from: from.toISOString(), to: to.toISOString() });
+
+      // Assert
+      expect(state().isDaily()).toBe(false);
+      expect(bars()[0]?.getAttribute('aria-label')).toContain('1 pedido,');
+    });
+
+    it('should place no tooltip when no bar, or a bar that does not exist, is hovered', async () => {
+      // Arrange
+      await render();
+
+      // Act / Assert
+      expect(state().hoveredBucket()).toBeNull();
+      expect(state().tooltipBottom()).toBe(0);
+      expect(state().tooltipLeft()).toBeCloseTo((0.5 / 24) * 100);
+      state().hovered.set(99);
+      expect(state().hoveredBucket()).toBeNull();
+    });
+  });
 });
