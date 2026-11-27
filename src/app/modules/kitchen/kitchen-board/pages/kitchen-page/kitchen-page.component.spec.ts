@@ -44,6 +44,33 @@ function queueOf(...orders: KitchenOrder[]): KitchenQueue {
   return { serverTime: new Date(NOW).toISOString(), orders };
 }
 
+// Runs before the tests below replace the providers of the page, so the page is built as the app builds it.
+describe('KitchenPageComponent with its own providers', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+  });
+
+  it('should build its board from the API of the environment', async () => {
+    // Arrange
+    await TestBed.configureTestingModule({ imports: [KitchenPageComponent] }).compileComponents();
+    const fixture = TestBed.createComponent(KitchenPageComponent);
+
+    // Act
+    fixture.detectChanges();
+    await vi.advanceTimersByTimeAsync(1000);
+    fixture.detectChanges();
+
+    // Assert
+    expect((fixture.nativeElement as HTMLElement).querySelector('h1')).not.toBeNull();
+    fixture.destroy();
+  });
+});
+
 describe('KitchenPageComponent', () => {
   let answer: () => Observable<KitchenQueue>;
   let alert: {

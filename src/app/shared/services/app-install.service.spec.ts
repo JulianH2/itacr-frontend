@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { TestBed } from '@angular/core/testing';
 
 import {
@@ -117,5 +118,118 @@ describe('AppInstallService', () => {
 
     // Assert
     expect(service.showIosHint()).toBe(false);
+  });
+});
+
+describe('AppInstallService without a prompt', () => {
+  it('should do nothing when there is no prompt to open', async () => {
+    // Arrange
+    TestBed.configureTestingModule({
+      providers: [{ provide: INSTALL_PLATFORM, useValue: BROWSER_TAB }],
+    });
+    const service = TestBed.inject(AppInstallService);
+
+    // Act
+    await service.install();
+
+    // Assert
+    expect(service.installed()).toBe(false);
+  });
+
+  it('should log and keep the app uninstalled when the browser prompt fails', async () => {
+    // Arrange
+    TestBed.configureTestingModule({
+      providers: [{ provide: INSTALL_PLATFORM, useValue: BROWSER_TAB }],
+    });
+    const service = TestBed.inject(AppInstallService);
+    service.start();
+    const event = promptEvent('accepted');
+    event.prompt = vi.fn(() => Promise.reject(new Error('blocked')));
+    window.dispatchEvent(event);
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    // Act
+    await service.install();
+
+    // Assert
+    expect(consoleError).toHaveBeenCalledOnce();
+    expect(service.installed()).toBe(false);
+    consoleError.mockRestore();
+  });
+});
+
+describe('INSTALL_PLATFORM', () => {
+  function detect(view: unknown): InstallPlatform {
+    TestBed.configureTestingModule({
+      providers: [{ provide: DOCUMENT, useValue: { defaultView: view } }],
+    });
+    return TestBed.inject(INSTALL_PLATFORM);
+  }
+
+  function view(
+    userAgent: string,
+    options: {
+      standaloneQuery?: boolean;
+      iosStandalone?: boolean;
+      touchPoints?: number;
+      noMatchMedia?: boolean;
+    } = {},
+  ): unknown {
+    return {
+      navigator: {
+        userAgent,
+        maxTouchPoints: options.touchPoints ?? 0,
+        standalone: options.iosStandalone,
+      },
+      matchMedia: options.noMatchMedia
+        ? undefined
+        : () => ({ matches: options.standaloneQuery ?? false }),
+    };
+  }
+
+  it('should be a browser tab when there is no window', () => {
+    // Act / Assert
+    expect(detect(null)).toEqual({ standalone: false, ios: false });
+  });
+
+  it('should be standalone when the display mode is standalone', () => {
+    // Act / Assert
+    expect(detect(view('Mozilla/5.0 (Linux; Android 14)', { standaloneQuery: true }))).toEqual({
+      standalone: true,
+      ios: false,
+    });
+  });
+
+  it('should be the installed iPhone app when Safari says it is standalone', () => {
+    // Act / Assert
+    expect(
+      detect(
+        view('Mozilla/5.0 (iPhone; CPU iPhone OS 18_0)', {
+          iosStandalone: true,
+          noMatchMedia: true,
+        }),
+      ),
+    ).toEqual({
+      standalone: true,
+      ios: true,
+    });
+  });
+
+  it('should be an iPad when a Mac user agent has a touch screen', () => {
+    // Act / Assert
+    expect(
+      detect(view('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)', { touchPoints: 5 })),
+    ).toEqual({
+      standalone: false,
+      ios: true,
+    });
+  });
+
+  it('should be a Mac when the Mac user agent has no touch screen', () => {
+    // Act / Assert
+    expect(detect(view('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'))).toEqual({
+      standalone: false,
+      ios: false,
+    });
   });
 });

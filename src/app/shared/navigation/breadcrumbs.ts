@@ -22,7 +22,7 @@ const SEGMENT_LABELS: Readonly<Record<string, string>> = {
 
 /** "/orders/detail/42?x=1" -> [Pedidos (/orders), Detalle (/orders/detail/42)]. The last crumb is the current page. */
 export function breadcrumbsFor(url: string): readonly Breadcrumb[] {
-  const path = url.split(/[?#]/)[0] ?? '';
+  const path = url.replace(/[?#].*$/s, '');
   const segments = path.split('/').filter((segment) => segment.length > 0);
   const crumbs: Breadcrumb[] = [];
   let lastLabelled = -1;

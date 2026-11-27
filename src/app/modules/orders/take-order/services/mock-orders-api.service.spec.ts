@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, type Observable } from 'rxjs';
 
@@ -150,5 +151,15 @@ describe('MockOrdersApiService', () => {
     const { value: ready } = await settle(service.getReadyPickupOrders());
 
     expect(ready).toEqual([]);
+  });
+});
+
+describe('MockOrdersApiService provided by Angular', () => {
+  it('should be created by the injector, as the feature providers create it', () => {
+    // Arrange
+    TestBed.configureTestingModule({ providers: [MockOrdersApiService] });
+
+    // Act / Assert
+    expect(TestBed.inject(MockOrdersApiService)).toBeInstanceOf(MockOrdersApiService);
   });
 });

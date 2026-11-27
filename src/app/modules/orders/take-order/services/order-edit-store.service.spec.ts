@@ -338,7 +338,10 @@ describe('OrderEditStore', () => {
     const result = await store.save();
 
     // Assert
-    expect(result).toEqual({ reload: true });
+    expect(result).toEqual({
+      reload: true,
+      error: 'El pedido ya no se puede modificar porque cocina lo marcó como listo.',
+    });
     expect(store.error()).toBe(
       'El pedido ya no se puede modificar porque cocina lo marcó como listo.',
     );
@@ -372,5 +375,102 @@ describe('OrderEditStore', () => {
 
     // Assert
     expect(store.items()).toHaveLength(3);
+  });
+
+  it('should have no table before an order is open', () => {
+    // Act / Assert
+    expect(store.tableId()).toBeNull();
+  });
+
+  it('should fail to open when the error is not an answer of the API', async () => {
+    // Arrange
+    api.orderError = new Error('boom');
+
+    // Act
+    await store.open('order-1');
+
+    // Assert
+    expect(store.problem()).toBe('failed');
+  });
+
+  it('should open an order that is already in preparation', async () => {
+    // Arrange
+    api.order = { ...DETAIL, status: 'InPreparation' };
+
+    // Act
+    await store.open('order-1');
+
+    // Assert
+    expect(store.problem()).toBeNull();
+    expect(draft.editingOrderId()).toBe('order-1');
+  });
+
+  it.each([
+    ['a line without product', { ...DETAIL.items[0], productId: undefined }],
+    ['a combo whose extras do not match their ids', { ...COMBO_DETAIL.items[0], extraIds: [] }],
+  ])('should not offer the edit when the order has %s', async (_case, item) => {
+    // Arrange
+    api.order = { ...DETAIL, items: [item] };
+
+    // Act
+    await store.open('order-1');
+
+    // Assert
+    expect(store.problem()).toBe('failed');
+  });
+
+  it('should open a combo that has no extras and no exclusions', async () => {
+    // Arrange
+    const combo = {
+      ...COMBO_DETAIL.items[0],
+      extras: undefined,
+      extraIds: undefined,
+      exclusions: undefined,
+      exclusionIds: undefined,
+    };
+    api.order = { ...DETAIL, items: [combo] };
+
+    // Act
+    await store.open('order-1');
+
+    // Assert
+    expect(store.problem()).toBeNull();
+    expect(store.items()[0]?.customization).toEqual({
+      size: { id: 'size-large', name: 'Grande' },
+      drink: { id: 'drink-cola', name: 'Refresco de cola' },
+      extras: [],
+      exclusions: [],
+    });
+  });
+
+  it('should save nothing when no order is open', async () => {
+    // Act / Assert
+    await expect(store.save()).resolves.toBeNull();
+    expect(api.updates).toEqual([]);
+  });
+
+  it('should send the changes once when save is pressed twice', async () => {
+    // Arrange
+    await store.open('order-1');
+
+    // Act
+    const first = store.save();
+    const second = await store.save();
+    await first;
+
+    // Assert
+    expect(second).toBeNull();
+    expect(api.updates).toHaveLength(1);
+  });
+
+  it('should ask the order store to read the tables again', () => {
+    // Arrange
+    const reload = vi.spyOn(TestBed.inject(TakeOrderStore), 'reloadTables');
+
+    // Act
+    store.reloadTables();
+
+    // Assert
+    expect(reload).toHaveBeenCalledOnce();
   });
 });

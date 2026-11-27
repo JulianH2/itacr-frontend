@@ -148,6 +148,8 @@ describe('KitchenStore', () => {
     answer = () => throwError(() => new Error('offline'));
     const store = createStore();
     expect(store.hasError()).toBe(true);
+    expect(store.isLoading()).toBe(false);
+    expect(store.newOrders()).toEqual([]);
 
     // Act
     answer = () => of(queueOf(order('1', 'New', 0)));

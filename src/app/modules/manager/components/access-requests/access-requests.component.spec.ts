@@ -1,6 +1,7 @@
 import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
-import { type Observable, of } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
+import { NEVER, type Observable, of, throwError } from 'rxjs';
 
 import { EmployeeRole } from '@shared/auth/auth.models';
 
@@ -29,12 +30,13 @@ describe('AccessRequestsComponent', () => {
   let assignTemporaryPin: ReturnType<typeof vi.fn<(id: string, pin: string) => Observable<void>>>;
   let fixture: ComponentFixture<AccessRequestsComponent>;
   let section: HTMLElement;
+  let loadRequests: () => Observable<AccessRequests>;
 
   async function render(): Promise<void> {
     const api: ManagerApi = {
       getDashboard: vi.fn(),
       getOrders: vi.fn(),
-      getAccessRequests: () => of(pending),
+      getAccessRequests: () => loadRequests(),
       approveAccount,
       rejectAccount,
       assignTemporaryPin,
@@ -72,6 +74,7 @@ describe('AccessRequestsComponent', () => {
 
   beforeEach(() => {
     pending = { accounts: [ACCOUNT], pinResets: [RESET] };
+    loadRequests = () => of(pending);
     approveAccount = vi.fn(() => {
       pending = { ...pending, accounts: [] };
       return of(undefined);
@@ -265,5 +268,49 @@ describe('AccessRequestsComponent', () => {
 
     // Assert
     expect(byTestId('requests-empty')?.textContent).toContain('No hay solicitudes pendientes.');
+  });
+
+  it('should say it is loading until the requests arrive', async () => {
+    // Arrange
+    loadRequests = () => NEVER;
+
+    // Act
+    await render();
+
+    // Assert
+    expect(byTestId('requests-loading')?.textContent).toContain('Cargando solicitudes');
+  });
+
+  it('should say the requests failed to load and load them again on retry', async () => {
+    // Arrange
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    loadRequests = () => throwError(() => new HttpErrorResponse({ status: 503 }));
+    await render();
+    expect(byTestId('requests-error')).not.toBeNull();
+    expect(byTestId('requests-loading')).toBeNull();
+    loadRequests = () => of(pending);
+
+    // Act
+    byTestId('requests-error')?.querySelector('button')?.click();
+    await settle();
+
+    // Assert
+    expect(byTestId('requests-error')).toBeNull();
+    expect(byTestId('account-account-1')).not.toBeNull();
+  });
+
+  it('should keep the PIN form open when the PIN cannot be assigned', async () => {
+    // Arrange
+    assignTemporaryPin.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    await render();
+    await click('open-pin');
+
+    // Act
+    await type('temporary-pin', '9087');
+    await click('save-pin');
+
+    // Assert
+    expect(byTestId('temporary-pin')).not.toBeNull();
+    expect(byTestId('requests-feedback')?.getAttribute('role')).toBe('alert');
   });
 });

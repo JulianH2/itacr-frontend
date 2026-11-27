@@ -1,6 +1,7 @@
 import { InjectionToken, type Provider } from '@angular/core';
 
 import { environment } from '@env/environment';
+import { apiImplementation } from '@shared/config/api-implementation';
 
 import { DEFAULT_TIMER_THRESHOLDS, type TimerThresholds } from './models/kitchen-timer';
 import { KITCHEN_API } from './services/kitchen-api';
@@ -16,6 +17,10 @@ export const KITCHEN_TIMER_THRESHOLDS = new InjectionToken<TimerThresholds>(
 export function provideKitchenApi(): Provider {
   return {
     provide: KITCHEN_API,
-    useClass: environment.useMockApi ? MockKitchenApiService : HttpKitchenApiService,
+    useClass: apiImplementation(
+      environment.useMockApi,
+      MockKitchenApiService,
+      HttpKitchenApiService,
+    ),
   };
 }

@@ -208,4 +208,47 @@ describe('KitchenStore status changes (HU_05)', () => {
     // Assert
     expect(api.changeStatus).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['an error of the app', new Error('boom')],
+    ['an answer without detail', new HttpErrorResponse({ status: 500, error: null })],
+  ])('should give the unexpected message for %s', (_case, error) => {
+    // Arrange
+    api.changeStatus.mockReturnValue(throwError(() => error));
+    const store = createStore();
+
+    // Act
+    store.advance(store.newOrders()[0]);
+
+    // Assert
+    expect(store.actionError()).toBe(KITCHEN_ACTION_MESSAGES.unexpected);
+  });
+
+  it('should show the order as the server has it and say why when the undo fails', () => {
+    // Arrange
+    api.undoStatusChange.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
+    const store = createStore();
+    store.advance(store.newOrders()[0]);
+
+    // Act
+    store.undo();
+
+    // Assert
+    expect(store.newOrders().map((item) => item.id)).toEqual(['1']);
+    expect(store.actionError()).toBe(KITCHEN_ACTION_MESSAGES.network);
+  });
+
+  it('should not undo a tap while the server is still saving it', () => {
+    // Arrange
+    api.changeStatus.mockReturnValue(new Subject<KitchenStatusChange>());
+    const store = createStore();
+    store.advance(store.newOrders()[0]);
+
+    // Act
+    store.undo();
+
+    // Assert
+    expect(api.undoStatusChange).not.toHaveBeenCalled();
+    expect(store.busyIds().has('1')).toBe(true);
+  });
 });

@@ -87,4 +87,42 @@ describe('SessionService', () => {
     expect(service.session()).toBeNull();
     expect(storage.getItem('itacr.session')).toBeNull();
   });
+
+  it.each([
+    ['a value that is not an object', '42'],
+    [
+      'an employee that is not an object',
+      JSON.stringify({ accessToken: 'a', expiresAt: '2999-01-01T00:00:00.000Z', employee: 'Ana' }),
+    ],
+    [
+      'an employee with an unknown role',
+      JSON.stringify({
+        accessToken: 'a',
+        expiresAt: '2999-01-01T00:00:00.000Z',
+        employee: { id: '1', displayName: 'Ana', role: 'Chef' },
+      }),
+    ],
+  ])('should ignore a stored session with %s', (_case, raw) => {
+    // Arrange
+    storage.setItem('itacr.session', raw);
+
+    // Act
+    const service = createService();
+
+    // Assert
+    expect(service.session()).toBeNull();
+    expect(storage.getItem('itacr.session')).toBe(raw);
+  });
+
+  it('should remember nobody when it expires without a session', () => {
+    // Arrange
+    const service = createService();
+
+    // Act
+    service.expire();
+
+    // Assert
+    expect(service.lastEmployee()).toBeNull();
+    expect(storage.getItem('itacr.last-employee')).toBeNull();
+  });
 });

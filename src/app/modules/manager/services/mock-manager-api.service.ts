@@ -76,20 +76,22 @@ function channelMetrics(
   orders: readonly ManagerOrderRow[],
 ): ChannelMetrics {
   const own = orders.filter((order) => groupOf(order) === channel);
-  const prepared = own.filter((order) => order.preparationSeconds !== null);
+  const preparationSeconds = own.flatMap((order) =>
+    order.preparationSeconds === null ? [] : [order.preparationSeconds],
+  );
   const delivered = own.filter((order) => order.status === 'Delivered');
   return {
     channel,
     orders: own.length,
     deliveredOrders: delivered.length,
     sales: delivered.reduce((sum, order) => sum + order.total, 0),
-    preparedOrders: prepared.length,
+    preparedOrders: preparationSeconds.length,
     averagePreparationSeconds:
-      prepared.length === 0
+      preparationSeconds.length === 0
         ? null
         : Math.round(
-            prepared.reduce((sum, order) => sum + (order.preparationSeconds ?? 0), 0) /
-              prepared.length,
+            preparationSeconds.reduce((sum, seconds) => sum + seconds, 0) /
+              preparationSeconds.length,
           ),
   };
 }
@@ -144,16 +146,13 @@ export class MockManagerApiService implements ManagerApi {
   getDashboard(from: string, to: string): Observable<ManagerDashboard> {
     const orders = sampleOrders(new Date(from), new Date(to));
     const channels = [channelMetrics('Waiter', orders), channelMetrics('Pickup', orders)];
-    const timed = channels.filter((channel) => channel.averagePreparationSeconds !== null);
+    const timed = channels
+      .flatMap(({ channel, averagePreparationSeconds: seconds }) =>
+        seconds === null ? [] : [{ channel, seconds }],
+      )
+      .sort((a, b) => b.seconds - a.seconds);
     const slowest =
-      timed.length === 2 &&
-      timed[0].averagePreparationSeconds !== timed[1].averagePreparationSeconds
-        ? timed.reduce(
-            (a, b) =>
-              (a.averagePreparationSeconds ?? 0) >= (b.averagePreparationSeconds ?? 0) ? a : b,
-            timed[0],
-          ).channel
-        : null;
+      timed.length === 2 && timed[0].seconds !== timed[1].seconds ? timed[0].channel : null;
     return of({
       from,
       to,

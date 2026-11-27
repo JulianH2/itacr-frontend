@@ -85,8 +85,9 @@ export class OrderDetailPageComponent {
     const error = this.orderResource.error();
     return error instanceof HttpErrorResponse && error.status === 404;
   });
+  // A resource that failed has no value, so an error always means there is no order to show.
   protected readonly hasError = computed(
-    () => this.orderResource.error() !== undefined && !this.notFound() && !this.order(),
+    () => this.orderResource.error() !== undefined && !this.notFound(),
   );
 
   protected readonly timeline = computed(() => {

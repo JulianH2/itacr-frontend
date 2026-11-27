@@ -195,4 +195,41 @@ describe('OrderEditPageComponent', () => {
     expect(byTestId(page, 'edit-problem')?.textContent).toContain('ya no se puede modificar');
     expect(byTestId(page, 'save-edit')).toBeNull();
   });
+
+  it('should change the quantity, remove a line and keep the note the waiter types', async () => {
+    // Arrange
+    const harness = await render();
+    const draft = TestBed.inject(OrderDraftService);
+
+    // Act
+    harness.page
+      .querySelector<HTMLButtonElement>('[aria-label="Quitar Hamburguesa Clásica del pedido"]')
+      ?.click();
+    await harness.fixture.whenStable();
+    harness.page.querySelectorAll<HTMLButtonElement>('app-qty-stepper button')[1]?.click();
+    await harness.fixture.whenStable();
+    const note = harness.page.querySelector<HTMLTextAreaElement>('textarea');
+    if (note) {
+      note.value = 'sin hielo';
+      note.dispatchEvent(new Event('input'));
+    }
+    await harness.fixture.whenStable();
+
+    // Assert
+    expect(draft.items().map((item) => [item.productId, item.quantity])).toEqual([['soda', 2]]);
+    expect(TestBed.inject(OrderEditStore).note()).toBe('sin hielo');
+  });
+
+  it('should stay on the form and keep the changes when saving fails', async () => {
+    // Arrange
+    const harness = await render({ updateError: new HttpErrorResponse({ status: 500 }) });
+
+    // Act
+    await press(harness, 'save-edit');
+
+    // Assert
+    expect(harness.navigate).not.toHaveBeenCalled();
+    expect(TestBed.inject(ToastService).toasts()).toEqual([]);
+    expect(byTestId(harness.page, 'edit-notice')).not.toBeNull();
+  });
 });

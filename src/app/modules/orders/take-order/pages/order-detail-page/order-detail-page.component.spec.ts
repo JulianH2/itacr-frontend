@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { signal } from '@angular/core';
+import { ApplicationRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { type Observable, EMPTY, NEVER, of, throwError } from 'rxjs';
@@ -58,11 +58,26 @@ const DELIVERY_DONE: DeliveredOrder = {
   deliveredAt: '2026-10-14T18:25:00Z',
 };
 
+/** The derived state of the page, read directly for the states the template never asks about. */
+interface PageState {
+  isLoading(): boolean;
+  timeline(): readonly unknown[];
+  upcoming(): readonly unknown[];
+  createdTime(): string;
+  deliveredTime(): string | null;
+  serviceMinutes(): number | null;
+  statusTone(): string;
+}
+
 describe('OrderDetailPageComponent', () => {
+  let page: PageState;
   let getOrder: ReturnType<typeof vi.fn<(orderId: string) => Observable<OrderDetail>>>;
   let deliverOrder: ReturnType<typeof vi.fn<(orderId: string) => Observable<DeliveredOrder>>>;
 
-  async function render(role: EmployeeRole = EmployeeRole.Waiter): Promise<HTMLElement> {
+  async function render(
+    role: EmployeeRole = EmployeeRole.Waiter,
+    waitUntilStable = true,
+  ): Promise<HTMLElement> {
     const api: OrdersApi = {
       getDiningTables: () => EMPTY,
       createOrder: () => EMPTY,
@@ -84,8 +99,13 @@ describe('OrderDetailPageComponent', () => {
       ],
     }).compileComponents();
     const fixture = TestBed.createComponent(OrderDetailPageComponent);
+    page = fixture.componentInstance as unknown as PageState;
     fixture.componentRef.setInput('id', 'order-1');
-    await fixture.whenStable();
+    if (waitUntilStable) {
+      await fixture.whenStable();
+    } else {
+      fixture.detectChanges();
+    }
     return fixture.nativeElement as HTMLElement;
   }
 
@@ -398,5 +418,59 @@ describe('OrderDetailPageComponent', () => {
         (note) => note.textContent,
       ),
     ).toEqual(['Sin sal', 'Para compartir']);
+  });
+
+  it('should leave the time out of the header when the order has no timeline', async () => {
+    // Arrange
+    getOrder = vi.fn(() => of({ ...DETAIL, timeline: [] }));
+
+    // Act
+    const element = await render();
+
+    // Assert
+    expect(element.querySelector('.detail__destination')?.textContent?.trim()).toBe('Mesa 5');
+  });
+
+  it('should offer to try again when the order cannot be loaded, and load it on retry', async () => {
+    // Arrange
+    getOrder = vi.fn(() => throwError(() => new HttpErrorResponse({ status: 500 })));
+    const element = await render();
+    expect(element.querySelector('[role="alert"]')?.textContent).toContain(
+      'No pudimos cargar el pedido',
+    );
+    getOrder.mockReturnValue(of(DETAIL));
+
+    // Act
+    element.querySelector<HTMLButtonElement>('[role="alert"] button')?.click();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(getOrder).toHaveBeenCalledTimes(2);
+    expect(element.querySelector('h1')?.textContent).toContain('Orden #12');
+  });
+
+  it('should say it is loading and have nothing to show until the order arrives', async () => {
+    // Arrange
+    getOrder = vi.fn(() => NEVER);
+
+    // Act
+    const element = await render(EmployeeRole.Waiter, false);
+
+    // Assert
+    expect(element.querySelector('[role="status"]')?.textContent?.trim()).toBe('Cargando pedido…');
+    expect(page.timeline()).toEqual([]);
+    expect(page.upcoming()).toEqual([]);
+    expect(page.createdTime()).toBe('');
+    expect(page.deliveredTime()).toBeNull();
+    expect(page.serviceMinutes()).toBeNull();
+    expect(page.statusTone()).toBe('neutral');
+  });
+
+  it('should not count as loading while an order it already shows is read again', async () => {
+    // Act
+    await render();
+
+    // Assert
+    expect(page.isLoading()).toBe(false);
   });
 });

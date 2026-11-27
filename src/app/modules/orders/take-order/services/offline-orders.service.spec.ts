@@ -265,4 +265,51 @@ describe('OfflineOrdersService', () => {
     expect(api.requests).toHaveLength(0);
     expect(service.pendingCount()).toBe(1);
   });
+
+  it('should skip an order already rejected and send the next pending one', async () => {
+    // Arrange
+    online.set(true);
+    const service = setUp();
+    await service.enqueue(request('old', '2026-10-22T06:00:00.000Z'), SUMMARY);
+    api.errors.push(new HttpErrorResponse({ status: 400, error: { detail: 'Rechazado.' } }));
+    await service.sync();
+    await service.enqueue(request('new', '2026-10-22T18:00:00.000Z'), SUMMARY);
+
+    // Act
+    await service.sync();
+
+    // Assert
+    expect(api.requests.map((sent) => sent.clientOrderId)).toEqual(['old', 'new']);
+    expect(service.orders().map((order) => order.clientOrderId)).toEqual(['old']);
+  });
+
+  it('should not save an order when nobody is signed in', async () => {
+    // Arrange
+    const service = setUp();
+    TestBed.inject(SessionService).clear();
+
+    // Act / Assert
+    await expect(
+      service.enqueue(request('a', '2026-10-22T18:00:00.000Z'), SUMMARY),
+    ).rejects.toThrow('A pending order needs a signed-in waiter');
+    expect(await storage.getAll()).toEqual([]);
+  });
+
+  it('should log and go on when the saved orders cannot be read', async () => {
+    // Arrange
+    storage.getAll = () => Promise.reject(new Error('IndexedDB blocked'));
+    const service = setUp();
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    // Act
+    await service.start();
+
+    // Assert
+    expect(consoleError).toHaveBeenCalledWith(
+      'Failed to read the pending orders',
+      expect.any(Error),
+    );
+    expect(service.orders()).toEqual([]);
+    consoleError.mockRestore();
+  });
 });

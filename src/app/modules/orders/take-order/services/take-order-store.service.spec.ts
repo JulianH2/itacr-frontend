@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { signal } from '@angular/core';
+import { ApplicationRef, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { EMPTY, type Observable, of, throwError } from 'rxjs';
 
@@ -371,5 +371,47 @@ describe('TakeOrderStore', () => {
     expect(draft.itemCount()).toBe(0);
     expect(store.tableId()).toBeNull();
     expect(store.takeAway()).toBe(false);
+  });
+
+  it('should keep the table when take away is turned off', () => {
+    // Arrange
+    store.selectTable(TABLE_FIVE.id);
+
+    // Act
+    store.setTakeAway(false);
+
+    // Assert
+    expect(store.tableId()).toBe(TABLE_FIVE.id);
+    expect(store.takeAway()).toBe(false);
+  });
+
+  it('should log and report the error when the tables cannot be loaded', async () => {
+    // Arrange
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.spyOn(api, 'getDiningTables').mockReturnValue(throwError(() => new Error('offline')));
+
+    // Act
+    store.tables();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(store.hasTablesError()).toBe(true);
+    expect(consoleError).toHaveBeenCalledWith('Failed to load tables', expect.any(Error));
+    consoleError.mockRestore();
+  });
+
+  it('should read the tables again when asked', async () => {
+    // Arrange
+    const getDiningTables = vi.spyOn(api, 'getDiningTables');
+    store.tables();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Act
+    store.reloadTables();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    // Assert
+    expect(getDiningTables).toHaveBeenCalledTimes(2);
+    expect(store.tables()).toEqual([TABLE_FIVE]);
   });
 });

@@ -87,4 +87,19 @@ describe('RedirectPageComponent', () => {
     expect(navigateByUrl).toHaveBeenCalledTimes(1);
     expect(navigateByUrl).toHaveBeenCalledWith('/login');
   });
+
+  it('should open no panel when the session ends before the redirect', async () => {
+    // Arrange
+    const session = TestBed.inject(SessionService);
+    session.start(loginResponse(EmployeeRole.Waiter));
+    const fixture = TestBed.createComponent(RedirectPageComponent);
+    await fixture.whenStable();
+    session.clear();
+
+    // Act
+    vi.advanceTimersByTime(REDIRECT_DELAY_MS);
+
+    // Assert
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
 });

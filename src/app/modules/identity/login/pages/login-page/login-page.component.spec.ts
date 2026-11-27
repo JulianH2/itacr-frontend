@@ -173,4 +173,162 @@ describe('LoginPageComponent', () => {
     // Assert
     expect(textOf('login-error')).toBe(AUTH_MESSAGES.locked);
   });
+
+  function buttonWithText(text: string): HTMLButtonElement | undefined {
+    return Array.from(element().querySelectorAll<HTMLButtonElement>('button')).find(
+      (button) => button.textContent?.trim() === text,
+    );
+  }
+
+  /** The handlers and values the template only reaches in another step. */
+  function page(): {
+    roleLabel(): string;
+    pickRole(value: string): void;
+    changeEmployee(): void;
+    submitPin(): void;
+    requestPinReset(): void;
+    step(): string;
+  } {
+    return fixture.componentInstance as unknown as ReturnType<typeof page>;
+  }
+
+  it('should show the error when the staff of the role cannot be loaded', async () => {
+    // Act
+    click(`role-${EmployeeRole.Waiter}`);
+    http
+      .expectOne((request) => request.url === `${AUTH_API_URL}/employees`)
+      .flush(null, { status: 500, statusText: 'Error' });
+    await fixture.whenStable();
+
+    // Assert
+    expect(textOf('login-error')).toBe(AUTH_MESSAGES.unexpected);
+  });
+
+  it('should go back to the roles when the employee changes the role', async () => {
+    // Arrange
+    click(`role-${EmployeeRole.Waiter}`);
+    http.expectOne((request) => request.url === `${AUTH_API_URL}/employees`).flush([WAITER]);
+    await fixture.whenStable();
+
+    // Act
+    buttonWithText('Cambiar rol')?.click();
+    fixture.detectChanges();
+
+    // Assert
+    expect(page().step()).toBe('role');
+    expect(page().roleLabel()).toBe('');
+  });
+
+  it('should go back to the staff list, without loading it again, when the employee is not the one chosen', async () => {
+    // Arrange
+    await goToPinStep();
+
+    // Act
+    buttonWithText('No soy yo')?.click();
+    fixture.detectChanges();
+
+    // Assert
+    expect(page().step()).toBe('employee');
+    expect(element().querySelector(`[data-testid="employee-${WAITER.id}"]`)).not.toBeNull();
+  });
+
+  it('should send the PIN once when it is submitted twice', async () => {
+    // Arrange
+    await goToPinStep();
+    enterPin('1234');
+
+    // Act
+    click('pin-submit');
+    page().submitPin();
+
+    // Assert
+    http.expectOne(`${AUTH_API_URL}/login/pin`).flush(loginResponse(EmployeeRole.Waiter));
+    await fixture.whenStable();
+  });
+
+  it('should keep the page where it should go next when it was asked for', async () => {
+    // Arrange
+    fixture.componentRef.setInput('returnUrl', '/orders/catalog');
+    await goToPinStep();
+    enterPin('1234');
+
+    // Act
+    click('pin-submit');
+    http.expectOne(`${AUTH_API_URL}/login/pin`).flush(loginResponse(EmployeeRole.Waiter));
+    await fixture.whenStable();
+
+    // Assert
+    expect(navigate).toHaveBeenCalledWith(['/login/redirect'], {
+      queryParams: { returnUrl: '/orders/catalog' },
+    });
+  });
+
+  it('should show the error when the PIN reset cannot be sent', async () => {
+    // Arrange
+    await goToPinStep();
+
+    // Act
+    click('pin-reset');
+    http
+      .expectOne(`${AUTH_API_URL}/pin-reset-requests`)
+      .flush(null, { status: 0, statusText: 'Unknown Error' });
+    await fixture.whenStable();
+
+    // Assert
+    expect(textOf('login-error')).toBe(AUTH_MESSAGES.network);
+  });
+
+  it('should ignore what has no meaning before a role and an employee are chosen', () => {
+    // Act
+    page().pickRole('Chef');
+    page().changeEmployee();
+    page().submitPin();
+    page().requestPinReset();
+
+    // Assert
+    expect(page().step()).toBe('role');
+    http.expectNone(() => true);
+  });
+});
+
+describe('LoginPageComponent when the session expired', () => {
+  it('should ask the same employee for the PIN, and load the staff when it is someone else', async () => {
+    // Arrange
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'itacr.last-employee',
+      JSON.stringify({ id: WAITER.id, displayName: WAITER.displayName, role: EmployeeRole.Waiter }),
+    );
+    TestBed.configureTestingModule({
+      imports: [LoginPageComponent],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SESSION_STORAGE, useValue: storage },
+      ],
+    });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(LoginPageComponent);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    expect(element.querySelector('[data-testid="selected-employee"]')?.textContent).toContain(
+      WAITER.displayName,
+    );
+
+    // Act
+    Array.from(element.querySelectorAll<HTMLButtonElement>('button'))
+      .find((button) => button.textContent?.trim() === 'No soy yo')
+      ?.click();
+
+    // Assert
+    http
+      .expectOne(
+        (request) =>
+          request.url === `${AUTH_API_URL}/employees` &&
+          request.params.get('role') === EmployeeRole.Waiter,
+      )
+      .flush([WAITER]);
+    http.verify();
+  });
 });

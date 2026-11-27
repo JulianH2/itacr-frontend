@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, type Observable } from 'rxjs';
 
@@ -119,5 +120,24 @@ describe('MockManagerApiService', () => {
 
     expect(requests?.pinResets).toEqual([]);
     expect((unknown.error as HttpErrorResponse).status).toBe(404);
+  });
+
+  it('leaves out the orders of the range that are still in the future', async () => {
+    const tomorrowLunch = new Date('2026-11-13T13:00:00').toISOString();
+    const anHourLater = new Date('2026-11-13T14:00:00').toISOString();
+
+    const { value: dashboard } = await settle(service.getDashboard(tomorrowLunch, anHourLater));
+
+    expect(dashboard?.totalOrders).toBe(0);
+  });
+});
+
+describe('MockManagerApiService provided by Angular', () => {
+  it('should be created by the injector, as the feature providers create it', () => {
+    // Arrange
+    TestBed.configureTestingModule({ providers: [MockManagerApiService] });
+
+    // Act / Assert
+    expect(TestBed.inject(MockManagerApiService)).toBeInstanceOf(MockManagerApiService);
   });
 });

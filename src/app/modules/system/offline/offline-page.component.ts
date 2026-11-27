@@ -1,10 +1,10 @@
-import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 
 import { StatePageComponent } from '@shared/components/state-page/state-page.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
+import { PAGE_RELOAD } from '@shared/services/app-update.service';
 
 /** Explains that the device has no connection and that orders in progress keep working. */
 @Component({
@@ -29,9 +29,9 @@ import { StatusBadgeComponent } from '@shared/components/status-badge/status-bad
   `,
 })
 export class OfflinePageComponent {
-  private readonly document = inject(DOCUMENT);
+  private readonly reload = inject(PAGE_RELOAD);
 
   protected retry(): void {
-    this.document.defaultView?.location.reload();
+    this.reload();
   }
 }

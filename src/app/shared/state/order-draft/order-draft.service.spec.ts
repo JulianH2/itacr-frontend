@@ -320,4 +320,15 @@ describe('OrderDraftService', () => {
       expect(service.items()).toHaveLength(1);
     });
   });
+
+  it('should ignore a quantity that is not an integer', () => {
+    // Arrange
+    service.add(FRIES);
+
+    // Act
+    service.changeQuantity(FRIES.productId, 2.5);
+
+    // Assert
+    expect(service.items()[0].quantity).toBe(1);
+  });
 });

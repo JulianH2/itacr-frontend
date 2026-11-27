@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 
-import { toRegistrationFailure } from './auth-errors';
-import { AUTH_PROBLEM_TYPES } from './auth-messages';
+import { toAuthErrorMessage, toRegistrationFailure } from './auth-errors';
+import { AUTH_MESSAGES, AUTH_PROBLEM_TYPES } from './auth-messages';
 
 describe('toRegistrationFailure', () => {
   it('should put the message of each field the API rejected next to that field', () => {
@@ -69,5 +69,61 @@ describe('toRegistrationFailure', () => {
     expect(toRegistrationFailure(new Error('boom')).general).toBe(
       'Ocurrió un error inesperado. Inténtalo de nuevo.',
     );
+  });
+});
+
+describe('toAuthErrorMessage', () => {
+  it('should give the unexpected message when the error is not an HTTP error', () => {
+    // Act / Assert
+    expect(toAuthErrorMessage(new Error('boom'), 'pin')).toBe(AUTH_MESSAGES.unexpected);
+  });
+
+  it('should give the network message when the server could not be reached', () => {
+    // Act / Assert
+    expect(toAuthErrorMessage(new HttpErrorResponse({ status: 0 }), 'pin')).toBe(
+      AUTH_MESSAGES.network,
+    );
+  });
+
+  it.each([
+    [AUTH_PROBLEM_TYPES.invalidCredentials, 'pin', AUTH_MESSAGES.invalidPin],
+    [AUTH_PROBLEM_TYPES.invalidCredentials, 'password', AUTH_MESSAGES.invalidPassword],
+    [AUTH_PROBLEM_TYPES.accountPendingApproval, 'pin', AUTH_MESSAGES.pendingApproval],
+    [AUTH_PROBLEM_TYPES.accountInactive, 'pin', AUTH_MESSAGES.inactive],
+    [AUTH_PROBLEM_TYPES.accountLocked, 'password', AUTH_MESSAGES.locked],
+  ] as const)('should map the problem type %s of a %s login', (type, method, message) => {
+    // Arrange
+    const error = new HttpErrorResponse({ status: 400, error: { type } });
+
+    // Act / Assert
+    expect(toAuthErrorMessage(error, method)).toBe(message);
+  });
+
+  it.each([
+    [401, 'pin', AUTH_MESSAGES.invalidPin],
+    [401, 'password', AUTH_MESSAGES.invalidPassword],
+    [423, 'pin', AUTH_MESSAGES.locked],
+    [429, 'pin', AUTH_MESSAGES.tooManyRequests],
+    [500, 'pin', AUTH_MESSAGES.unexpected],
+  ] as const)(
+    'should map the status %s of a %s login without a known problem type',
+    (status, method, message) => {
+      // Arrange
+      const error = new HttpErrorResponse({
+        status,
+        error: { status, type: 'https://example.com/other' },
+      });
+
+      // Act / Assert
+      expect(toAuthErrorMessage(error, method)).toBe(message);
+    },
+  );
+
+  it('should map by status when the body is not a problem', () => {
+    // Arrange
+    const error = new HttpErrorResponse({ status: 401, error: 'Unauthorized' });
+
+    // Act / Assert
+    expect(toAuthErrorMessage(error, 'pin')).toBe(AUTH_MESSAGES.invalidPin);
   });
 });
